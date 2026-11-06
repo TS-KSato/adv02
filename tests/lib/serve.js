@@ -1,6 +1,6 @@
 // 試験用の静的サーバー。リポジトリの直下を配信する（外部パッケージを使わない）。
-// prefix を渡すと、リポジトリをそのパスの下に置く（例：/novelgame02 なら /novelgame02/ で配信し、ルート直下は 404）。
-// 公開先（GitHub Pages の /novelgame02/）と同じ形で試せるようにするため。
+// prefix を渡すと、リポジトリをそのパスの下に置く（例：/adv02 なら /adv02/ で配信し、ルート直下は 404）。
+// 公開先（GitHub Pages の /adv02/）と同じ形で試せるようにするため。
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -14,7 +14,7 @@ const TYPES = {
   '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.wav': 'audio/wav', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg',
 };
 
-// prefix は「/novelgame02」のように、末尾の / を付けない形で渡す（空なら公開直下）。
+// prefix は「/adv02」のように、末尾の / を付けない形で渡す（空なら公開直下）。
 function serve(root, port, prefix) {
   const mount = (prefix || '').replace(/\/+$/, '');
   const server = http.createServer((req, res) => {

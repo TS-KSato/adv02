@@ -4,7 +4,7 @@
 
 | 項目 | 値 |
 |---|---|
-| 取得元 | https://github.com/ts-ksato/novelgame01 |
+| 取得元 | https://github.com/ts-ksato/adv01（旧名 novelgame01） |
 | 取得元ブランチ | `kit/starter-kit-prep` |
 | 固定したコミット | `48c0362ea42feb684e42e2742f75c6c44dd44c8b`（`48c0362`） |
 | キットの版 | `0.1.0` |
@@ -36,7 +36,7 @@
 | `package.json` | 名前を `novelgame02-kit-and-tests` に変更。スクリプトを `serve` `test` `test:unit` `test:browser` `test:saves` `test:game` に組み直した | ゼルグ試験（`test:zelg`）と、取り込んでいない tools を外すため |
 | `package-lock.json` | ルートの `name` だけを新作名に揃えた（依存は変更なし） | `npm ci` の整合のため |
 | `tests/run.js` | `zelg` 群を外し、`game` 群（`tests/game/`）を加えた | ゼルグの試験を呼ばないため |
-| `tests/lib/serve.js` | 第二引数 `prefix` を追加（例：`/novelgame02`）。省略時は従来どおり | 公開先 `/novelgame02/` と同じ形で配信して試すため。ルート直下の参照は 404 にする |
+| `tests/lib/serve.js` | 第二引数 `prefix` を追加（例：`/adv02`）。省略時は従来どおり | 公開先 `/adv02/` と同じ形で配信して試すため。ルート直下の参照は 404 にする |
 
 ## 4. 作品固有のファイル（新作で書いたもの）
 
@@ -79,5 +79,5 @@ npm run test:game                 # 作品データ・取り込み・冒頭一�
 
 - 上流の `kit/README.md` は、`npm test` が `tests/zelg` を含むことを前提にしています。新作では `tests/zelg` を持たないため、`npm test` は `kit`（unit・browser・saves）と `game` の四群を実行します。
 - 上流の `npm run assets` `npm run release` は、新作では使えません（`kit/tools` を取り込んでいないため）。
-- サブパス配信（`/novelgame02/`）は、新作の `npm run serve` と `tests/game/play.js` が確かめます。
+- サブパス配信（`/adv02/`）は、新作の `npm run serve` と `tests/game/play.js` が確かめます。
 - 上流と同じく、試験はデスクトップ版 Chromium で行っています。スマホ実機（iPhone・Android の Safari・Chrome）の確認は、今回は行っていません。
