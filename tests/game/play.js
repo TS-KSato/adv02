@@ -1,5 +1,5 @@
 // 『きみのための甲子園』の冒頭一場面の試験（ブラウザ）。
-// 公開先と同じ /novelgame02/ の下から配信し、クリックとキーだけで動かして確かめる。
+// 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
 // GAME_SHOTS に保存先のフォルダを指定すると、画面キャプチャを残す（任意）。
@@ -11,7 +11,7 @@ const { serve } = require('../lib/serve');
 const { launch } = require('../lib/launch');
 
 const ROOT = path.join(__dirname, '..', '..');
-const PREFIX = '/novelgame02';
+const PREFIX = '/adv02';
 const SAVE_KEY = 'kit:novelgame02-koshien:v1';
 const SHOT_DIR = process.env.GAME_SHOTS || '';
 
@@ -34,7 +34,7 @@ const expectOf = (i) => {
 
 const ERRORS = []; // ページの例外・console error・HTTP 4xx/5xx・公開先の外への参照
 const OK_URLS = new Set(); // 200 で読み込めた URL
-let BASE = ''; // http://127.0.0.1:<port>/novelgame02/
+let BASE = ''; // http://127.0.0.1:<port>/adv02/
 
 // ----- 画面の読み取り（DOM と KIT の状態。操作はしない） -----
 const show = (page) => page.evaluate(() => {
@@ -382,9 +382,9 @@ async function legibility(browser) {
   }
 }
 
-// 公開先の形：/novelgame02/ の下だけで配信される（ルート直下は 404）
+// 公開先の形：/adv02/ の下だけで配信される（ルート直下は 404）
 async function mountCheck(origin) {
-  section('公開先の形：/novelgame02/ の下でだけ配信される');
+  section('公開先の形：/adv02/ の下でだけ配信される');
   const rootIndex = await fetch(origin + '/index.html');
   check('ルート直下の index.html は配信されない（404）', rootIndex.status === 404, String(rootIndex.status));
   const rootGame = await fetch(origin + '/game.js');
@@ -392,7 +392,7 @@ async function mountCheck(origin) {
   for (const p of ['index.html', 'game.js', 'kit/releases/0.1.0/kit.js', 'kit/releases/0.1.0/kit.css', 'assets/backgrounds/field-morning-temp.png']) {
     const res = await fetch(BASE + p);
     await res.arrayBuffer();
-    check('/novelgame02/ の下で ' + p + ' が 200', res.status === 200, String(res.status));
+    check('/adv02/ の下で ' + p + ' が 200', res.status === 200, String(res.status));
   }
   const png = await fetch(BASE + 'assets/backgrounds/field-morning-temp.png');
   check('背景の Content-Type は image/png', (png.headers.get('content-type') || '').startsWith('image/png'));

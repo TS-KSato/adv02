@@ -33,7 +33,7 @@ for (const f of Object.keys(BASELINE)) {
 
 section('取り込みの記録（docs/kit-provenance.json）');
 const prov = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs', 'kit-provenance.json'), 'utf8'));
-check('取得元は ts-ksato/novelgame01', prov.repository === 'https://github.com/ts-ksato/novelgame01', prov.repository);
+check('取得元は ts-ksato/adv01', prov.repository === 'https://github.com/ts-ksato/adv01', prov.repository);
 check('取得元ブランチは kit/starter-kit-prep', prov.branchAtImport === 'kit/starter-kit-prep', prov.branchAtImport);
 check('取得元コミットは 48c0362ea42feb684e42e2742f75c6c44dd44c8b', prov.commit === '48c0362ea42feb684e42e2742f75c6c44dd44c8b', prov.commit);
 check('使用キットの版は 0.1.0', prov.kitVersion === '0.1.0', prov.kitVersion);

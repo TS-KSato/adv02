@@ -3,7 +3,7 @@
 ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。今回は冒頭の一場面だけを実装しています。
 
 - 場面：春のグラウンド（`opening-ground`）。平野の入学時の期待から、グラウンドへ向かうまで（23行）
-- 公開予定：https://ts-ksato.github.io/novelgame02/ （**未公開**。この段階では公開していません）
+- 公開予定：https://ts-ksato.github.io/adv02/ （**未公開**。この段階では公開していません）
 - キット：ノベルゲーム制作キット 0.1.0（固定版。取り込みの経緯は [docs/kit-integration.md](docs/kit-integration.md)）
 
 ## 注意
@@ -16,7 +16,7 @@
 ## 中身
 
 ```text
-index.html                 入口（/novelgame02/ の下で動く。相対パスのみ）
+index.html                 入口（/adv02/ の下で動く。相対パスのみ）
 game.js                    作品データ（window.KIT_GAME）
 game.css                   新作専用の見た目（場面名・ページ数の札）
 assets/backgrounds/        仮背景
@@ -38,9 +38,9 @@ npm run serve
 
 ブラウザで次を開きます（横向きで見てください）。
 
-- http://127.0.0.1:8080/novelgame02/
+- http://127.0.0.1:8080/adv02/
 
-`npm run serve` は、リポジトリを `/novelgame02/` の下に置いて配信します。ルート直下（`http://127.0.0.1:8080/`）は配信しません。
+`npm run serve` は、リポジトリを `/adv02/` の下に置いて配信します。ルート直下（`http://127.0.0.1:8080/`）は配信しません。
 
 ## 試験
 
@@ -63,6 +63,6 @@ npm run test:game        # 新作：作品データ・取り込みの記録・�
 
 ## 素材とキットの出所
 
-- キット（`kit/`）は上流 https://github.com/ts-ksato/novelgame01 の固定版です。
+- キット（`kit/`）は上流 https://github.com/ts-ksato/adv01 の固定版です。
 - 作品の本文（`game.js`）と仮背景は、この作品のためのものです。
 - サンプルA・Bの図形と音は、キットの試験用の素材です。

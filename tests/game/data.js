@@ -85,7 +85,7 @@ for (const [key, file] of Object.entries(bgs)) {
 }
 check('演出は背景の一つだけ（c01-001）', G.cues.length === 1 && G.cues[0].at === 'c01-001' && G.cues[0].bg === 'field-morning-temp', JSON.stringify(G.cues));
 
-section('相対パス（公開先 /novelgame02/ の下で動く）');
+section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');
 const refs = [...indexHtml.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]).filter((r) => !r.startsWith('data:'));
 check('index.html の参照はすべて ./ で始まる相対パス', refs.length > 0 && refs.every((r) => r.startsWith('./')), refs.join(' '));

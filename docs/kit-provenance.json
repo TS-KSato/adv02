@@ -1,5 +1,5 @@
 {
-  "repository": "https://github.com/ts-ksato/novelgame01",
+  "repository": "https://github.com/ts-ksato/adv01",
   "branchAtImport": "kit/starter-kit-prep",
   "commit": "48c0362ea42feb684e42e2742f75c6c44dd44c8b",
   "kitVersion": "0.1.0",
@@ -15,7 +15,7 @@
     "package.json": "スクリプトを新作用に組み直した（ゼルグ試験・tools 系を外し、test:game を追加）",
     "package-lock.json": "ルートの name を novelgame02-kit-and-tests に揃えた（依存は変更なし）",
     "tests/run.js": "zelg 群を外し、game 群（tests/game）を加えた",
-    "tests/lib/serve.js": "サブパス（/novelgame02/）で配信する prefix 引数を追加した（省略時は従来どおり）"
+    "tests/lib/serve.js": "サブパス（/adv02/）で配信する prefix 引数を追加した（省略時は従来どおり）"
   },
   "newInThisRepository": [
     "index.html",
