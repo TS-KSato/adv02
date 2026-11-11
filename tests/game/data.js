@@ -101,9 +101,9 @@ const marriageChoices = marriage.choices || [];
 check('大山本人と先輩のどちらに聞くか選べる',
   marriageChoices.length === 2 && marriageChoices[0].text === '大山に聞く' && marriageChoices[0].to === 'marriage-oyama' &&
   marriageChoices[1].text === '先輩に聞く' && marriageChoices[1].to === 'marriage-senpai');
-check('どちらから聞いても明日の練習の話へ合流し、現在の収録範囲を終える',
+check('どちらから聞いても明日の練習の話へ合流し、幕間へ進む',
   marriageChoices.length === 2 && marriageChoices.every(c => G.scenes[c.to]?.next === 'marriage-end') &&
-  !G.scenes['marriage-end'].next && !G.scenes['marriage-end'].choices);
+  G.scenes['marriage-end'].next === 'after-ten-more' && !G.scenes['marriage-end'].choices);
 const marriageDoc = read('docs/victory-and-marriage-script.md').split(/^## .+$/m).slice(1);
 const marriageKeys = ['marriage-start', 'marriage-oyama', 'marriage-senpai', 'marriage-end'];
 const marriageMismatch = marriageKeys.filter((key, i) => {
@@ -112,6 +112,25 @@ const marriageMismatch = marriageKeys.filter((key, i) => {
   return JSON.stringify(expected) !== JSON.stringify(actual);
 });
 check('本文と話者が docs/victory-and-marriage-script.md と一致する', marriageMismatch.length === 0, marriageMismatch.join(', '));
+
+section('あと十本／指導の出所');
+check('幕間のあとにバント守備へ進む', G.scenes['after-ten-more'].next === 'coaching-start');
+const coachingChoices = G.scenes['coaching-start'].choices || [];
+check('平野が先に誰に聞くか、資料を見るかを選べる',
+  coachingChoices.length === 2 &&
+  coachingChoices[0].text === '指示の意味を聞く' && coachingChoices[0].to === 'coaching-ask' &&
+  coachingChoices[1].text === '去年の資料を見返す' && coachingChoices[1].to === 'coaching-notes');
+check('どちらの調べ方でも美空に問いかける場面に合流し、現在の収録範囲を終える',
+  coachingChoices.length === 2 && coachingChoices.every(c => G.scenes[c.to]?.next === 'coaching-end') &&
+  !G.scenes['coaching-end'].next && !G.scenes['coaching-end'].choices);
+const coachingDoc = read('docs/source-of-coaching-script.md').split(/^## .+$/m).slice(1);
+const coachingKeys = ['after-ten-more', 'coaching-start', 'coaching-ask', 'coaching-notes', 'coaching-end'];
+const coachingMismatch = coachingKeys.filter((key, i) => {
+  const expected = (coachingDoc[i] || '').trim().split(/\n\n+/).filter(p => p && !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('本文と話者が docs/source-of-coaching-script.md と一致する', coachingMismatch.length === 0, coachingMismatch.join(', '));
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭から「優勝と結婚」までの試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭から「指導の出所」までの試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -186,8 +186,16 @@ async function practicePlaythrough(browser, choiceIndex) {
     await clickText(page, marriageChoice.text);
     await readScene(marriageChoice.to);
     await readScene('marriage-end');
+    await readScene('after-ten-more');
+    await readScene('coaching-start');
+    const coachingChoices = G.scenes['coaching-start'].choices;
+    check('指示を聞くか資料を見返すか選べる', await page.getByRole('button', { name: coachingChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: coachingChoices[1].text, exact: true }).isVisible());
+    const coachingChoice = coachingChoices[choiceIndex];
+    await clickText(page, coachingChoice.text);
+    await readScene(coachingChoice.to);
+    await readScene('coaching-end');
     await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-    check('「優勝と結婚」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
+    check('「指導の出所」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
     check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
   } finally {
     await ctx.close();
