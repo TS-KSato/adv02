@@ -86,7 +86,14 @@ const scorer = G.scenes['scorer-first'];
 const scorerDoc = read('docs/scorer-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const scorerLines = scorer.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/scorer-script.md と一致する', JSON.stringify(scorerDoc) === JSON.stringify(scorerLines));
-check('「記録する一年生」の最後で現在の収録範囲を終える', !scorer.next && !scorer.choices);
+check('記録する一年生の次は美空の登場へ進む', scorer.next === 'coach-arrival' && !scorer.choices);
+
+section('美空の登場');
+const arrival = G.scenes['coach-arrival'];
+const arrivalDoc = read('docs/coach-arrival-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const arrivalLines = arrival.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/coach-arrival-script.md と一致する', JSON.stringify(arrivalDoc) === JSON.stringify(arrivalLines));
+check('美空の登場の最後で現在の収録範囲を終える', !arrival.next && !arrival.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
