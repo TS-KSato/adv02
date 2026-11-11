@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭一場面の試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭と初練習の試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -127,36 +127,62 @@ async function playthrough(ctx, label, viewport, withShots) {
   check(label + '：23 行すべてで、行ID・話者・本文・行位置が docs と一致', linesOk, details.slice(0, 3).join(' | '));
   check(label + '：23 行すべてで、見切れ・横スクロールがない', fitsOk, details.slice(0, 3).join(' | '));
 
-  // 最後の行の次の入力で、タイトルへ戻る（キット標準の「ここまで」。物語の完結ではない）
   await advance(page);
-  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-  const toast = await page.textContent('.kit-toast');
-  check(label + '：最後の行の次の入力でタイトルへ戻る', (await show(page)).screen === 'title');
-  check(label + '：「この作品はここまでです。」が出る', toast.includes('この作品はここまでです。'), toast);
-  check(label + '：読了後は「つづきから」が押せない（自動保存の位置が消える）', await page.getByRole('button', { name: 'つづきから', exact: true }).isDisabled());
-  const saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), SAVE_KEY);
-  check(label + '：保存の自動位置は null', saved.auto === null);
-
-  // 読了後も、何も送られず、タイトルのボタンも押されない（無限送り・誤作動の確認）
-  await page.waitForTimeout(1200);
-  const after = await show(page);
-  check(label + '：読了後、行位置もタイトルも変わらない', after.screen === 'title' && after.lineId === 'c01-023', JSON.stringify(after));
-  await page.keyboard.press('Space');
-  await page.waitForTimeout(400);
-  check(label + '：タイトルで Space を押しても、はじめからにならない', (await show(page)).screen === 'title');
+  await waitFull(page, G.scenes['practice-start'].lines[0].text);
+  check(label + '：二十三行のあとに放課後の練習へ進む', (await show(page)).lineId === 'c02-001');
   return page;
 }
 
-// 読了済みの場面を、既読SKIPで最後まで送る。最後の行の後はタイトルで止まり、SKIP の状態も解除される
-async function skipToEnd(page) {
-  section('既読SKIP：読了済みの冒頭を最後まで送り、タイトルで止まる');
+// 既読SKIPは冒頭から放課後へ進み、未読の行では止まる
+async function skipIntoPractice(page) {
+  section('既読SKIP：冒頭を越え、練習の未読行で止まる');
+  await clickText(page, 'タイトル');
   await clickText(page, 'はじめから');
   await clickText(page, '既読SKIP');
-  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 20000 });
-  await page.waitForTimeout(800);
+  await page.waitForFunction(() => KIT.s.lineId === 'c02-002' && !KIT.s.skip_on, null, { timeout: 20000 });
   const s = await show(page);
-  check('既読SKIPは最後の行まで送り、タイトルで止まる', s.screen === 'title' && s.lineId === 'c01-023', JSON.stringify(s));
-  check('止まった後、SKIP の状態は解除されている', !s.skip);
+  check('冒頭から既読の続きへ進み、最初の未読行で止まる', s.scene === 'practice-start' && s.lineId === 'c02-002' && !s.skip);
+}
+
+async function practicePlaythrough(browser, choiceIndex) {
+  const ctx = await browser.newContext({ viewport: SMALL_LANDSCAPE });
+  try {
+    const page = await openGame(ctx, { speedZero: true });
+    await clickText(page, 'はじめから');
+    const start = G.scenes['practice-start'];
+    for (let i = 0; i < LINES.length; i++) await advance(page);
+    const choice = start.choices[choiceIndex];
+    section('最初の選択肢：' + choice.text);
+    async function readScene(sceneKey, { reloadAfterFirst = false } = {}) {
+      const lines = G.scenes[sceneKey].lines;
+      const issues = [];
+      for (const [index, line] of lines.entries()) {
+        const s = await show(page);
+        const speaker = line.speaker ? G.speakers[line.speaker] : '';
+        if (s.scene !== sceneKey || s.lineId !== line.id || s.prose !== line.text || s.speaker !== speaker) issues.push(line.id + ' 本文');
+        if (!fits(await layout(page))) issues.push(line.id + ' 見切れ');
+        if (reloadAfterFirst && index === 0) {
+          await page.reload();
+          await page.waitForFunction(() => window.KIT && window.KIT.s);
+          await clickText(page, 'つづきから');
+          const back = await show(page);
+          check('選んだ練習の途中でリロードして同じ行に戻る', back.scene === sceneKey && back.lineId === line.id && back.prose === line.text);
+        }
+        await advance(page);
+      }
+      check(sceneKey + ' の本文・話者が正しく表示され、横向き 667×375 で収まる', issues.length === 0, issues.slice(0, 4).join(' | '));
+    }
+    await readScene('practice-start');
+    check('内野と外野の二つの選択肢が表示される', await page.getByRole('button', { name: start.choices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: start.choices[1].text, exact: true }).isVisible());
+    await clickText(page, choice.text);
+    await readScene(choice.to, { reloadAfterFirst: choiceIndex === 0 });
+    await readScene('practice-end');
+    await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
+    check('合流したあと、試遊の最後でタイトルへ戻る', (await show(page)).screen === 'title');
+    check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
+  } finally {
+    await ctx.close();
+  }
 }
 
 // 文字の流れ中の一回目のクリックは全文を出し、行は進まない。次のクリックで進む。キーでも進む。
@@ -409,7 +435,7 @@ async function main() {
 
     const desk = await browser.newContext({ viewport: DESKTOP });
     const deskPage = await playthrough(desk, 'デスクトップ 1280×720', DESKTOP, true);
-    await skipToEnd(deskPage);
+    await skipIntoPractice(deskPage);
     await desk.close();
 
     const land = await browser.newContext({ viewport: LANDSCAPE });
@@ -424,6 +450,8 @@ async function main() {
     await portraitGuide(browser);
     await smallLandscape(browser);
     await legibility(browser);
+    await practicePlaythrough(browser, 0);
+    await practicePlaythrough(browser, 1);
 
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));

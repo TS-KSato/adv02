@@ -1,9 +1,9 @@
 # きみのための甲子園
 
-ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。今回は冒頭の一場面だけを実装しています。
+ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。冒頭から初練習までのテキスト試遊稿です。
 
-- 場面：春のグラウンド（`opening-ground`）。平野の入学時の期待から、グラウンドへ向かうまで（23行）
-- 公開予定：https://ts-ksato.github.io/adv02/ （**未公開**。この段階では公開していません）
+- 場面：「春のグラウンド」（冒頭23行）と「練習へ交ざる」（内野または外野を選び、帰り道へ合流）
+- 公開予定：https://ts-ksato.github.io/adv02/ （公開中の内容は反映済みの版です）
 - キット：ノベルゲーム制作キット 0.1.0（固定版。取り込みの経緯は [docs/kit-integration.md](docs/kit-integration.md)）
 
 ## 注意
@@ -23,7 +23,7 @@ assets/backgrounds/        仮背景
 kit/releases/0.1.0/        作品が実行時に読む、固定版のキット（4 ファイル）
 kit/engine/                上流の複製（回帰試験が参照）
 kit/samples/               キットの回帰試験用の作品（新作の下敷きではない）
-tests/                     試験（kit/ はキットの回帰、game/ は新作の作品データと冒頭一場面）
+tests/                     試験（kit/ はキットの回帰、game/ は新作の作品データ・冒頭・初練習）
 docs/                      確認用の本文・企画前提・取り込みの記録
 ```
 
@@ -49,17 +49,17 @@ npm test                 # すべて（kit の unit・browser・saves と、game
 npm run test:unit        # キット：作品データの検証・演出・保存の評価（ブラウザ不要）
 npm run test:browser     # キット：サンプルA・Bの操作（ブラウザ）
 npm run test:saves       # キット：変更前の保存を、変更した作品データで読む（ブラウザ）
-npm run test:game        # 新作：作品データ・取り込みの記録・冒頭一場面（ブラウザ）
+npm run test:game        # 新作：作品データ・取り込みの記録・冒頭と初練習（ブラウザ）
 ```
 
 - ブラウザ試験は、試験自身が静的サーバーを起動・終了します。外部でサーバーを立てる必要はありません。
 - 試験で使うブラウザは Playwright（1.56.1）が取得した Chromium です。別の Chromium を使うときは環境変数 `KIT_CHROMIUM_PATH` に実行ファイルのパスを指定します。
 - `npm test` は、上流 `kit/README.md` の手順と違い、ゼルグの試験を呼びません（新作には含めていません）。
 
-## 冒頭一場面の確認
+## 冒頭と初練習の確認
 
-- 本文と行IDは [docs/opening-script.md](docs/opening-script.md) にあります。`game.js` と一致することを `tests/game/data.js` が確かめます。
-- 試験では、新規開始から最後の行まで、クリックとキーだけで読み進めます。途中でリロードして「つづきから」で戻り、手動セーブも確かめます。
+- 本文と行IDは [docs/opening-script.md](docs/opening-script.md) 、初練習の本文は [docs/practice-script.md](docs/practice-script.md) にあります。`game.js` と一致することを `tests/game/data.js` が確かめます。
+- 試験では、冒頭から最初の選択肢へ進み、内野・外野それぞれの本文と合流を確かめます。途中でリロードして「つづきから」で戻り、手動セーブも確かめます。
 
 ## 素材とキットの出所
 
