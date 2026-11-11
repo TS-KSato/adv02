@@ -144,7 +144,26 @@ const convenient = G.scenes['convenient-scorer'];
 const convenientDoc = read('docs/convenient-scorer-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const convenientLines = convenient.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/convenient-scorer-script.md と一致する', JSON.stringify(convenientDoc) === JSON.stringify(convenientLines));
-check('便利な部員、特別な相手で現在の収録範囲を終える', !convenient.next && !convenient.choices);
+check('便利な部員、特別な相手の次は幕間へ進む', convenient.next === 'desk-corner' && !convenient.choices);
+
+section('机の端／日和との日常');
+check('幕間のあとに日和と片づけをする', G.scenes['desk-corner'].next === 'hiyori-start');
+const hiyoriChoices = G.scenes['hiyori-start'].choices || [];
+check('飲み物か用具の片づけを選べる',
+  hiyoriChoices.length === 2 &&
+  hiyoriChoices[0].text === '飲み物を運ぶ' && hiyoriChoices[0].to === 'hiyori-drinks' &&
+  hiyoriChoices[1].text === '用具の片づけを手伝う' && hiyoriChoices[1].to === 'hiyori-equipment');
+check('片づけの選択肢は翌日の共通場面に合流する',
+  hiyoriChoices.length === 2 && hiyoriChoices.every(c => G.scenes[c.to]?.next === 'hiyori-end') &&
+  !G.scenes['hiyori-end'].next && !G.scenes['hiyori-end'].choices);
+const hiyoriDoc = read('docs/hiyori-everyday-script.md').split(/^## .+$/m).slice(1);
+const hiyoriKeys = ['desk-corner', 'hiyori-start', 'hiyori-drinks', 'hiyori-equipment', 'hiyori-end'];
+const hiyoriMismatch = hiyoriKeys.filter((key, i) => {
+  const expected = (hiyoriDoc[i] || '').trim().split(/\n\n+/).filter(p => p && !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('本文と話者が docs/hiyori-everyday-script.md と一致する', hiyoriMismatch.length === 0, hiyoriMismatch.join(', '));
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
