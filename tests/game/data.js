@@ -93,7 +93,25 @@ const arrival = G.scenes['coach-arrival'];
 const arrivalDoc = read('docs/coach-arrival-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const arrivalLines = arrival.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/coach-arrival-script.md と一致する', JSON.stringify(arrivalDoc) === JSON.stringify(arrivalLines));
-check('美空の登場の最後で現在の収録範囲を終える', !arrival.next && !arrival.choices);
+check('美空の登場の次は「優勝と結婚」へ進む', arrival.next === 'marriage-start' && !arrival.choices);
+
+section('優勝と結婚');
+const marriage = G.scenes['marriage-start'];
+const marriageChoices = marriage.choices || [];
+check('大山本人と先輩のどちらに聞くか選べる',
+  marriageChoices.length === 2 && marriageChoices[0].text === '大山に聞く' && marriageChoices[0].to === 'marriage-oyama' &&
+  marriageChoices[1].text === '先輩に聞く' && marriageChoices[1].to === 'marriage-senpai');
+check('どちらから聞いても明日の練習の話へ合流し、現在の収録範囲を終える',
+  marriageChoices.length === 2 && marriageChoices.every(c => G.scenes[c.to]?.next === 'marriage-end') &&
+  !G.scenes['marriage-end'].next && !G.scenes['marriage-end'].choices);
+const marriageDoc = read('docs/victory-and-marriage-script.md').split(/^## .+$/m).slice(1);
+const marriageKeys = ['marriage-start', 'marriage-oyama', 'marriage-senpai', 'marriage-end'];
+const marriageMismatch = marriageKeys.filter((key, i) => {
+  const expected = (marriageDoc[i] || '').trim().split(/\n\n+/).filter(p => p && !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('本文と話者が docs/victory-and-marriage-script.md と一致する', marriageMismatch.length === 0, marriageMismatch.join(', '));
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

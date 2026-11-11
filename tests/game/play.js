@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭から美空の登場までの試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭から「優勝と結婚」までの試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -179,8 +179,15 @@ async function practicePlaythrough(browser, choiceIndex) {
     await readScene('practice-end');
     await readScene('scorer-first');
     await readScene('coach-arrival');
+    await readScene('marriage-start');
+    const marriageChoices = G.scenes['marriage-start'].choices;
+    check('大山と先輩の二つの選択肢が表示される', await page.getByRole('button', { name: marriageChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: marriageChoices[1].text, exact: true }).isVisible());
+    const marriageChoice = marriageChoices[choiceIndex];
+    await clickText(page, marriageChoice.text);
+    await readScene(marriageChoice.to);
+    await readScene('marriage-end');
     await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-    check('美空の登場を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
+    check('「優勝と結婚」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
     check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
   } finally {
     await ctx.close();
