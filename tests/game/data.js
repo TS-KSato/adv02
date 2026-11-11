@@ -70,7 +70,7 @@ check('練習参加時に内野か外野を選ぶ', choices.length === 2 && choi
 check('二つの選択肢はそれぞれ別の練習を読める', choices[0]?.to === 'practice-infield' && choices[1]?.to === 'practice-outfield');
 check('両方の練習から翌日への共通部分に進む', choices.length === 2 && choices.every(c => G.scenes[c.to]?.next === 'practice-end'));
 const end = G.scenes['practice-end'];
-check('合流後は試遊範囲を終える', !end.next && !end.choices);
+check('合流後は「記録する一年生」へ進む', end.next === 'scorer-first' && !end.choices);
 const sections = read('docs/practice-script.md').split(/^## .+$/m).slice(1);
 const practiceKeys = ['practice-start', 'practice-infield', 'practice-outfield', 'practice-end'];
 const practiceMismatch = [];
@@ -80,6 +80,13 @@ for (const [i, key] of practiceKeys.entries()) {
   if (JSON.stringify(fromDoc) !== JSON.stringify(fromGame)) practiceMismatch.push(key);
 }
 check('初練習の本文と話者が docs/practice-script.md と一致する', practiceMismatch.length === 0, practiceMismatch.join(', '));
+
+section('記録する一年生');
+const scorer = G.scenes['scorer-first'];
+const scorerDoc = read('docs/scorer-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const scorerLines = scorer.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/scorer-script.md と一致する', JSON.stringify(scorerDoc) === JSON.stringify(scorerLines));
+check('「記録する一年生」の最後で現在の収録範囲を終える', !scorer.next && !scorer.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

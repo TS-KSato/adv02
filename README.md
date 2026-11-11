@@ -1,8 +1,8 @@
 # きみのための甲子園
 
-ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。冒頭から初練習までのテキスト試遊稿です。
+ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。冒頭から「記録する一年生」までの本編初稿です。
 
-- 場面：「春のグラウンド」（冒頭23行）と「練習へ交ざる」（内野または外野を選び、帰り道へ合流）
+- 場面：「春のグラウンド」（冒頭23行）と「練習へ交ざる」（内野または外野を選ぶ）、「記録する一年生」（両方の選択肢から進む）
 - 公開予定：https://ts-ksato.github.io/adv02/ （公開中の内容は反映済みの版です）
 - キット：ノベルゲーム制作キット 0.1.0（固定版。取り込みの経緯は [docs/kit-integration.md](docs/kit-integration.md)）
 
@@ -56,10 +56,10 @@ npm run test:game        # 新作：作品データ・取り込みの記録・�
 - 試験で使うブラウザは Playwright（1.56.1）が取得した Chromium です。別の Chromium を使うときは環境変数 `KIT_CHROMIUM_PATH` に実行ファイルのパスを指定します。
 - `npm test` は、上流 `kit/README.md` の手順と違い、ゼルグの試験を呼びません（新作には含めていません）。
 
-## 冒頭と初練習の確認
+## 収録した本文の確認
 
-- 本文と行IDは [docs/opening-script.md](docs/opening-script.md) 、初練習の本文は [docs/practice-script.md](docs/practice-script.md) にあります。`game.js` と一致することを `tests/game/data.js` が確かめます。
-- 試験では、冒頭から最初の選択肢へ進み、内野・外野それぞれの本文と合流を確かめます。途中でリロードして「つづきから」で戻り、手動セーブも確かめます。
+- 本文と行IDは [docs/opening-script.md](docs/opening-script.md)、続きの本文は [docs/practice-script.md](docs/practice-script.md) と [docs/scorer-script.md](docs/scorer-script.md) にあります。`game.js` と一致することを `tests/game/data.js` が確かめます。
+- 試験では、冒頭から最初の選択肢へ進み、内野・外野それぞれの本文と、「記録する一年生」への合流を確かめます。途中でリロードして「つづきから」で戻り、手動セーブも確かめます。
 
 ## 素材とキットの出所
 
