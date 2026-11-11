@@ -1,8 +1,8 @@
 # きみのための甲子園
 
-ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。冒頭から「外周五十周」までの本編初稿です。
+ブラウザで遊ぶ横向きのノベルゲームの作品データ（試作）。冒頭から「外周50周」までの本編初稿です。
 
-- 場面：「春のグラウンド」（冒頭23行）と「練習へ交ざる」（内野または外野を選ぶ）、「記録する一年生」（両方の選択肢から進む）、「美空の登場」、「優勝と結婚」（大山か先輩に話を聞く）、幕間「あと十本」、「指導の出所」（指示を聞くか、資料を見るか選ぶ）、「外周五十周」
+- 場面：「春のグラウンド」（冒頭23行）と「練習へ交ざる」（内野または外野を選ぶ）、「記録する1年生」（両方の選択肢から進む）、「美空の登場」、「優勝と結婚」（大山か先輩に話を聞く）、幕間「あと10本」、「指導の出所」（指示を聞くか、資料を見るか選ぶ）、「外周50周」
 - 公開予定：https://ts-ksato.github.io/adv02/ （公開中の内容は反映済みの版です）
 - キット：ノベルゲーム制作キット 0.1.0（固定版。取り込みの経緯は [docs/kit-integration.md](docs/kit-integration.md)）
 
@@ -58,6 +58,7 @@ npm run test:game        # 新作：作品データ・取り込みの記録・�
 
 ## 収録した本文の確認
 
+- 本文では、回・塁・周・本数・学年などの数字は算用数字で表記します。「四球」「三遊間」などの用語や、「一瞬」「一緒」などの熟語は漢字のままにします。
 - 本文と行IDは [docs/opening-script.md](docs/opening-script.md)、続きの本文は [docs/practice-script.md](docs/practice-script.md) 、[docs/scorer-script.md](docs/scorer-script.md)、[docs/coach-arrival-script.md](docs/coach-arrival-script.md)、[docs/victory-and-marriage-script.md](docs/victory-and-marriage-script.md)、[docs/source-of-coaching-script.md](docs/source-of-coaching-script.md)、[docs/fifty-laps-script.md](docs/fifty-laps-script.md) にあります。`game.js` と一致することを `tests/game/data.js` が確かめます。
 - 試験では、冒頭から最初の選択肢へ進み、内野・外野それぞれの本文と合流、その先の「優勝と結婚」と「指導の出所」の選択肢を確かめます。途中でリロードして「つづきから」で戻り、手動セーブも確かめます。
 

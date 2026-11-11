@@ -70,7 +70,7 @@ check('練習参加時に内野か外野を選ぶ', choices.length === 2 && choi
 check('二つの選択肢はそれぞれ別の練習を読める', choices[0]?.to === 'practice-infield' && choices[1]?.to === 'practice-outfield');
 check('両方の練習から翌日への共通部分に進む', choices.length === 2 && choices.every(c => G.scenes[c.to]?.next === 'practice-end'));
 const end = G.scenes['practice-end'];
-check('合流後は「記録する一年生」へ進む', end.next === 'scorer-first' && !end.choices);
+check('合流後は「記録する1年生」へ進む', end.next === 'scorer-first' && !end.choices);
 const sections = read('docs/practice-script.md').split(/^## .+$/m).slice(1);
 const practiceKeys = ['practice-start', 'practice-infield', 'practice-outfield', 'practice-end'];
 const practiceMismatch = [];
@@ -81,12 +81,12 @@ for (const [i, key] of practiceKeys.entries()) {
 }
 check('初練習の本文と話者が docs/practice-script.md と一致する', practiceMismatch.length === 0, practiceMismatch.join(', '));
 
-section('記録する一年生');
+section('記録する1年生');
 const scorer = G.scenes['scorer-first'];
 const scorerDoc = read('docs/scorer-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const scorerLines = scorer.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/scorer-script.md と一致する', JSON.stringify(scorerDoc) === JSON.stringify(scorerLines));
-check('記録する一年生の次は美空の登場へ進む', scorer.next === 'coach-arrival' && !scorer.choices);
+check('記録する1年生の次は美空の登場へ進む', scorer.next === 'coach-arrival' && !scorer.choices);
 
 section('美空の登場');
 const arrival = G.scenes['coach-arrival'];
@@ -113,14 +113,14 @@ const marriageMismatch = marriageKeys.filter((key, i) => {
 });
 check('本文と話者が docs/victory-and-marriage-script.md と一致する', marriageMismatch.length === 0, marriageMismatch.join(', '));
 
-section('あと十本／指導の出所');
+section('あと10本／指導の出所');
 check('幕間のあとにバント守備へ進む', G.scenes['after-ten-more'].next === 'coaching-start');
 const coachingChoices = G.scenes['coaching-start'].choices || [];
 check('平野が先に誰に聞くか、資料を見るかを選べる',
   coachingChoices.length === 2 &&
   coachingChoices[0].text === '指示の意味を聞く' && coachingChoices[0].to === 'coaching-ask' &&
   coachingChoices[1].text === '去年の資料を見返す' && coachingChoices[1].to === 'coaching-notes');
-check('どちらの調べ方でも美空に問いかけ、外周五十周へ進む',
+check('どちらの調べ方でも美空に問いかけ、外周50周へ進む',
   coachingChoices.length === 2 && coachingChoices.every(c => G.scenes[c.to]?.next === 'coaching-end') &&
   G.scenes['coaching-end'].next === 'fifty-laps' && !G.scenes['coaching-end'].choices);
 const coachingDoc = read('docs/source-of-coaching-script.md').split(/^## .+$/m).slice(1);
@@ -132,12 +132,12 @@ const coachingMismatch = coachingKeys.filter((key, i) => {
 });
 check('本文と話者が docs/source-of-coaching-script.md と一致する', coachingMismatch.length === 0, coachingMismatch.join(', '));
 
-section('外周五十周');
+section('外周50周');
 const laps = G.scenes['fifty-laps'];
 const lapsDoc = read('docs/fifty-laps-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const lapsLines = laps.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/fifty-laps-script.md と一致する', JSON.stringify(lapsDoc) === JSON.stringify(lapsLines));
-check('外周五十周で現在の収録範囲を終える', !laps.next && !laps.choices);
+check('外周50周で現在の収録範囲を終える', !laps.next && !laps.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
