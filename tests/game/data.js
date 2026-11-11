@@ -137,7 +137,14 @@ const laps = G.scenes['fifty-laps'];
 const lapsDoc = read('docs/fifty-laps-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const lapsLines = laps.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/fifty-laps-script.md と一致する', JSON.stringify(lapsDoc) === JSON.stringify(lapsLines));
-check('外周50周で現在の収録範囲を終える', !laps.next && !laps.choices);
+check('外周50周から美空との会話へ進む', laps.next === 'convenient-scorer' && !laps.choices);
+
+section('便利な部員、特別な相手');
+const convenient = G.scenes['convenient-scorer'];
+const convenientDoc = read('docs/convenient-scorer-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const convenientLines = convenient.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/convenient-scorer-script.md と一致する', JSON.stringify(convenientDoc) === JSON.stringify(convenientLines));
+check('便利な部員、特別な相手で現在の収録範囲を終える', !convenient.next && !convenient.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
