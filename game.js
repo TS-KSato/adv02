@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -989,7 +989,20 @@ window.KIT_GAME = {
     'oyama-injury': {
       title: '大山の負傷',
       lines: [
-        { id: 'c18-001', text: "清峰との準決勝。8回表、4対2。俺は清峰の攻撃の欄に、続けて入った2人の走者を書いた。2アウトでも、右中間を抜かれれば同点になる。" },
+        { id: 'c18-pre-a', text: "準決勝までの数日、大山は全体練習が終わってからも走っていた。外野のポールから反対側のポールまで。俺が用具を倉庫へ運ぶあいだに、何度も目の前を横切った。" },
+        { id: 'c18-pre-b', text: "試合の前日、俺が倉庫の鍵を閉めたときも、まだ走っていた。帰り支度を済ませた中田先輩が、グラウンドの出口で声を張った。" },
+        { id: 'c18-pre-c', speaker: 'nakata', text: "大山、明日も試合だぞ。もう切り上げろ。" },
+        { id: 'c18-pre-d', speaker: 'oyama', text: "俺が先輩と同じとこでバテると思ってんのか。" },
+        { id: 'c18-pre-e', text: "中田先輩は振り返った。何か言いかけたが、大山がまた走り出したので、そのまま帰った。" },
+        { id: 'c18-pre-f', text: "その晩。大山は家の前でも、目印にした電柱まで何本もダッシュしていた。最後の1本を終えて家の前まで戻ると、両手を膝について笑った。" },
+        { id: 'c18-pre-g', speaker: 'oyama', text: "（ふふ……美空との結婚も見えてきたな。）" },
+        { id: 'c18-pre-h', speaker: 'oyama_mother', text: "翔！　さっきから呼んでるでしょ。いい加減、夕飯食べなさい！" },
+        { id: 'c18-pre-i', speaker: 'oyama', text: "うるせえババア！　人の恋路を邪魔すんな！" },
+        { id: 'c18-pre-j', speaker: 'oyama_mother', text: "誰がババアだ！　もう下げるよ！" },
+        { id: 'c18-pre-k', text: "夕飯を下げられると聞くなり、大山は玄関の段を駆け上がった。右足をついたところで足首がずきっと痛み、戸枠に手をついた。" },
+        { id: 'c18-pre-l', speaker: 'oyama', text: "痛っ……。食う！　下げんな！" },
+        { id: 'c18-pre-m', text: "靴を脱いで足首を回した。まだ痛んだが、台所から皿を重ねる音がしたので、足のことは忘れてそっちへ急いだ。" },
+        { id: 'c18-001', text: "翌日。清峰との準決勝。8回表、4対2。俺は清峰の攻撃の欄に、続けて入った2人の走者を書いた。2アウトでも、右中間を抜かれれば同点になる。" },
         { id: 'c18-002', text: "マウンドの先輩が、2塁の走者を振り返ってから投げた。" },
         { id: 'c18-003', text: "打った瞬間、センターが右へ走った。ライトの大山はもう背中を向けて、フェンスへ向かっていた。" },
         { id: 'c18-004', text: "センターのほうが打球に近く見えた。なのに、落ちてくる球の下に先に入ったのは大山だった。" },
