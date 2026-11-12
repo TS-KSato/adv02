@@ -233,7 +233,14 @@ const homeRun = G.scenes['sasaki-home-run'];
 const homeRunDoc = read('docs/sasaki-home-run-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const homeRunLines = homeRun.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/sasaki-home-run-script.md と一致する', JSON.stringify(homeRunDoc) === JSON.stringify(homeRunLines));
-check('一度だけの本塁打が現時点の最後の場面である', !homeRun.next && !homeRun.choices);
+check('北陵戦の決着から新聞と記録へ進む', homeRun.next === 'newspaper-and-scorebook' && !homeRun.choices);
+
+section('新聞と記録');
+const newspaper = G.scenes['newspaper-and-scorebook'];
+const newspaperDoc = read('docs/newspaper-and-scorebook-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const newspaperLines = newspaper.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/newspaper-and-scorebook-script.md と一致する', JSON.stringify(newspaperDoc) === JSON.stringify(newspaperLines));
+check('新聞と記録が現時点の最後の場面である', !newspaper.next && !newspaper.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
