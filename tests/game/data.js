@@ -282,7 +282,14 @@ const returnScene = G.scenes['oyama-return'];
 const returnDoc = read('docs/oyama-return-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const returnLines = returnScene.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/oyama-return-script.md と一致する', JSON.stringify(returnDoc) === JSON.stringify(returnLines));
-check('大山の復帰が現時点の最後の場面である', !returnScene.next && !returnScene.choices);
+check('大山の復帰から先輩たちの引き継ぎへ進む', returnScene.next === 'nakata-handover' && !returnScene.choices);
+
+section('世代交代');
+const handover = G.scenes['nakata-handover'];
+const handoverDoc = read('docs/nakata-handover-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const handoverLines = handover.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/nakata-handover-script.md と一致する', JSON.stringify(handoverDoc) === JSON.stringify(handoverLines));
+check('世代交代が現時点の最後の場面である', !handover.next && !handover.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
