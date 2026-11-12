@@ -170,7 +170,28 @@ const kawamoto = G.scenes['kawamoto-visit'];
 const kawamotoDoc = read('docs/kawamoto-visit-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const kawamotoLines = kawamoto.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/kawamoto-visit-script.md と一致する', JSON.stringify(kawamotoDoc) === JSON.stringify(kawamotoLines));
-check('河本の来校で現在の収録範囲を終える', !kawamoto.next && !kawamoto.choices);
+check('河本の来校から証言へ進む', kawamoto.next === 'testimony-start' && !kawamoto.choices);
+
+section('河本の証言');
+check('就任初日の回想を経て、現在の場面へ戻る',
+  G.scenes['testimony-start'].next === 'testimony-memory' &&
+  G.scenes['testimony-memory'].next === 'testimony-present');
+const testimonyChoices = G.scenes['testimony-present'].choices || [];
+check('回想のあと、平野が聞くか大山を待つか選べる',
+  testimonyChoices.length === 2 &&
+  testimonyChoices[0].text === '平野が聞き返す' && testimonyChoices[0].to === 'testimony-ask' &&
+  testimonyChoices[1].text === '大山の反応を待つ' && testimonyChoices[1].to === 'testimony-wait');
+check('どちらの反応からも、河本が美空のもとへ戻る場面へ合流する',
+  testimonyChoices.length === 2 && testimonyChoices.every(c => G.scenes[c.to]?.next === 'testimony-end') &&
+  !G.scenes['testimony-end'].next && !G.scenes['testimony-end'].choices);
+const testimonyDoc = read('docs/kawamoto-testimony-script.md').split(/^## .+$/m).slice(1);
+const testimonyKeys = ['testimony-start', 'testimony-memory', 'testimony-present', 'testimony-ask', 'testimony-wait', 'testimony-end'];
+const testimonyMismatch = testimonyKeys.filter((key, i) => {
+  const expected = (testimonyDoc[i] || '').trim().split(/\n\n+/).filter(p => p && !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('本文と話者が docs/kawamoto-testimony-script.md と一致する', testimonyMismatch.length === 0, testimonyMismatch.join(', '));
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

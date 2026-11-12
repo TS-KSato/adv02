@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「河本の来校」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「河本の証言」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -627,6 +627,95 @@ window.KIT_GAME = {
         { id: 'c10-031', text: "河本さんは言いかけたことをやめ、監督を一度見た。それから、大山に向き直った。" },
         { id: 'c10-032', speaker: 'kawamoto', text: "この人が監督になった日、最初に目標を聞いたのは俺だぞ。" },
         { id: 'c10-033', text: "8勝を報告したときより、声が大きかった。" },
+      ],
+      next: 'testimony-start',
+    },
+    'testimony-start': {
+      title: '河本の証言',
+      lines: [
+        { id: 'c11s-001', speaker: 'oyama', text: "いつから知ってようが、もう卒業しただろ。" },
+        { id: 'c11s-002', text: "大山はベンチの向こうを見た。監督は紙の束を持って、鞄を置いてある奥の腰掛けへ移っていた。" },
+        { id: 'c11s-003', speaker: 'kawamoto', text: "就任初日だ。あの日、誰も声をかけられなかったんだぞ。" },
+        { id: 'c11s-004', text: "河本さんはそこでいったん言葉を切った。大山がこっちを向くまで待ってから、続きを言った。" },
+        { id: 'c11s-005', speaker: 'kawamoto', text: "俺が聞くまでな。" },
+      ],
+      next: 'testimony-memory',
+    },
+    'testimony-memory': {
+      title: '美空の就任初日',
+      lines: [
+        { id: 'c11m-001', text: "新しい監督が、部員の前に立っていた。持ってきた紙が風でめくれ、指をずらして押さえ直す。その間も、前に並んだ選手たちは誰も目をそらさなかった。" },
+        { id: 'c11m-002', text: "列の端で誰かが咳をした。それでようやく、河本は自分が息を止めていたことに気づいた。" },
+        { id: 'c11m-003', speaker: 'kawamoto', text: "監督。今年の目標、聞いてもいいですか。" },
+        { id: 'c11m-004', speaker: 'misora', text: "も、目標？" },
+        { id: 'c11m-005', text: "美空は紙から顔を上げた。河本と目が合うと、その横にも同じようにこちらを見ている顔が並んでいた。" },
+        { id: 'c11m-006', speaker: 'kawamoto', text: "はい。前の監督は、甲子園出場だって。" },
+        { id: 'c11m-007', speaker: 'misora', text: "あ……。ええと……1番。" },
+        { id: 'c11m-008', text: "河本は聞き返す前に、隣の選手を見た。隣の選手も、同じことを聞いたという顔をしていた。" },
+        { id: 'c11m-009', speaker: 'kawamoto', text: "1番って、甲子園で優勝するってことですか？" },
+        { id: 'c11m-010', speaker: 'misora', text: "……はい。" },
+        { id: 'c11m-011', text: "さっきまで声も出なかった列が、そこでざわついた。" },
+        { id: 'c11m-012', speaker: 'member', text: "でも監督、うちは県でベスト4ですよ。" },
+        { id: 'c11m-013', speaker: 'misora', text: "父さんが……。あ、いえ。1番になれたら……私も、やっと落ち着けるから。" },
+        { id: 'c11m-014', speaker: 'kawamoto', text: "落ち着くって？" },
+        { id: 'c11m-015', speaker: 'misora', text: "家で……一緒に暮らせたら……。" },
+        { id: 'c11m-016', text: "誰かが帽子を持ち直した。その音が聞こえるほど、周りが静かだった。" },
+        { id: 'c11m-017', text: "美空は顔を上げた。話を終えたつもりだったのか、まだ全員が自分を見ているのに気づくと、慌てて手元の紙に目を落とした。" },
+        { id: 'c11m-018', text: "いちばん上の行を見つけると、紙の端を押さえていた手に力を入れた。" },
+        { id: 'c11m-019', speaker: 'misora', text: "……まず外周。走って。" },
+        { id: 'c11m-020', text: "河本が走り出すと、少し遅れて、後ろの列が動いた。" },
+        { id: 'c11m-021', speaker: 'member', text: "……誰と？" },
+        { id: 'c11m-022', speaker: 'other_member', text: "優勝したあとの話だよな。" },
+        { id: 'c11m-023', text: "河本は後ろを見かけたが、すぐ前の選手に追いついて、いったん足を緩めた。" },
+        { id: 'c11m-024', text: "校舎の角を曲がるころには、前のほうでも、声を落として何か話していた。" },
+        { id: 'c11m-025', text: "1周目が終わるころには、列の前のほうから「結婚」という言葉が聞こえた。" },
+      ],
+      next: 'testimony-present',
+    },
+    'testimony-present': {
+      title: '河本の証言',
+      lines: [
+        { id: 'c11p-001', text: "河本さんが話し終えた。監督はもうベンチの奥で、鞄の中を探っていた。" },
+        { id: 'c11p-002', speaker: 'oyama', text: "ちっ……俺の知らない美空を……。" },
+        { id: 'c11p-003', text: "河本さんは大山の顔を見て、さっきまでよりずっと機嫌がよくなった。" },
+        { id: 'c11p-004', text: "俺には、話を聞く前より分からなくなったことがあった。" },
+      ],
+      choices: [
+        { text: '平野が聞き返す', to: 'testimony-ask' },
+        { text: '大山の反応を待つ', to: 'testimony-wait' },
+      ],
+    },
+    'testimony-ask': {
+      title: '河本の証言',
+      lines: [
+        { id: 'c11a-001', speaker: 'hirano', text: "でも、誰と暮らすかは言ってないですよね。" },
+        { id: 'c11a-002', speaker: 'kawamoto', text: "そうだよ。" },
+        { id: 'c11a-003', text: "河本さんがあっさり認めたので、俺はてっきり、その先は自分でも分からないと言うのかと思った。" },
+        { id: 'c11a-004', speaker: 'hirano', text: "じゃあ、結婚って言ったのは――" },
+        { id: 'c11a-005', speaker: 'kawamoto', text: "お前、あそこで本人にその先まで言わせるのか？" },
+        { id: 'c11a-006', text: "むしろ俺のほうが気の利かないことを言ったみたいな顔をされた。" },
+        { id: 'c11a-007', text: "近くにいた先輩まで、かごを持ったまま小さくうなずいた。" },
+      ],
+      next: 'testimony-end',
+    },
+    'testimony-wait': {
+      title: '河本の証言',
+      lines: [
+        { id: 'c11w-001', text: "大山はベンチの奥にいる監督を見た。それから河本さんのほうへ向き直った。" },
+        { id: 'c11w-002', speaker: 'oyama', text: "待てよ。結婚って言われたわけじゃねえだろ。" },
+        { id: 'c11w-003', speaker: 'kawamoto', text: "あそこでその先まで言わせるなよ。" },
+        { id: 'c11w-004', speaker: 'oyama', text: "言われてねえんだな。" },
+        { id: 'c11w-005', speaker: 'kawamoto', text: "お前、その場にいなかったもんな。" },
+        { id: 'c11w-006', text: "大山は口を開きかけた。そのまま何も言わず、視線をそらした。" },
+        { id: 'c11w-007', text: "河本さんは、今度は笑うのを隠さなかった。" },
+      ],
+      next: 'testimony-end',
+    },
+    'testimony-end': {
+      title: '河本の証言',
+      lines: [
+        { id: 'c11e-001', text: "河本さんは上着の襟を直した。大山に向かって張っていた声を落とし、ベンチの奥へ戻っていった。" },
+        { id: 'c11e-002', text: "監督の膝にあった練習メニューの下から、さっきの新聞の角が、まだ少しだけのぞいていた。" },
       ],
     },
   },

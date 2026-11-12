@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭から「河本の来校」までの試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭から「河本の証言」までの試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -205,8 +205,17 @@ async function practicePlaythrough(browser, choiceIndex) {
     await readScene(hiyoriChoice.to);
     await readScene('hiyori-end');
     await readScene('kawamoto-visit');
+    await readScene('testimony-start');
+    await readScene('testimony-memory');
+    await readScene('testimony-present');
+    const testimonyChoices = G.scenes['testimony-present'].choices;
+    check('回想のあと、平野と大山のどちらの反応を見るか選べる', await page.getByRole('button', { name: testimonyChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: testimonyChoices[1].text, exact: true }).isVisible());
+    const testimonyChoice = testimonyChoices[choiceIndex];
+    await clickText(page, testimonyChoice.text);
+    await readScene(testimonyChoice.to);
+    await readScene('testimony-end');
     await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-    check('「河本の来校」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
+    check('「河本の証言」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
     check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
   } finally {
     await ctx.close();
