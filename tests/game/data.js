@@ -226,7 +226,14 @@ const sasakiCalled = G.scenes['sasaki-called'];
 const sasakiCalledDoc = read('docs/sasaki-called-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const sasakiCalledLines = sasakiCalled.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/sasaki-called-script.md と一致する', JSON.stringify(sasakiCalledDoc) === JSON.stringify(sasakiCalledLines));
-check('佐々木の指名が現時点の最後の場面である', !sasakiCalled.next && !sasakiCalled.choices);
+check('佐々木の指名から打席へ進む', sasakiCalled.next === 'sasaki-home-run' && !sasakiCalled.choices);
+
+section('一度だけの本塁打');
+const homeRun = G.scenes['sasaki-home-run'];
+const homeRunDoc = read('docs/sasaki-home-run-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const homeRunLines = homeRun.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/sasaki-home-run-script.md と一致する', JSON.stringify(homeRunDoc) === JSON.stringify(homeRunLines));
+check('一度だけの本塁打が現時点の最後の場面である', !homeRun.next && !homeRun.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
