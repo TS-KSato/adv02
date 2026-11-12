@@ -261,7 +261,14 @@ const defeat = G.scenes['ryusei-defeat'];
 const defeatDoc = read('docs/ryusei-defeat-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const defeatLines = defeat.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/ryusei-defeat-script.md と一致する', JSON.stringify(defeatDoc) === JSON.stringify(defeatLines));
-check('龍成との決戦、敗退が現時点の最後の場面である', !defeat.next && !defeat.choices);
+check('龍成戦の敗退から試合直後のベンチへ進む', defeat.next === 'tears-after-the-final' && !defeat.choices);
+
+section('一人の涙、別々の意味');
+const tears = G.scenes['tears-after-the-final'];
+const tearsDoc = read('docs/tears-after-the-final-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const tearsLines = tears.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/tears-after-the-final-script.md と一致する', JSON.stringify(tearsDoc) === JSON.stringify(tearsLines));
+check('一人の涙、別々の意味が現時点の最後の場面である', !tears.next && !tears.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
