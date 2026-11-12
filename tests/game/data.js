@@ -198,7 +198,14 @@ const results = G.scenes['kawamoto-results'];
 const resultsDoc = read('docs/kawamoto-results-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const resultsLines = results.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/kawamoto-results-script.md と一致する', JSON.stringify(resultsDoc) === JSON.stringify(resultsLines));
-check('河本の再訪の約束が現時点の最後の場面である', !results.next && !results.choices);
+check('河本の再訪の約束から新庄との練習試合へ進む', results.next === 'shinjo-first-meeting' && !results.choices);
+
+section('新庄との接触');
+const shinjo = G.scenes['shinjo-first-meeting'];
+const shinjoDoc = read('docs/shinjo-first-meeting-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const shinjoLines = shinjo.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/shinjo-first-meeting-script.md と一致する', JSON.stringify(shinjoDoc) === JSON.stringify(shinjoLines));
+check('新庄との接触が現時点の最後の場面である', !shinjo.next && !shinjo.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
