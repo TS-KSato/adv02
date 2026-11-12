@@ -268,7 +268,14 @@ const tears = G.scenes['tears-after-the-final'];
 const tearsDoc = read('docs/tears-after-the-final-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const tearsLines = tears.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/tears-after-the-final-script.md と一致する', JSON.stringify(tearsDoc) === JSON.stringify(tearsLines));
-check('一人の涙、別々の意味が現時点の最後の場面である', !tears.next && !tears.choices);
+check('試合直後のベンチから空いた一行へ進む', tears.next === 'blank-line' && !tears.choices);
+
+section('空いた一行');
+const blank = G.scenes['blank-line'];
+const blankDoc = read('docs/blank-line-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const blankLines = blank.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/blank-line-script.md と一致する', JSON.stringify(blankDoc) === JSON.stringify(blankLines));
+check('空いた一行が現時点の最後の場面である', !blank.next && !blank.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
