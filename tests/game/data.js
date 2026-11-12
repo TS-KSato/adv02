@@ -155,7 +155,7 @@ check('飲み物か用具の片づけを選べる',
   hiyoriChoices[1].text === '用具の片づけを手伝う' && hiyoriChoices[1].to === 'hiyori-equipment');
 check('片づけの選択肢は翌日の共通場面に合流する',
   hiyoriChoices.length === 2 && hiyoriChoices.every(c => G.scenes[c.to]?.next === 'hiyori-end') &&
-  !G.scenes['hiyori-end'].next && !G.scenes['hiyori-end'].choices);
+  G.scenes['hiyori-end'].next === 'kawamoto-visit' && !G.scenes['hiyori-end'].choices);
 const hiyoriDoc = read('docs/hiyori-everyday-script.md').split(/^## .+$/m).slice(1);
 const hiyoriKeys = ['desk-corner', 'hiyori-start', 'hiyori-drinks', 'hiyori-equipment', 'hiyori-end'];
 const hiyoriMismatch = hiyoriKeys.filter((key, i) => {
@@ -164,6 +164,13 @@ const hiyoriMismatch = hiyoriKeys.filter((key, i) => {
   return JSON.stringify(expected) !== JSON.stringify(actual);
 });
 check('本文と話者が docs/hiyori-everyday-script.md と一致する', hiyoriMismatch.length === 0, hiyoriMismatch.join(', '));
+
+section('河本の来校');
+const kawamoto = G.scenes['kawamoto-visit'];
+const kawamotoDoc = read('docs/kawamoto-visit-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const kawamotoLines = kawamoto.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/kawamoto-visit-script.md と一致する', JSON.stringify(kawamotoDoc) === JSON.stringify(kawamotoLines));
+check('河本の来校で現在の収録範囲を終える', !kawamoto.next && !kawamoto.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
