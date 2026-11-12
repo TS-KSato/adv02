@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -1079,7 +1079,15 @@ window.KIT_GAME = {
         { id: 'c20-002', text: "ベンチに戻ってきた先輩たちは、誰も荷物に手をつけなかった。中田先輩は腰掛けの前で膝に手を置いた。隣には、試合中ずっとヘルメットを用意していた控えの先輩が立っていた。" },
         { id: 'c20-003', text: "その2人の間から、監督の横顔が見えた。" },
         { id: 'c20-004', text: "監督は掲示板を見ていた。頬を伝った涙が、あごの先から落ちた。拭おうともしなかったので、次の涙も同じところを通った。" },
-        { id: 'c20-005', text: "ネットの向こうで、誰かが「あの監督さんも泣いてる」と言った。" },
+        { id: 'c20-005', text: "ネットの向こうで、誰かの声が裏返った。" },
+        { id: 'c20-005a', speaker: 'spectator', text: "えっ……監督、泣いてる？" },
+        { id: 'c20-005b', text: "帰りかけていた人が通路で足を止めた。後ろの列の人が立ち上がり、前の人の肩越しにベンチをのぞいた。ざわめきは、まだ歓声の残る龍成側のスタンドにまで広がった。" },
+        { id: 'c20-005c', text: "鳳翔の保護者席では、母親たちがタオルやうちわを持ったまま、ベンチを見下ろしていた。" },
+        { id: 'c20-005d', speaker: 'hosho_mother', text: "監督が、あんなに泣いてくれるなんてね……。" },
+        { id: 'c20-005e', text: "隣の母親が、小さくうなずいた。" },
+        { id: 'c20-005f', speaker: 'other_hosho_mother', text: "うちの子たち、幸せだね。" },
+        { id: 'c20-005g', text: "向かいのベンチでは、野原も帰り支度の手を止めていた。9回、2アウトから、同点の走者を1塁に置かれた。打球がグラブに収まるまで、腰掛けに戻れなかった。" },
+        { id: 'c20-005h', speaker: 'nohara', text: "（大山がいなくても、最後まで気が抜けなかった。……神条さんの娘だからって、それだけで見てたのかもしれんな。）" },
         { id: 'c20-006', text: "鳳翔側のスタンドから、拍手がひとつ起きた。少しずつ数が増えた。夕日がベンチの奥まで差し込んで、監督の頬と、先輩たちが膝につけてきた土を照らしていた。" },
         { id: 'c20-007', text: "スタンドから降りてきた大山が、ベンチ脇の柵まで松葉杖で来た。柵をつかんだまま、美空から目を離さなかった。" },
         { id: 'c20-008', speaker: 'oyama', text: "美空……俺と行きたかったんだよな。俺が出てりゃ、あんな顔させずに済んだのに。" },
