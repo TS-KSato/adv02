@@ -219,7 +219,14 @@ const quarterfinal = G.scenes['regional-quarterfinal'];
 const quarterfinalDoc = read('docs/regional-quarterfinal-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const quarterfinalLines = quarterfinal.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/regional-quarterfinal-script.md と一致する', JSON.stringify(quarterfinalDoc) === JSON.stringify(quarterfinalLines));
-check('地方予選が現時点の最後の場面である', !quarterfinal.next && !quarterfinal.choices);
+check('地方予選から佐々木の指名へ進む', quarterfinal.next === 'sasaki-called' && !quarterfinal.choices);
+
+section('佐々木の指名');
+const sasakiCalled = G.scenes['sasaki-called'];
+const sasakiCalledDoc = read('docs/sasaki-called-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const sasakiCalledLines = sasakiCalled.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/sasaki-called-script.md と一致する', JSON.stringify(sasakiCalledDoc) === JSON.stringify(sasakiCalledLines));
+check('佐々木の指名が現時点の最後の場面である', !sasakiCalled.next && !sasakiCalled.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
