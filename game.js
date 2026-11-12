@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', reporter: '記者' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -904,9 +904,9 @@ window.KIT_GAME = {
         { id: 'c16-005a', text: "北陵の監督は、構えに入った佐々木を見ていた。" },
         { id: 'c16-005b', speaker: 'hokuryo_coach', text: "（素振りはごく普通だった。なのに、あの構えは迷いがない。……次の球が分かってるのか？）" },
         { id: 'c16-005c', speaker: 'hirano', text: "（向こうは何かあると思ってるのかな。佐々木先輩まで、何か分かったような顔してるけど。）" },
-        { id: 'c16-005d', text: "一塁の大山が、佐々木先輩を見たままベンチに声を飛ばした。" },
-        { id: 'c16-005e', speaker: 'oyama', text: "おい平野、あんなやつ、うちにいたか？　……打つぞ、あいつ。" },
-        { id: 'c16-005f', speaker: 'hirano', text: "（先輩の顔も覚えてないのか。……大山はいつも通りだな。）" },
+        { id: 'c16-005d', text: "一塁ベースの脇で、大山が打席を見たままつぶやいた。" },
+        { id: 'c16-005e', speaker: 'oyama', text: "あんなやつ、うちにいたか？　……打つぞ、あいつ。" },
+        { id: 'c16-005f', speaker: 'hokuryo_first_baseman', text: "えっ。自分とこの選手だろ？　知らないのか？" },
         { id: 'c16-006', text: "大山がリードを取った。北陵の投手は一度だけそちらを見て、捕手に向き直った。" },
         { id: 'c16-007', text: "捕手のサインに、投手はすぐうなずいた。ミットが外寄りに出る。俺が7回まで何度も印をつけた場所だった。今日一番よく決まっていた球で、この回を終わらせるつもりだ。" },
         { id: 'c16-008', text: "真っすぐが来た。ミットは構えた位置から動いていなかった。" },
