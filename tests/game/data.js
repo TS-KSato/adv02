@@ -247,7 +247,14 @@ const faces = G.scenes['what-her-face-means'];
 const facesDoc = read('docs/what-her-face-means-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const facesLines = faces.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/what-her-face-means-script.md と一致する', JSON.stringify(facesDoc) === JSON.stringify(facesLines));
-check('表情が意味を持つが現時点の最後の場面である', !faces.next && !faces.choices);
+check('準決勝の前日から清峰戦へ進む', faces.next === 'oyama-injury' && !faces.choices);
+
+section('大山の負傷');
+const injury = G.scenes['oyama-injury'];
+const injuryDoc = read('docs/oyama-injury-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const injuryLines = injury.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/oyama-injury-script.md と一致する', JSON.stringify(injuryDoc) === JSON.stringify(injuryLines));
+check('大山の負傷が現時点の最後の場面である', !injury.next && !injury.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
