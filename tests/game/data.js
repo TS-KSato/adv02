@@ -275,7 +275,14 @@ const blank = G.scenes['blank-line'];
 const blankDoc = read('docs/blank-line-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const blankLines = blank.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/blank-line-script.md と一致する', JSON.stringify(blankDoc) === JSON.stringify(blankLines));
-check('空いた一行が現時点の最後の場面である', !blank.next && !blank.choices);
+check('空いた一行から大山の再診と復帰へ進む', blank.next === 'oyama-return' && !blank.choices);
+
+section('大山の復帰');
+const returnScene = G.scenes['oyama-return'];
+const returnDoc = read('docs/oyama-return-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const returnLines = returnScene.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/oyama-return-script.md と一致する', JSON.stringify(returnDoc) === JSON.stringify(returnLines));
+check('大山の復帰が現時点の最後の場面である', !returnScene.next && !returnScene.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
