@@ -240,7 +240,14 @@ const newspaper = G.scenes['newspaper-and-scorebook'];
 const newspaperDoc = read('docs/newspaper-and-scorebook-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const newspaperLines = newspaper.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/newspaper-and-scorebook-script.md と一致する', JSON.stringify(newspaperDoc) === JSON.stringify(newspaperLines));
-check('新聞と記録が現時点の最後の場面である', !newspaper.next && !newspaper.choices);
+check('新聞と記録から準決勝前日の場面へ進む', newspaper.next === 'what-her-face-means' && !newspaper.choices);
+
+section('表情が意味を持つ');
+const faces = G.scenes['what-her-face-means'];
+const facesDoc = read('docs/what-her-face-means-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const facesLines = faces.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/what-her-face-means-script.md と一致する', JSON.stringify(facesDoc) === JSON.stringify(facesLines));
+check('表情が意味を持つが現時点の最後の場面である', !faces.next && !faces.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
