@@ -254,7 +254,14 @@ const injury = G.scenes['oyama-injury'];
 const injuryDoc = read('docs/oyama-injury-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const injuryLines = injury.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/oyama-injury-script.md と一致する', JSON.stringify(injuryDoc) === JSON.stringify(injuryLines));
-check('大山の負傷が現時点の最後の場面である', !injury.next && !injury.choices);
+check('大山の負傷から龍成との決勝へ進む', injury.next === 'ryusei-defeat' && !injury.choices);
+
+section('龍成との決戦、敗退');
+const defeat = G.scenes['ryusei-defeat'];
+const defeatDoc = read('docs/ryusei-defeat-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const defeatLines = defeat.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/ryusei-defeat-script.md と一致する', JSON.stringify(defeatDoc) === JSON.stringify(defeatLines));
+check('龍成との決戦、敗退が現時点の最後の場面である', !defeat.next && !defeat.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
