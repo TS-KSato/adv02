@@ -205,7 +205,14 @@ const shinjo = G.scenes['shinjo-first-meeting'];
 const shinjoDoc = read('docs/shinjo-first-meeting-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const shinjoLines = shinjo.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/shinjo-first-meeting-script.md と一致する', JSON.stringify(shinjoDoc) === JSON.stringify(shinjoLines));
-check('新庄との接触が現時点の最後の場面である', !shinjo.next && !shinjo.choices);
+check('新庄との練習試合から夏の名簿へ進む', shinjo.next === 'summer-roster' && !shinjo.choices);
+
+section('夏の名簿');
+const roster = G.scenes['summer-roster'];
+const rosterDoc = read('docs/summer-roster-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const rosterLines = roster.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/summer-roster-script.md と一致する', JSON.stringify(rosterDoc) === JSON.stringify(rosterLines));
+check('夏の名簿が現時点の最後の場面である', !roster.next && !roster.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
