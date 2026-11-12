@@ -212,7 +212,14 @@ const roster = G.scenes['summer-roster'];
 const rosterDoc = read('docs/summer-roster-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const rosterLines = roster.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/summer-roster-script.md と一致する', JSON.stringify(rosterDoc) === JSON.stringify(rosterLines));
-check('夏の名簿が現時点の最後の場面である', !roster.next && !roster.choices);
+check('夏の名簿から地方大会準々決勝へ進む', roster.next === 'regional-quarterfinal' && !roster.choices);
+
+section('地方予選');
+const quarterfinal = G.scenes['regional-quarterfinal'];
+const quarterfinalDoc = read('docs/regional-quarterfinal-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const quarterfinalLines = quarterfinal.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/regional-quarterfinal-script.md と一致する', JSON.stringify(quarterfinalDoc) === JSON.stringify(quarterfinalLines));
+check('地方予選が現時点の最後の場面である', !quarterfinal.next && !quarterfinal.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
