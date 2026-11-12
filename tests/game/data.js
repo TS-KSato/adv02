@@ -183,7 +183,7 @@ check('回想のあと、平野が聞くか大山を待つか選べる',
   testimonyChoices[1].text === '大山の反応を待つ' && testimonyChoices[1].to === 'testimony-wait');
 check('どちらの反応からも、河本が美空のもとへ戻る場面へ合流する',
   testimonyChoices.length === 2 && testimonyChoices.every(c => G.scenes[c.to]?.next === 'testimony-end') &&
-  !G.scenes['testimony-end'].next && !G.scenes['testimony-end'].choices);
+  G.scenes['testimony-end'].next === 'kawamoto-results' && !G.scenes['testimony-end'].choices);
 const testimonyDoc = read('docs/kawamoto-testimony-script.md').split(/^## .+$/m).slice(1);
 const testimonyKeys = ['testimony-start', 'testimony-memory', 'testimony-present', 'testimony-ask', 'testimony-wait', 'testimony-end'];
 const testimonyMismatch = testimonyKeys.filter((key, i) => {
@@ -192,6 +192,13 @@ const testimonyMismatch = testimonyKeys.filter((key, i) => {
   return JSON.stringify(expected) !== JSON.stringify(actual);
 });
 check('本文と話者が docs/kawamoto-testimony-script.md と一致する', testimonyMismatch.length === 0, testimonyMismatch.join(', '));
+
+section('実績では伝わらない');
+const results = G.scenes['kawamoto-results'];
+const resultsDoc = read('docs/kawamoto-results-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const resultsLines = results.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/kawamoto-results-script.md と一致する', JSON.stringify(resultsDoc) === JSON.stringify(resultsLines));
+check('河本の再訪の約束が現時点の最後の場面である', !results.next && !results.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
