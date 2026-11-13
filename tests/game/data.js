@@ -317,7 +317,14 @@ const press = G.scenes['parents-and-press'];
 const pressDoc = read('docs/parents-and-press-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const pressLines = press.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/parents-and-press-script.md と一致する', JSON.stringify(pressDoc) === JSON.stringify(pressLines));
-check('父親たちと取材が現時点の最後の場面である', !press.next && !press.choices);
+check('父親たちと取材から新年度の幕間へ進む', press.next === 'second-scorebook' && !press.choices);
+
+section('二冊目');
+const secondScorebook = G.scenes['second-scorebook'];
+const secondScorebookDoc = read('docs/second-scorebook-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const secondScorebookLines = secondScorebook.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/second-scorebook-script.md と一致する', JSON.stringify(secondScorebookDoc) === JSON.stringify(secondScorebookLines));
+check('二冊目が現時点の最後の場面である', !secondScorebook.next && !secondScorebook.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
