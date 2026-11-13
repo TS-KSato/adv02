@@ -24,7 +24,7 @@ check('固定版の検証に通る', v.ok, v.errors.join(' / '));
 section('作品の識別子・版');
 check('作品IDは novelgame02-koshien', G.id === 'novelgame02-koshien', G.id);
 check('作品名は きみのための甲子園', G.title === 'きみのための甲子園', G.title);
-check('作品データの版は 2026.11-1', G.dataVersion === '2026.11-1', G.dataVersion);
+check('作品データの版は 2026.11-2', G.dataVersion === '2026.11-2', G.dataVersion);
 check('使うキットの版は 0.1.0', G.kit === '0.1.0', G.kit);
 const kitJs = read('kit/releases/0.1.0/kit.js');
 const kitVersion = (kitJs.match(/const KIT_VERSION = '([^']+)'/) || [])[1];
@@ -36,9 +36,17 @@ const oldRecord = { v: 1, game: G.id, dataVersion: oldGame.dataVersion,
   flagSchema: saves.flagSchema(oldGame), auto: { at: 'c01-001', flags: {}, dataVersion: oldGame.dataVersion },
   slots: [{ at: 'c28-017', flags: {}, dataVersion: oldGame.dataVersion }], seen: [] };
 const migrated = saves.assess(G, oldRecord, JSON.stringify(oldRecord));
-check('旧版の自動・手動保存の位置を維持し、新しい判定は両方未成立になる',
+check('旧版の自動・手動保存の位置を維持し、新しい判定はすべて未成立になる',
   migrated.mode === 'migrated' && migrated.record.auto?.at === 'c01-001' && migrated.record.slots[0]?.at === 'c28-017' &&
-  [migrated.record.auto, migrated.record.slots[0]].every(p => !p.flags.ryuseiPrep && !p.flags.ryuseiRecovery));
+  [migrated.record.auto, migrated.record.slots[0]].every(p => Object.values(p.flags).every(v => v === false)));
+const ryuseiVersion = { ...G, dataVersion: '2026.11-1', flags: { ryuseiPrep: G.flags.ryuseiPrep, ryuseiRecovery: G.flags.ryuseiRecovery } };
+const ryuseiRecord = { ...oldRecord, dataVersion: ryuseiVersion.dataVersion, flagSchema: saves.flagSchema(ryuseiVersion),
+  auto: { at: 'c30-025', flags: { ryuseiPrep: false, ryuseiRecovery: true }, dataVersion: ryuseiVersion.dataVersion }, slots: [] };
+const ryuseiMigrated = saves.assess(G, ryuseiRecord, JSON.stringify(ryuseiRecord));
+check('甲子園1回戦の旧版保存から龍成戦の選択と保存位置を引き継ぐ',
+  ryuseiMigrated.mode === 'migrated' && ryuseiMigrated.record.auto?.at === 'c30-025' &&
+  ryuseiMigrated.record.auto.flags.ryuseiRecovery === true &&
+  !ryuseiMigrated.record.auto.flags.konanPrep && !ryuseiMigrated.record.auto.flags.konanRecovery);
 check('最初の分岐は勝敗フラグを変えない', G.scenes['practice-start'].choices.every(c => !c.set));
 
 section('場面と行');
@@ -370,9 +378,9 @@ check('龍成戦とE1の本文・話者が原稿と一致する', rematchDoc.len
   const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
   return JSON.stringify(expected) === JSON.stringify(actual);
 }));
-function rematchPath(picks) {
+function tournamentPath(start, picks) {
   const flags = Object.fromEntries(Object.entries(G.flags).map(([key, def]) => [key, def.default]));
-  let key = 'ryusei-rematch';
+  let key = start;
   const visited = [];
   while (key && !visited.includes(key)) {
     visited.push(key);
@@ -389,11 +397,11 @@ function rematchPath(picks) {
   return visited.join(' → ');
 }
 check('事前準備で当日の確認を飛ばし、龍成戦に勝つ',
-  rematchPath([0]) === 'ryusei-rematch → ryusei-prepared → ryusei-middle → ryusei-late → ryusei-win → bus-to-koshien → national-opponents');
+  tournamentPath('ryusei-rematch', [0]) === 'ryusei-rematch → ryusei-prepared → ryusei-middle → ryusei-late → ryusei-win → bus-to-koshien → national-opponents → konan-press');
 check('事前準備なしでも田原と初球を確認すれば勝つ',
-  rematchPath([1, 0]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-recovered → ryusei-late → ryusei-win → bus-to-koshien → national-opponents');
+  tournamentPath('ryusei-rematch', [1, 0]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-recovered → ryusei-late → ryusei-win → bus-to-koshien → national-opponents → konan-press');
 check('どちらでも初球を確認しなければ敗退し、E1へ進む',
-  rematchPath([1, 1]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-unrecovered → ryusei-late → ryusei-loss → ryusei-summer');
+  tournamentPath('ryusei-rematch', [1, 1]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-unrecovered → ryusei-late → ryusei-loss → ryusei-summer');
 
 section('行きのバス');
 const bus = G.scenes['bus-to-koshien'];
@@ -407,7 +415,22 @@ const national = G.scenes['national-opponents'];
 const nationalDoc = read('docs/national-opponents-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const nationalLines = national.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('全国の相手の本文と話者が原稿と一致する', JSON.stringify(nationalDoc) === JSON.stringify(nationalLines));
-check('全国の相手が現時点の勝利側の最後の場面である', !national.next && !national.choices);
+check('甲子園1回戦から港南工業戦の準備へ進む', national.next === 'konan-press' && !national.choices);
+
+section('取材と準備');
+const konanKeys = ["konan-press", "konan-prepared", "konan-unprepared", "konan-recovery-choice", "konan-recovered", "konan-unrecovered", "konan-coach-brief", "konan-ninth", "konan-win", "konan-loss", "konan-return-bus"];
+const konanDoc = read('docs/konan-second-round-script.md').split(/^## .+$/m).slice(1);
+check('港南戦とE2の本文・話者が原稿と一致する', konanDoc.length === konanKeys.length && konanKeys.every((key, i) => {
+  const expected = konanDoc[i].trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) === JSON.stringify(actual);
+}));
+check('取材を分担して右翼手を見れば、コーチへの伝達を経て勝つ',
+  tournamentPath('konan-press', [0]) === 'konan-press → konan-prepared → konan-coach-brief → konan-ninth → konan-win');
+check('当日でも右翼手を見れば、コーチへの伝達を経て勝つ',
+  tournamentPath('konan-press', [1, 0]) === 'konan-press → konan-unprepared → konan-recovery-choice → konan-recovered → konan-coach-brief → konan-ninth → konan-win');
+check('どちらでも右翼手を確認しなければ、伝達せず敗退してE2へ進む',
+  tournamentPath('konan-press', [1, 1]) === 'konan-press → konan-unprepared → konan-recovery-choice → konan-unrecovered → konan-ninth → konan-loss → konan-return-bus');
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

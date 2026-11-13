@@ -1,10 +1,10 @@
-// 『きみのための甲子園』の作品データ。冒頭から「全国の相手」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から甲子園2回戦までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
-  dataVersion: '2026.11-1',   // 龍成戦の準備・回収フラグを追加
+  dataVersion: '2026.11-2',   // 港南工業戦の準備・回収フラグを追加
   kit: '0.1.0',               // 使うキットの版（kit/releases/0.1.0）
 
   start: { scene: 'opening-ground', line: 'c01-001' },
@@ -12,8 +12,9 @@ window.KIT_GAME = {
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
   speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手', muto: '武藤', hoshihama_player: '星浜選手', other_hoshihama_player: '別の星浜選手', hoshihama_coach: '星浜監督' },
 
-  // 2年目の地方決勝で初球の情報を確認したか
-  flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false } },
+  // 2年目の大会で、試合を左右する情報を確認したか
+  flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false },
+    konanPrep: { type: 'boolean', default: false }, konanRecovery: { type: 'boolean', default: false } },
 
   // 素材。今回は仮背景の1枚だけ
   assets: {
@@ -1638,6 +1639,121 @@ window.KIT_GAME = {
         { id: 'c30-024', text: "9回裏、最後の打球はショートの前で跳ねた。小宮が前へ出て捕り、1塁へ投げた。走者の足がベースに届く前に、ミットが鳴った。" },
         { id: 'c30-025', text: "6対2。スコアブックを閉じると、俺の手には鉛筆の跡がついていた。整列に向かう先輩のユニフォームには、さっきのスライディングの泥がまだついていた。" },
       ],
+      next: 'konan-press',
+    },
+    'konan-press': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31a-001', text: "1回戦の翌日、宿の食堂を出ると、廊下の長椅子に記者が2人座っていた。俺が通ると、先に立った記者が「平野くんだね」と手帳を開いた。" },
+        { id: 'c31a-002', speaker: 'reporter', text: "昨日は最後まで、みんな監督のほうを見てたね。普段からよく声を掛けてもらうの？" },
+        { id: 'c31a-003', text: "ちょうど通りかかった監督が、記者の手帳を見て足を止めた。" },
+        { id: 'c31a-004', speaker: 'misora', text: "平野くん、これお願い。先に部屋戻ってるね。" },
+        { id: 'c31a-005', text: "記者は俺と監督を交互に見て、「任せてもらってるんだね」と言った。監督はもう部屋の鍵を出していた。" },
+        { id: 'c31a-006', text: "食堂の入口から、日和がタブレットを持ってきた。港南工業の1回戦を見ていたらしい。画面には、ライトがずいぶん前で打球を拾っているところが映っていた。" },
+        { id: 'c31a-007', speaker: 'hiyori', text: "向こうのライト、ここから投げてホームまで届いてる。もう1本、似た打球があったよ。" },
+        { id: 'c31a-008', text: "もう1人の記者も立ち上がった。先に来た人とは別の質問があるらしかった。" },
+      ],
+      choices: [
+        { text: '取材対応を日和と分ける', to: 'konan-prepared', set: { konanPrep: true } },
+        { text: '一人で取材を引き受ける', to: 'konan-unprepared' },
+      ],
+    },
+    'konan-prepared': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31b-001', text: "俺は試合の記録について答え、普段の練習については日和に代わってもらった。そのあいだに、食堂の端で映像を見直した。" },
+        { id: 'c31b-002', text: "1本目も2本目も、打球が落ちたときにはライトがすぐ近くまで来ていた。拾ってから足を止めずに投げ、返球は途中の野手を越えて捕手まで届いた。" },
+        { id: 'c31b-003', speaker: 'hirano', text: "右に落ちても、思ったほど時間ないな。" },
+        { id: 'c31b-004', text: "日和が戻ってくるまでに、どの打球で前へ出ていたか、ノートに書いておいた。" },
+      ],
+      next: 'konan-coach-brief',
+    },
+    'konan-unprepared': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31c-001', text: "俺は日和にタブレットを預け、2人の話を順に聞いた。去年の決勝のことまで聞かれて、食堂に戻ったときには、次のミーティングが始まっていた。" },
+      ],
+      next: 'konan-recovery-choice',
+    },
+    'konan-recovery-choice': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31d-001', text: "試合当日。スタンド下の通路で、面会を申し込んでいた卒業生が待っていた。控えの選手を呼びに行こうとしたところで、外からボールがミットに収まる音が続けて聞こえた。港南工業の外野手が、ホームへの返球を練習している。" },
+        { id: 'c31d-002', speaker: 'hiyori', text: "面会なら私が案内できるよ。外、見てくる？" },
+      ],
+      choices: [
+        { text: '面会の案内を日和に任せ、外野の送球を見る', to: 'konan-recovered', set: { konanRecovery: true } },
+        { text: '面会を最後まで案内する', to: 'konan-unrecovered' },
+      ],
+    },
+    'konan-recovered': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31e-001', text: "日和に面会を頼み、グラウンドへ出た。ライトは、ほかの外野手より内野に近い位置から打球を追い始めた。前に落ちた球を拾うと、そのままホームへ投げた。" },
+        { id: 'c31e-002', text: "捕手はほとんど動かなかった。送球が胸の高さに届くまで、俺はライトのいた場所から目を離せなかった。" },
+      ],
+      next: 'konan-coach-brief',
+    },
+    'konan-unrecovered': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31f-001', text: "俺は卒業生を面会場所まで案内し、選手を連れて戻った。グラウンドへ出たときには、港南工業の外野手はもうベンチに引き揚げていた。" },
+      ],
+      next: 'konan-ninth',
+    },
+    'konan-coach-brief': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31g-001', text: "試合が始まる前に、3塁コーチを務める先輩を呼び止めた。" },
+        { id: 'c31g-002', speaker: 'hirano', text: "港南のライト、浅く守って、前に落ちた球をそのままホームまで返してきます。右前に落ちても、思ったより時間ないです。" },
+        { id: 'c31g-003', text: "先輩はライトの守備位置を見てから、「分かった。打球だけで回さないようにする」と答えた。" },
+      ],
+      next: 'konan-ninth',
+    },
+    'konan-ninth': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31h-001', text: "港南工業は、鳳翔に走者を出しても長打を許さなかった。6回の犠牲フライで1点は取れたが、9回裏に入っても1対2だった。" },
+        { id: 'c31h-002', text: "1アウトから、先輩の打球が左翼線の内側に落ちた。先輩は1塁を蹴って2塁まで行った。次の打者が右へ打ち返すと、ベンチで誰かが「落ちるぞ！」と叫んだ。" },
+        { id: 'c31h-003', text: "白球がライトの前で跳ねた。2塁走者はもう3塁へ向かっていた。ライトが前へ出て、跳ね上がった球を拾った。" },
+      ],
+      next: (f) => (f.konanPrep || f.konanRecovery) ? 'konan-win' : 'konan-loss',
+    },
+    'konan-win': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31i-001', text: "3塁コーチが両手を上げた。走者はベースを踏んだところで止まった。" },
+        { id: 'c31i-002', text: "返球は途中の野手を越えて捕手に届いた。走者がホームへ向かっていたら、まだ線の途中だったと思う。" },
+        { id: 'c31i-003', text: "1アウト1・3塁。次の打者がセンターへフライを打った。3塁走者はベースに足を置いたまま待ち、センターのグラブに球が入ると走り出した。今度は返球より先にホームを踏んだ。2対2。" },
+        { id: 'c31i-004', text: "1塁には、右前打を打った先輩が残っていた。大山が打席に入ると、俺は鉛筆を置いて立ち上がった。" },
+        { id: 'c31i-005', text: "大山の打球が左中間を抜けた。走者は2塁を蹴っても速度を落とさなかった。3塁コーチは今度は腕を回した。" },
+        { id: 'c31i-006', text: "走者がホームを踏んだ。大山は2塁で足を止め、ベンチから飛び出してくる仲間を見てから、ゆっくりヘルメットを脱いだ。" },
+        { id: 'c31i-007', text: "3対2。日和が俺の肩を叩いた。俺はまだ立ったままで、日和も座ろうとはしなかった。" },
+      ],
+    },
+    'konan-loss': {
+      title: '取材と準備',
+      lines: [
+        { id: 'c31j-001', text: "3塁コーチが腕を回した。走者は3塁を蹴ってホームへ向かった。" },
+        { id: 'c31j-002', text: "返球は途中の野手を越え、捕手の胸に届いた。捕手は球を受け、滑り込んでくる走者の腕にグラブを当てた。" },
+        { id: 'c31j-003', text: "球審が拳を上げた。走者は土の上に座ったまま、返球が来たほうを振り返った。" },
+        { id: 'c31j-004', text: "2アウト1塁。次の打者のゴロを、港南のショートが2塁へ送った。大山は次の打者が待つ場所で、バットを握ったままだった。" },
+        { id: 'c31j-005', text: "1対2。俺はスコアブックに、ホームでアウトになった走者の線を引いた。右前に落ちた瞬間は、同点になると思っていた。" },
+      ],
+      next: 'konan-return-bus',
+    },
+    'konan-return-bus': {
+      title: '帰りのバス',
+      lines: [
+        { id: 'c31k-001', text: "帰りのバスでは、大山は行きと同じ窓側に座っていた。今度はカーテンが閉まっていた。膝にグラブはなかった。" },
+        { id: 'c31k-002', text: "通路を挟んだ窓側の席。美空は外を見ていたが、ふと思い出したようにスマホを出し、父とのメッセージを開いた。" },
+        { id: 'c31k-003', speaker: 'misora', text: "（甲子園には行ったんだし、レジの話はもういいよね。）" },
+        { id: 'c31k-004', text: "画面には「甲子園には行ったからね」とだけ打ってあった。美空は送ると、窓のほうを向き直した。" },
+        { id: 'c31k-005', text: "俺が座っている列の後ろから、先輩たちの声が聞こえた。" },
+        { id: 'c31k-006', speaker: 'senpai', text: "監督、帰りくらい寝りゃいいのに。まだ試合のこと考えてんのかな。" },
+        { id: 'c31k-007', speaker: 'other_senpai', text: "明日、グラウンド使えますかね。" },
+        { id: 'c31k-008', text: "俺は閉じかけていた目を開けた。足元の鞄に、今日の試合を書いたスコアブックが入っていた。" },
+      ],
     },
   },
 
@@ -1646,6 +1762,9 @@ window.KIT_GAME = {
     { at: 'c01-001', bg: 'field-morning-temp' },
   ],
 
-  // 旧版の行IDはそのまま。勝敗判定を通過していない旧版には両方の初期値を入れる。
-  migrations: { '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false }) } },
+  // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
+  migrations: {
+    '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false, konanPrep: false, konanRecovery: false }) },
+    '2026.11-1': { lines: 'identity', flags: (f) => ({ ryuseiPrep: f.ryuseiPrep, ryuseiRecovery: f.ryuseiRecovery, konanPrep: false, konanRecovery: false }) },
+  },
 };
