@@ -24,14 +24,22 @@ check('固定版の検証に通る', v.ok, v.errors.join(' / '));
 section('作品の識別子・版');
 check('作品IDは novelgame02-koshien', G.id === 'novelgame02-koshien', G.id);
 check('作品名は きみのための甲子園', G.title === 'きみのための甲子園', G.title);
-check('作品データの版は 2026.10-1', G.dataVersion === '2026.10-1', G.dataVersion);
+check('作品データの版は 2026.11-1', G.dataVersion === '2026.11-1', G.dataVersion);
 check('使うキットの版は 0.1.0', G.kit === '0.1.0', G.kit);
 const kitJs = read('kit/releases/0.1.0/kit.js');
 const kitVersion = (kitJs.match(/const KIT_VERSION = '([^']+)'/) || [])[1];
 check('固定版 kit.js の版も 0.1.0', kitVersion === '0.1.0', kitVersion);
 check('開始位置は opening-ground の c01-001', G.start.scene === 'opening-ground' && G.start.line === 'c01-001');
-check('保存の移行は持たない（migrations が空）', JSON.stringify(G.migrations) === '{}');
-check('最初の分岐は勝敗フラグを変えない', Object.keys(G.flags).length === 0);
+const oldGame = { ...G, dataVersion: '2026.10-1', flags: {} };
+const saves = require('../../kit/releases/0.1.0/save.js');
+const oldRecord = { v: 1, game: G.id, dataVersion: oldGame.dataVersion,
+  flagSchema: saves.flagSchema(oldGame), auto: { at: 'c01-001', flags: {}, dataVersion: oldGame.dataVersion },
+  slots: [{ at: 'c28-017', flags: {}, dataVersion: oldGame.dataVersion }], seen: [] };
+const migrated = saves.assess(G, oldRecord, JSON.stringify(oldRecord));
+check('旧版の自動・手動保存の位置を維持し、新しい判定は両方未成立になる',
+  migrated.mode === 'migrated' && migrated.record.auto?.at === 'c01-001' && migrated.record.slots[0]?.at === 'c28-017' &&
+  [migrated.record.auto, migrated.record.slots[0]].every(p => !p.flags.ryuseiPrep && !p.flags.ryuseiRecovery));
+check('最初の分岐は勝敗フラグを変えない', G.scenes['practice-start'].choices.every(c => !c.set));
 
 section('場面と行');
 const scenes = Object.keys(G.scenes);
@@ -352,7 +360,40 @@ const reanalysis = G.scenes['nohara-reanalysis'];
 const reanalysisDoc = read('docs/nohara-reanalysis-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const reanalysisLines = reanalysis.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('野原の再分析の本文と話者が原稿と一致する', JSON.stringify(reanalysisDoc) === JSON.stringify(reanalysisLines));
-check('野原の再分析が現時点の最後の場面である', !reanalysis.next && !reanalysis.choices);
+check('野原の再分析から龍成との再戦へ進む', reanalysis.next === 'ryusei-rematch' && !reanalysis.choices);
+
+section('地方予選決勝・龍成との再戦');
+const rematchKeys = ["ryusei-rematch", "ryusei-prepared", "ryusei-unprepared", "ryusei-middle", "ryusei-recovery-choice", "ryusei-recovered", "ryusei-unrecovered", "ryusei-late", "ryusei-win", "ryusei-loss", "ryusei-summer"];
+const rematchDoc = read('docs/ryusei-rematch-script.md').split(/^## .+$/m).slice(1);
+check('龍成戦とE1の本文・話者が原稿と一致する', rematchDoc.length === rematchKeys.length && rematchKeys.every((key, i) => {
+  const expected = rematchDoc[i].trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) === JSON.stringify(actual);
+}));
+function rematchPath(picks) {
+  const flags = Object.fromEntries(Object.entries(G.flags).map(([key, def]) => [key, def.default]));
+  let key = 'ryusei-rematch';
+  const visited = [];
+  while (key && !visited.includes(key)) {
+    visited.push(key);
+    const scene = G.scenes[key];
+    if (scene.choices) {
+      const choice = scene.choices[picks.shift()];
+      if (!choice) break;
+      Object.assign(flags, choice.set);
+      key = choice.to;
+    } else {
+      key = typeof scene.next === 'function' ? scene.next(flags) : scene.next;
+    }
+  }
+  return visited.join(' → ');
+}
+check('事前準備で当日の確認を飛ばし、龍成戦に勝つ',
+  rematchPath([0]) === 'ryusei-rematch → ryusei-prepared → ryusei-middle → ryusei-late → ryusei-win');
+check('事前準備なしでも田原と初球を確認すれば勝つ',
+  rematchPath([1, 0]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-recovered → ryusei-late → ryusei-win');
+check('どちらでも初球を確認しなければ敗退し、E1へ進む',
+  rematchPath([1, 1]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-unrecovered → ryusei-late → ryusei-loss → ryusei-summer');
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
