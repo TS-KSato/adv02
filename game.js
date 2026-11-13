@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「剛の目撃」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「父親たちと取材」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -1276,6 +1276,31 @@ window.KIT_GAME = {
       lines: [
         { id: 'c24e-001', text: "駅の入口から、向こうの出口へ歩いていく二人の背中が見えた。美空が立ち止まって看板を探すたび、剛も箱と紙袋を抱えたまま足を止めた。" },
         { id: 'c24e-002', text: "隣では、大山がまだその背中を見ていた。" },
+      ],
+      next: 'parents-and-press',
+    },
+    'parents-and-press': {
+      title: '父親たちと取材',
+      lines: [
+        { id: 'c25-001', text: "秋の練習試合が終わると、日和に頼まれて、俺は本部席までスコアの写しを届けに行った。戻ってくる途中、スタンド下の通路で、美空監督が記者につかまっていた。" },
+        { id: 'c25-002', text: "記者は取材を始める前に、ちょうど通りかかった鳳翔の保護者にも話を聞いていた。" },
+        { id: 'c25-003', speaker: 'hosho_mother', text: "うちの子、あの決勝の日は帰ってきても何も言わなかったんです。次の朝には、もう練習に行きましたけど。" },
+        { id: 'c25-004', speaker: 'other_hosho_mother', text: "監督があんなに泣いてくれたでしょう。あの子たちも、ちゃんと見てもらえてたんだなって思いますよね。" },
+        { id: 'c25-005', text: "「あんなに泣いてくれた」と聞こえたところで、監督が顔を上げた。それから、壁の時計を見た。" },
+        { id: 'c25-006', text: "通路の向こうから、男が2人、こちらに歩いてきた。片方はスマホを持っていて、記者が次の質問をしかけたところで、監督の前に出た。" },
+        { id: 'c25-007', speaker: 'visitor', text: "あの、写真いいですか。できれば一緒に。" },
+        { id: 'c25-008', text: "監督が返事をする前に、男はもう隣に並ぼうとしていた。監督は半歩下がった。そのぶんだけ、男も前に出た。" },
+        { id: 'c25-009', text: "母親たちのそばにいた父親が、紙コップを窓枠に置いた。もう1人も、それを見て腰を上げた。" },
+        { id: 'c25-010', speaker: 'hosho_father', text: "すみません。いま取材中なので。お話なら、こちらで。" },
+        { id: 'c25-011', text: "声は穏やかだった。父親が通路の角を手で示すと、男たちは顔を見合わせた。それから4人とも角の向こうへ行った。監督は半歩下がった場所に立ったまま、記者のほうへ向き直った。" },
+        { id: 'c25-012', speaker: 'reporter', text: "夏はあと1勝でした。来年に向けて、もう動き出しているんですね。" },
+        { id: 'c25-013', text: "記者が見ていたのは、監督が手にしている練習試合の日程表だった。次の週末にも、朝から試合が入っている。" },
+        { id: 'c25-014', speaker: 'misora', text: "……朝からなんですよね。" },
+        { id: 'c25-015', text: "監督は日程表を畳んで、ため息をついた。記者のペンはそこで止まらず、ノートの次の行へ進んだ。" },
+        { id: 'c25-016', text: "さっきの父親が戻ってきた。窓枠に置いた紙コップを取り、自分の奥さんに渡した。もう1人も、飲みかけのコーヒーを持ってその隣に座った。スマホの男たちは戻ってこなかった。" },
+        { id: 'c25-017', text: "俺と目が合うと、父親は軽く会釈した。俺も頭を下げた。" },
+        { id: 'c25-018', speaker: 'misora', text: "平野くん。もう帰っていい？" },
+        { id: 'c25-019', text: "記者はまだ、ノートの最後の行を書いていた。" },
       ],
     },
   },

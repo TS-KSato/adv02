@@ -310,7 +310,14 @@ check('本文と話者が docs/tsuyoshi-sighting-script.md と一致する', sig
 check('弟だと先に伝えるか荷物を先に届けるかを選べ、どちらも同じ場面に合流する',
   JSON.stringify(G.scenes['tsuyoshi-sighting'].choices.map(c => c.to)) === JSON.stringify(sightingKeys.slice(1, 3)) &&
   sightingKeys.slice(1, 3).every(key => G.scenes[key].next === 'tsuyoshi-end'));
-check('剛の目撃が現時点の最後の場面である', !G.scenes['tsuyoshi-end'].next && !G.scenes['tsuyoshi-end'].choices);
+check('剛の目撃から父親たちと取材へ進む', G.scenes['tsuyoshi-end'].next === 'parents-and-press' && !G.scenes['tsuyoshi-end'].choices);
+
+section('父親たちと取材');
+const press = G.scenes['parents-and-press'];
+const pressDoc = read('docs/parents-and-press-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const pressLines = press.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/parents-and-press-script.md と一致する', JSON.stringify(pressDoc) === JSON.stringify(pressLines));
+check('父親たちと取材が現時点の最後の場面である', !press.next && !press.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
