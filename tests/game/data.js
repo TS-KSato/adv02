@@ -474,9 +474,9 @@ check('決勝・E4の本文と話者が原稿と一致する', finalDoc.length =
   return JSON.stringify(expected) === JSON.stringify(actual);
 }));
 check('事前に新庄の打席を比べれば、田原への伝達を経て優勝する',
-  tournamentPath('teirei-final', [0]) === 'teirei-final → teirei-prepared → teirei-game → teirei-ninth → teirei-battery-brief → teirei-win → last-out');
+  tournamentPath('teirei-final', [0]) === 'teirei-final → teirei-prepared → teirei-game → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title');
 check('8回終了後に田原と照合しても、伝達を経て優勝する',
-  tournamentPath('teirei-final', [1, 0]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-recovered → teirei-ninth → teirei-battery-brief → teirei-win → last-out');
+  tournamentPath('teirei-final', [1, 0]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-recovered → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title');
 check('新庄の踏み出しを確認しなければ、敗れてE4へ進む',
   tournamentPath('teirei-final', [1, 1]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-unrecovered → teirei-ninth → teirei-loss → teirei-champion-shinjo');
 
@@ -485,7 +485,14 @@ const lastOut = G.scenes['last-out'];
 const lastOutDoc = read('docs/last-out-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const lastOutLines = lastOut.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('最後のアウトの本文と話者が原稿と一致する', JSON.stringify(lastOutDoc) === JSON.stringify(lastOutLines));
-check('最後のアウトが現時点の優勝側の最後の場面である', !lastOut.next && !lastOut.choices);
+check('最後のアウトから優勝直後の場面へ進む', lastOut.next === 'first-koshien-title' && !lastOut.choices);
+
+section('甲子園初優勝');
+const championship = G.scenes['first-koshien-title'];
+const championshipDoc = read('docs/first-koshien-title-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const championshipLines = championship.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('甲子園初優勝の本文と話者が原稿と一致する', JSON.stringify(championshipDoc) === JSON.stringify(championshipLines));
+check('甲子園初優勝が現時点の優勝側の最後の場面である', !championship.next && !championship.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
