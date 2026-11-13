@@ -338,7 +338,14 @@ check('田原と小宮の本文と話者が原稿と一致する', rookieMismatc
 check('田原か小宮を選ぶ両分岐が帝嶺学院戦で合流する',
   JSON.stringify(G.scenes[rookieKeys[0]].choices.map(c => c.to)) === JSON.stringify(rookieKeys.slice(1, 3)) &&
   rookieKeys.slice(1, 3).every(key => G.scenes[key].next === rookieKeys[3]));
-check('帝嶺学院戦が現時点の最後の場面である', !G.scenes[rookieKeys[3]].next && !G.scenes[rookieKeys[3]].choices);
+check('帝嶺学院戦から夏の大会前へ進む', G.scenes[rookieKeys[3]].next === 'finish-it-this-year' && !G.scenes[rookieKeys[3]].choices);
+
+section('今年こそ終わらせる');
+const finishThisYear = G.scenes['finish-it-this-year'];
+const finishDoc = read('docs/finish-it-this-year-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const finishLines = finishThisYear.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('今年こそ終わらせるの本文と話者が原稿と一致する', JSON.stringify(finishDoc) === JSON.stringify(finishLines));
+check('今年こそ終わらせるが現時点の最後の場面である', !finishThisYear.next && !finishThisYear.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
