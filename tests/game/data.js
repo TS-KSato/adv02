@@ -508,6 +508,42 @@ const promiseLines = promise.lines.map(l => (l.speaker ? G.speakers[l.speaker] +
 check('本当の約束の本文と話者が原稿と一致する', JSON.stringify(promiseDoc) === JSON.stringify(promiseLines));
 check('優勝側は本当の約束で幕を閉じる', !promise.next && !promise.choices);
 
+section('冒頭から5つの結末まで');
+const endingCounts = {};
+const routeProblems = new Set();
+const reachedScenes = new Set();
+function visitRoute(key, flags, ancestors = []) {
+  const scene = G.scenes[key];
+  if (!scene || ancestors.includes(key)) {
+    routeProblems.add(ancestors.concat(key).join(' → '));
+    return;
+  }
+  reachedScenes.add(key);
+  const path = ancestors.concat(key);
+  const available = (scene.choices || []).filter(choice => !choice.when || choice.when({ ...flags }));
+  if (available.length) {
+    for (const choice of available) visitRoute(choice.to, { ...flags, ...choice.set }, path);
+    return;
+  }
+  const next = typeof scene.next === 'function' ? scene.next({ ...flags }) : scene.next;
+  if (next) visitRoute(next, flags, path);
+  else endingCounts[key] = (endingCounts[key] || 0) + 1;
+}
+visitRoute(G.start.scene, Object.fromEntries(Object.entries(G.flags).map(([key, def]) => [key, def.default])));
+check('全経路で行き先が存在し、循環せず、孤立した場面がない',
+  routeProblems.size === 0 && reachedScenes.size === scenes.length,
+  [...routeProblems, ...scenes.filter(key => !reachedScenes.has(key))].join(' / '));
+const expectedEndings = {
+  'ryusei-summer': 128, 'konan-return-bus': 256, 'aotake-no-tomorrow': 512,
+  'teirei-champion-shinjo': 1024, 'real-promise': 2048,
+};
+check('全3968経路が5つの結末に着き、途中で止まらない',
+  Object.keys(endingCounts).length === Object.keys(expectedEndings).length &&
+  Object.entries(expectedEndings).every(([key, count]) => endingCounts[key] === count),
+  JSON.stringify(endingCounts));
+check('優勝エンドは球場の驚きで幕を閉じる',
+  G.scenes['real-promise'].lines.at(-1).text === 'ええええええーっ！？');
+
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
 check('冒頭の話者は hirano と oyama', JSON.stringify(speakerKeys) === '["hirano","oyama"]', speakerKeys.join(','));
