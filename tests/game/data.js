@@ -389,11 +389,18 @@ function rematchPath(picks) {
   return visited.join(' → ');
 }
 check('事前準備で当日の確認を飛ばし、龍成戦に勝つ',
-  rematchPath([0]) === 'ryusei-rematch → ryusei-prepared → ryusei-middle → ryusei-late → ryusei-win');
+  rematchPath([0]) === 'ryusei-rematch → ryusei-prepared → ryusei-middle → ryusei-late → ryusei-win → bus-to-koshien');
 check('事前準備なしでも田原と初球を確認すれば勝つ',
-  rematchPath([1, 0]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-recovered → ryusei-late → ryusei-win');
+  rematchPath([1, 0]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-recovered → ryusei-late → ryusei-win → bus-to-koshien');
 check('どちらでも初球を確認しなければ敗退し、E1へ進む',
   rematchPath([1, 1]) === 'ryusei-rematch → ryusei-unprepared → ryusei-middle → ryusei-recovery-choice → ryusei-unrecovered → ryusei-late → ryusei-loss → ryusei-summer');
+
+section('行きのバス');
+const bus = G.scenes['bus-to-koshien'];
+const busDoc = read('docs/bus-to-koshien-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const busLines = bus.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('行きのバスの本文と話者が原稿と一致する', JSON.stringify(busDoc) === JSON.stringify(busLines));
+check('行きのバスが現時点の勝利側の最後の場面である', !bus.next && !bus.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
