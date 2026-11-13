@@ -24,7 +24,7 @@ check('固定版の検証に通る', v.ok, v.errors.join(' / '));
 section('作品の識別子・版');
 check('作品IDは novelgame02-koshien', G.id === 'novelgame02-koshien', G.id);
 check('作品名は きみのための甲子園', G.title === 'きみのための甲子園', G.title);
-check('作品データの版は 2026.11-2', G.dataVersion === '2026.11-2', G.dataVersion);
+check('作品データの版は 2026.11-3', G.dataVersion === '2026.11-3', G.dataVersion);
 check('使うキットの版は 0.1.0', G.kit === '0.1.0', G.kit);
 const kitJs = read('kit/releases/0.1.0/kit.js');
 const kitVersion = (kitJs.match(/const KIT_VERSION = '([^']+)'/) || [])[1];
@@ -47,6 +47,15 @@ check('甲子園1回戦の旧版保存から龍成戦の選択と保存位置を
   ryuseiMigrated.mode === 'migrated' && ryuseiMigrated.record.auto?.at === 'c30-025' &&
   ryuseiMigrated.record.auto.flags.ryuseiRecovery === true &&
   !ryuseiMigrated.record.auto.flags.konanPrep && !ryuseiMigrated.record.auto.flags.konanRecovery);
+const konanFlags = { ryuseiPrep: false, ryuseiRecovery: true, konanPrep: true, konanRecovery: false };
+const konanVersion = { ...G, dataVersion: '2026.11-2', flags: Object.fromEntries(Object.keys(konanFlags).map(k => [k, G.flags[k]])) };
+const konanRecord = { ...oldRecord, dataVersion: konanVersion.dataVersion, flagSchema: saves.flagSchema(konanVersion),
+  auto: { at: 'c31i-007', flags: konanFlags, dataVersion: konanVersion.dataVersion }, slots: [] };
+const konanMigrated = saves.assess(G, konanRecord, JSON.stringify(konanRecord));
+check('港南工業戦の旧版保存から両試合の選択と保存位置を引き継ぐ',
+  konanMigrated.mode === 'migrated' && konanMigrated.record.auto?.at === 'c31i-007' &&
+  Object.entries(konanFlags).every(([k, v]) => konanMigrated.record.auto.flags[k] === v) &&
+  konanMigrated.record.auto.flags.aotakePrep === false && konanMigrated.record.auto.flags.aotakeRecovery === false);
 check('最初の分岐は勝敗フラグを変えない', G.scenes['practice-start'].choices.every(c => !c.set));
 
 section('場面と行');
@@ -426,11 +435,26 @@ check('港南戦とE2の本文・話者が原稿と一致する', konanDoc.lengt
   return JSON.stringify(expected) === JSON.stringify(actual);
 }));
 check('取材を分担して右翼手を見れば、コーチへの伝達を経て勝つ',
-  tournamentPath('konan-press', [0]) === 'konan-press → konan-prepared → konan-coach-brief → konan-ninth → konan-win');
+  tournamentPath('konan-press', [0]) === 'konan-press → konan-prepared → konan-coach-brief → konan-ninth → konan-win → aotake-round-three → aotake-quarterfinal');
 check('当日でも右翼手を見れば、コーチへの伝達を経て勝つ',
-  tournamentPath('konan-press', [1, 0]) === 'konan-press → konan-unprepared → konan-recovery-choice → konan-recovered → konan-coach-brief → konan-ninth → konan-win');
+  tournamentPath('konan-press', [1, 0]) === 'konan-press → konan-unprepared → konan-recovery-choice → konan-recovered → konan-coach-brief → konan-ninth → konan-win → aotake-round-three → aotake-quarterfinal');
 check('どちらでも右翼手を確認しなければ、伝達せず敗退してE2へ進む',
   tournamentPath('konan-press', [1, 1]) === 'konan-press → konan-unprepared → konan-recovery-choice → konan-unrecovered → konan-ninth → konan-loss → konan-return-bus');
+
+section('連戦と準決勝');
+const aotakeKeys = ["aotake-round-three", "aotake-quarterfinal", "aotake-prepared", "aotake-unprepared", "aotake-game", "aotake-recovery-choice", "aotake-recovered", "aotake-unrecovered", "aotake-battery-brief", "aotake-eighth", "aotake-win", "aotake-loss", "aotake-no-tomorrow"];
+const aotakeDoc = read('docs/aotake-semifinal-script.md').split(/^## .+$/m).slice(1);
+check('連戦・青岳戦・E3の本文と話者が原稿と一致する', aotakeDoc.length === aotakeKeys.length && aotakeKeys.every((key, i) => {
+  const expected = aotakeDoc[i].trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) === JSON.stringify(actual);
+}));
+check('事前に球の高さを記録すれば、田原と大山への伝達を経て勝つ',
+  tournamentPath('aotake-round-three', [0]) === 'aotake-round-three → aotake-quarterfinal → aotake-prepared → aotake-game → aotake-battery-brief → aotake-eighth → aotake-win');
+check('7回終了後に田原と確認しても、田原と大山への伝達を経て勝つ',
+  tournamentPath('aotake-round-three', [1, 0]) === 'aotake-round-three → aotake-quarterfinal → aotake-unprepared → aotake-game → aotake-recovery-choice → aotake-recovered → aotake-battery-brief → aotake-eighth → aotake-win');
+check('球の高さを確認しなければ、青岳戦で敗れE3へ進む',
+  tournamentPath('aotake-round-three', [1, 1]) === 'aotake-round-three → aotake-quarterfinal → aotake-unprepared → aotake-game → aotake-recovery-choice → aotake-unrecovered → aotake-eighth → aotake-loss → aotake-no-tomorrow');
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

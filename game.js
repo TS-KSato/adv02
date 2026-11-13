@@ -1,10 +1,10 @@
-// 『きみのための甲子園』の作品データ。冒頭から甲子園2回戦までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から甲子園準決勝までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
-  dataVersion: '2026.11-2',   // 港南工業戦の準備・回収フラグを追加
+  dataVersion: '2026.11-3',   // 青岳学園戦の準備・回収フラグを追加
   kit: '0.1.0',               // 使うキットの版（kit/releases/0.1.0）
 
   start: { scene: 'opening-ground', line: 'c01-001' },
@@ -14,7 +14,8 @@ window.KIT_GAME = {
 
   // 2年目の大会で、試合を左右する情報を確認したか
   flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false },
-    konanPrep: { type: 'boolean', default: false }, konanRecovery: { type: 'boolean', default: false } },
+    konanPrep: { type: 'boolean', default: false }, konanRecovery: { type: 'boolean', default: false },
+    aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false } },
 
   // 素材。今回は仮背景の1枚だけ
   assets: {
@@ -1732,6 +1733,7 @@ window.KIT_GAME = {
         { id: 'c31i-006', text: "走者がホームを踏んだ。大山は2塁で足を止め、ベンチから飛び出してくる仲間を見てから、ゆっくりヘルメットを脱いだ。" },
         { id: 'c31i-007', text: "3対2。日和が俺の肩を叩いた。俺はまだ立ったままで、日和も座ろうとはしなかった。" },
       ],
+      next: 'aotake-round-three',
     },
     'konan-loss': {
       title: '取材と準備',
@@ -1758,6 +1760,137 @@ window.KIT_GAME = {
         { id: 'c31k-008', text: "俺は足元の鞄を引き寄せた。中には、今日の試合を書いたスコアブックが入っていた。" },
       ],
     },
+    'aotake-round-three': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32a-001', text: "3回戦の5回裏。南陵学園に1点を先に取られたまま、鳳翔は満塁で大山を迎えた。相手の捕手はベンチを見てから、外寄りに腰を落とした。前の打席では、大山に振らせる球をほとんど投げなかった。" },
+        { id: 'c32a-002', text: "今度は歩かせれば同点になる。投手は外の端でストライクを取ろうとした。球が少し内に入った。大山の打球が左中間の芝を転がるあいだに、1塁にいた先輩までホームに帰ってきた。" },
+        { id: 'c32a-003', text: "大山は2塁で手袋を締め直し、それから監督のほうへ顔を向けた。俺は、今ので3人帰ったと日和に言われるまで、最後の走者の線を書き忘れていた。" },
+        { id: 'c32a-004', text: "5対1。南陵戦が終わると、日和は使い終わった打順表を外し、その下に挟んであった西都商業の資料を出した。" },
+      ],
+      next: 'aotake-quarterfinal',
+    },
+    'aotake-quarterfinal': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32b-001', text: "準々決勝では、先輩投手が先発し、3年の先輩がマスクをかぶった。田原がベンチで見ている前で、先輩捕手は低い変化球を何度も土の上で止めた。7回まで、西都の得点は2点だった。" },
+        { id: 'c32b-002', text: "8回裏、2対2。2アウトから先輩捕手に打順が回った。初球をセンター前に打ち返すと、3塁走者に続いて、2塁走者もホームへ走った。" },
+        { id: 'c32b-003', text: "4対2。そのまま9回を終えた。先輩は最後の球を受けたミットを外しながら、日和に声をかけた。" },
+        { id: 'c32b-004', speaker: 'senpai', text: "さっき監督、俺が打ったとこ見てた？" },
+        { id: 'c32b-005', speaker: 'hiyori', text: "その前の回、低い球を止めたのは見てましたよ。" },
+        { id: 'c32b-006', text: "先輩は一度ミットを見た。それから、手を入れ直してベンチへ戻ってきた。" },
+        { id: 'c32b-007', text: "その晩、宿の食堂で、日和が南陵戦の映像を出してくれた。最後のほうでは、田原がミットを低く出したあと、胸の近くまで上げて捕る球が何度かあった。" },
+        { id: 'c32b-008', text: "机には、次に当たる青岳学園の打順表も置いてあった。先輩たちが確認する前に、書き込みを整理しておきたい。" },
+      ],
+      choices: [
+        { text: '前の試合から大山の球の高さを記録する', to: 'aotake-prepared', set: { aotakePrep: true } },
+        { text: '相手の打順を整理する', to: 'aotake-unprepared' },
+      ],
+    },
+    'aotake-prepared': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32c-001', text: "南陵戦の映像を終盤から見直した。直球が高かったところを控え、同じ打者の序盤の打席と並べた。打たれていない球にも、構えより上へ来た直球があった。" },
+        { id: 'c32c-002', speaker: 'hirano', text: "次もこうなったら、打たれる前に分かるかも。" },
+        { id: 'c32c-003', text: "日和が映像を止めてくれた。俺は田原が構えた高さと、実際に捕った高さを、見比べられるように書き残した。" },
+      ],
+      next: 'aotake-game',
+    },
+    'aotake-unprepared': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32d-001', text: "青岳の打順表を取った。打席の左右と、走者がいるときにバントをした打者を整理し、守備の確認に来た先輩たちに渡した。南陵戦の映像は、日和が閉じてくれた。" },
+      ],
+      next: 'aotake-game',
+    },
+    'aotake-game': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32e-001', text: "準決勝。大山は初回、青岳の先頭打者を真っすぐで三振に取った。打者のバットは球がミットに入ってから回った。" },
+        { id: 'c32e-002', text: "同じ打者が2巡目に来たときは違った。最初の真っすぐを一塁側へファウルにし、次はセンター前へ打ち返した。後ろの打者も、直球に振り遅れなくなった。" },
+        { id: 'c32e-003', text: "7回表。田原がミットを膝の前に出した。大山の直球が来ると、田原はミットを胸まで上げた。打球はライト線の外に切れた。次の真っすぐも、ミットが最初にあったところより上へ来た。" },
+        { id: 'c32e-004', text: "7回が終わって2対2。ベンチに戻った大山は水を飲み、ボトルを置いた。まだ投げるつもりで、グラブを膝から下ろさなかった。" },
+      ],
+      next: (f) => f.aotakePrep ? 'aotake-battery-brief' : 'aotake-recovery-choice',
+    },
+    'aotake-recovery-choice': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32f-001', text: "田原がマスクを外して、俺のそばに座った。グラウンドでは青岳の選手が守備についていた。" },
+        { id: 'c32f-002', text: "俺は7回のページを開いた。ミットが何度か上へ動いた気がする。田原に聞くなら、次の攻撃が始まるまでだ。隣では先輩が、残りの打順を知りたがっていた。" },
+      ],
+      choices: [
+        { text: '田原に捕球位置の変化を聞く', to: 'aotake-recovered', set: { aotakeRecovery: true } },
+        { text: '残りの打順を先に確認する', to: 'aotake-unrecovered' },
+      ],
+    },
+    'aotake-recovered': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32g-001', speaker: 'hirano', text: "最後の打者のとき、ミットが上がってたよね。構えを変えた？" },
+        { id: 'c32g-002', speaker: 'tahara', text: "構えたとこは同じです。真っすぐだけ、手が上へ持っていかれる感じでした。" },
+        { id: 'c32g-003', text: "俺は最後の打席だけじゃなかったと伝え、7回の記録を一緒に見た。田原は、低く来た変化球の行も指した。" },
+      ],
+      next: 'aotake-battery-brief',
+    },
+    'aotake-unrecovered': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32h-001', text: "俺は残りの打順を開いて、先輩に見せた。次の打者が呼ばれ、田原は水を飲み終えてベンチの奥へ移った。ミットの位置を聞かないまま、鳳翔の7回裏が始まった。" },
+      ],
+      next: 'aotake-eighth',
+    },
+    'aotake-battery-brief': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32i-001', text: "7回裏が終わって守備へ出る前に、俺は大山と田原を呼び止めた。" },
+        { id: 'c32i-002', speaker: 'hirano', text: "7回、真っすぐだけ高くなってる。低く構えても、胸の辺りまで来てた。" },
+        { id: 'c32i-003', text: "大山はボトルのふたを閉めて、田原を見た。" },
+        { id: 'c32i-004', speaker: 'tahara', text: "低い変化球は来てます。欲しいとこに構えますから、そこへお願いします。" },
+        { id: 'c32i-005', speaker: 'oyama', text: "低めだな。外すなよ。" },
+        { id: 'c32i-006', text: "大山はそう言って、田原が立つより先にグラウンドへ出た。" },
+      ],
+      next: 'aotake-eighth',
+    },
+    'aotake-eighth': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32j-001', text: "8回表。青岳は2本の安打で1・3塁とした。アウトは2つ。3塁の走者が帰れば、青岳が勝ち越す。" },
+        { id: 'c32j-002', text: "打者が右打席に入った。俺は膝の上のスコアブックを開いたまま、田原がどこに構えるかを見た。" },
+      ],
+      next: (f) => (f.aotakePrep || f.aotakeRecovery) ? 'aotake-win' : 'aotake-loss',
+    },
+    'aotake-win': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32k-001', text: "田原が外寄りの低いところへミットを出した。大山が投げた。真っすぐより遅い球が、打者の手元で沈んだ。" },
+        { id: 'c32k-002', text: "打球が地面をたたいた。小宮が前に出て捕り、1塁へ投げた。3塁走者はホームまで走ってきたが、先に1塁でアウトが取れた。" },
+        { id: 'c32k-003', text: "8回裏。小宮が左翼線へ打ち、2塁まで走った。次の打者がセンター前へ落とすと、小宮は3塁を回り、返球が捕手に届くより先にホームを踏んだ。" },
+        { id: 'c32k-004', text: "3対2。9回は別の先輩がマウンドに立った。最後のフライをセンターが捕ると、大山はベンチから真っ先に出た。" },
+        { id: 'c32k-005', text: "日和がスコアブックの隣に、決勝の予定が載った紙を置いた。俺はすぐにはそちらを見られなかった。最後のアウトを書いて、日和に「勝ったね」と言われてから、ようやく紙を受け取った。" },
+      ],
+    },
+    'aotake-loss': {
+      title: '連戦と準決勝',
+      lines: [
+        { id: 'c32l-001', text: "田原が低く構えた。大山の真っすぐは、ミットの上を通って打者の腰の高さへ来た。" },
+        { id: 'c32l-002', text: "打球は1塁手と2塁手の間を抜けた。3塁走者がホームを踏んで、2対3。" },
+        { id: 'c32l-003', text: "9回裏、鳳翔は1塁に走者を出した。最後の打球が外野手のグラブに収まるまで、俺は走者を目で追っていた。走者は2塁の手前で足を止めた。" },
+        { id: 'c32l-004', text: "2対3。俺は今度は最後のアウトまで書いた。書き終えても、もう一度開く場所が見つからなかった。" },
+      ],
+      next: 'aotake-no-tomorrow',
+    },
+    'aotake-no-tomorrow': {
+      title: '明日のない球場',
+      lines: [
+        { id: 'c32m-001', text: "決勝の日、俺たちはスタンドの階段を上がった。いつもは通り過ぎるだけの売店の前で止まり、日和が取っておいてくれた席を探した。" },
+        { id: 'c32m-002', text: "選手の名前が放送で流れた。俺は反射的に膝の上を見た。今日は、スコアブックを持ってきていなかった。" },
+        { id: 'c32m-003', speaker: 'misora', text: "……あと一つだった。" },
+        { id: 'c32m-004', text: "隣の列で、先輩が帽子を目深にかぶり直した。" },
+        { id: 'c32m-005', speaker: 'senpai', text: "監督、俺らのこと、まだ悔しがってくれてるんだな。" },
+        { id: 'c32m-006', text: "俺は監督の横顔を見た。何があと一つだったのか、聞けば答えてくれたかもしれない。グラウンドで最初の打者が構えたので、俺も前を向いた。" },
+      ],
+    },
   },
 
   // 演出は行IDで指定する。今回は冒頭の背景だけ
@@ -1767,7 +1900,8 @@ window.KIT_GAME = {
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
   migrations: {
-    '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false, konanPrep: false, konanRecovery: false }) },
-    '2026.11-1': { lines: 'identity', flags: (f) => ({ ryuseiPrep: f.ryuseiPrep, ryuseiRecovery: f.ryuseiRecovery, konanPrep: false, konanRecovery: false }) },
+    '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false }) },
+    '2026.11-1': { lines: 'identity', flags: (f) => ({ ryuseiPrep: f.ryuseiPrep, ryuseiRecovery: f.ryuseiRecovery, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false }) },
+    '2026.11-2': { lines: 'identity', flags: (f) => ({ ...f, aotakePrep: false, aotakeRecovery: false }) },
   },
 };
