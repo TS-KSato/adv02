@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「甲子園初優勝」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「公開求婚」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手', muto: '武藤', hoshihama_player: '星浜選手', other_hoshihama_player: '別の星浜選手', hoshihama_coach: '星浜監督', teirei_coach: '帝嶺監督', teirei_player: '帝嶺選手' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手', muto: '武藤', hoshihama_player: '星浜選手', other_hoshihama_player: '別の星浜選手', hoshihama_coach: '星浜監督', teirei_coach: '帝嶺監督', teirei_player: '帝嶺選手', interviewer: 'インタビュアー' },
 
   // 2年目の大会で、試合を左右する情報を確認したか
   flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false },
@@ -2084,6 +2084,33 @@ window.KIT_GAME = {
         { id: 'c34-014', text: "日和はうなずいてから、もう一度、今度は声を出して笑った。" },
         { id: 'c34-015', text: "球場の放送で、優勝校として鳳翔高校の名前が呼ばれた。グラウンドでは、やっと大山の顔が仲間の肩の間から見えた。" },
         { id: 'c34-016', text: "鳳翔高校、甲子園初優勝。" },
+      ],
+      next: 'public-proposal',
+    },
+    'public-proposal': {
+      title: '公開求婚',
+      lines: [
+        { id: 'c35-001', text: "歓声がようやく落ち着いてきたころ、係の人が大山をベンチ前へ呼んだ。マイクを持ったインタビュアーの後ろに、テレビカメラが1台ついてきた。" },
+        { id: 'c35-002', text: "俺はスコアブックを抱えて、日和とベンチの出口に立った。監督はその少し先で、インタビューが終わるのを待っていた。" },
+        { id: 'c35-003', speaker: 'interviewer', text: "9回のホームラン、お見事でした。内角の厳しい球でしたね。" },
+        { id: 'c35-004', speaker: 'oyama', text: "1球目で分かったんで。もう1球あそこに来るなら、打てます。" },
+        { id: 'c35-005', text: "鳳翔の応援席から拍手が起きた。大山はそっちを見なかった。マイクを向けられているあいだも、監督の立っている方に目をやっていた。" },
+        { id: 'c35-006', speaker: 'interviewer', text: "最後に、今日の優勝を、いちばん伝えたい人は誰ですか？" },
+        { id: 'c35-007', speaker: 'oyama', text: "います。そこに。" },
+        { id: 'c35-008', text: "大山が体ごと監督のほうを向いた。インタビュアーが慌てて半歩動き、マイクを大山の口元へ戻した。" },
+        { id: 'c35-009', speaker: 'oyama', text: "美空！　甲子園で優勝したぞ。俺と結婚してくれ！" },
+        { id: 'c35-010', text: "「結婚してくれ」が、スピーカーから外野席まで響いた。グラウンドでまだ笑っていた先輩たちの声が、そこで途切れた。" },
+        { id: 'c35-011', text: "スタンドのどこかから「おおーっ！」と声が上がった。拍手がその声を追いかけるように広がり、今度は相手側のスタンドからも口笛が鳴った。" },
+        { id: 'c35-012', speaker: 'senpai', text: "ああああっ！　大山、お前、先に言うなぁ！" },
+        { id: 'c35-013', text: "大山の後ろにいた先輩が、飛び出しかけて隣の選手にぶつかった。ぶつかられたほうも同じ方向へ飛び出しかけていた。" },
+        { id: 'c35-014', text: "鳳翔の応援席。手すりから身を乗り出した中田が、首に掛けていたタオルを両手で引っ張った。" },
+        { id: 'c35-015', speaker: 'nakata', text: "そいつの前に俺のファイルを読んでください、監督ーっ！" },
+        { id: 'c35-016', text: "帝嶺のベンチ前で、新庄は脱いだ帽子を手に持ったまま、大山を見ていた。" },
+        { id: 'c35-017', speaker: 'shinjo', text: "（あいつ……ここで言うのか。みんなが聞いてる前で。）" },
+        { id: 'c35-018', text: "インタビュアーはマイクを大山の前から引いて、監督へ向けた。カメラもそちらを向いた。ベンチの出口で、日和が息を吸う音が、俺のすぐ隣で聞こえた。" },
+        { id: 'c35-019', text: "監督は大山のほうを向いた。口元が緩んだだけじゃなかった。目を細めて、歯が見えるほど笑った。俺は監督があんなふうに笑うところを、初めて見た。" },
+        { id: 'c35-020', speaker: 'oyama', text: "（ほらな。）" },
+        { id: 'c35-021', text: "監督は差し出されたマイクを両手で受け取った。" },
       ],
     },
   },
