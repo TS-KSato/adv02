@@ -474,9 +474,9 @@ check('決勝・E4の本文と話者が原稿と一致する', finalDoc.length =
   return JSON.stringify(expected) === JSON.stringify(actual);
 }));
 check('事前に新庄の打席を比べれば、田原への伝達を経て優勝する',
-  tournamentPath('teirei-final', [0]) === 'teirei-final → teirei-prepared → teirei-game → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title → public-proposal');
+  tournamentPath('teirei-final', [0]) === 'teirei-final → teirei-prepared → teirei-game → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title → public-proposal → real-promise');
 check('8回終了後に田原と照合しても、伝達を経て優勝する',
-  tournamentPath('teirei-final', [1, 0]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-recovered → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title → public-proposal');
+  tournamentPath('teirei-final', [1, 0]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-recovered → teirei-ninth → teirei-battery-brief → teirei-win → last-out → first-koshien-title → public-proposal → real-promise');
 check('新庄の踏み出しを確認しなければ、敗れてE4へ進む',
   tournamentPath('teirei-final', [1, 1]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-unrecovered → teirei-ninth → teirei-loss → teirei-champion-shinjo');
 
@@ -499,7 +499,14 @@ const proposal = G.scenes['public-proposal'];
 const proposalDoc = read('docs/public-proposal-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const proposalLines = proposal.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('公開求婚の本文と話者が原稿と一致する', JSON.stringify(proposalDoc) === JSON.stringify(proposalLines));
-check('公開求婚が現時点の優勝側の最後の場面である', !proposal.next && !proposal.choices);
+check('公開求婚から父娘の約束が明かされる優勝エンドへ進む', proposal.next === 'real-promise' && !proposal.choices);
+
+section('本当の約束');
+const promise = G.scenes['real-promise'];
+const promiseDoc = read('docs/real-promise-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const promiseLines = promise.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本当の約束の本文と話者が原稿と一致する', JSON.stringify(promiseDoc) === JSON.stringify(promiseLines));
+check('優勝側は本当の約束で幕を閉じる', !promise.next && !promise.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
