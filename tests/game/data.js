@@ -296,7 +296,21 @@ const genRecords = G.scenes['gen-reads-the-records'];
 const genRecordsDoc = read('docs/gen-reads-the-records-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const genRecordsLines = genRecords.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/gen-reads-the-records-script.md と一致する', JSON.stringify(genRecordsDoc) === JSON.stringify(genRecordsLines));
-check('厳が語る娘の決意が現時点の最後の場面である', !genRecords.next && !genRecords.choices);
+check('厳が資料を読む場面から剛の目撃へ進む', genRecords.next === 'tsuyoshi-sighting' && !genRecords.choices);
+
+section('剛の目撃');
+const sightingKeys = ['tsuyoshi-sighting', 'tsuyoshi-tell', 'tsuyoshi-return-bag', 'tsuyoshi-end'];
+const sightingDoc = read('docs/tsuyoshi-sighting-script.md').split(/^## .+$/m).slice(1);
+const sightingMismatch = sightingKeys.filter((key, i) => {
+  const expected = (sightingDoc[i] || '').trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('本文と話者が docs/tsuyoshi-sighting-script.md と一致する', sightingMismatch.length === 0, sightingMismatch.join(', '));
+check('弟だと先に伝えるか荷物を先に届けるかを選べ、どちらも同じ場面に合流する',
+  JSON.stringify(G.scenes['tsuyoshi-sighting'].choices.map(c => c.to)) === JSON.stringify(sightingKeys.slice(1, 3)) &&
+  sightingKeys.slice(1, 3).every(key => G.scenes[key].next === 'tsuyoshi-end'));
+check('剛の目撃が現時点の最後の場面である', !G.scenes['tsuyoshi-end'].next && !G.scenes['tsuyoshi-end'].choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

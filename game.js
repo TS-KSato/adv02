@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「厳が語る娘の決意」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「剛の目撃」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -1209,6 +1209,63 @@ window.KIT_GAME = {
         { id: 'c23-022', speaker: 'gen', text: "……明日の守備、さっきの紙だけじゃ足りんな。" },
         { id: 'c23-023', text: "厳はノートを開き、武藤の名前と試合の日付を書き写した。" },
         { id: 'c23-024', text: "中田のファイルは、机のいちばん手前に開いたままだった。" },
+      ],
+      next: 'tsuyoshi-sighting',
+    },
+    'tsuyoshi-sighting': {
+      title: '剛の目撃',
+      lines: [
+        { id: 'c24-001', text: "駅前の店で替えの鉛筆を買って出ると、前を歩く人が、ベンチに紙袋を置いた。片手でスマホを出し、もう片方の手で、隣にいる男に何か頼んでいる。" },
+        { id: 'c24-002', text: "美空監督だった。学校では見ない服だったが、返事を待たずに次の用事を言い始めるところで分かった。" },
+        { id: 'c24-003', speaker: 'misora', text: "剛、次あそこ。駅の反対側。" },
+        { id: 'c24-004', text: "黒いスーツの男は、箱を抱えたまま振り向いた。首が太くて、上着の肩が張っていた。眉のあたりが誰かに似ていると思ったら、厳さんだった。" },
+        { id: 'c24-005', speaker: 'tsuyoshi', text: "姉ちゃん、俺、友達の結婚式からそのまま来たんだけど。これ置きに帰っていい？" },
+        { id: 'c24-006', speaker: 'misora', text: "あの店だけ。すぐ終わるから。" },
+        { id: 'c24-007', text: "剛は箱を抱え直した。手首には、引き出物の袋までぶら下がっていた。" },
+        { id: 'c24-008', text: "駅前の通りを挟んだ反対側に、大山がいた。自販機の横で足を止め、肩のあたりまでしか見えない人混みの奥をのぞいていた。" },
+        { id: 'c24-009', speaker: 'oyama', text: "（な、なんだ、あの男は……？）" },
+        { id: 'c24-010', text: "美空が駅の向こうの看板を指した。剛がそちらを見ようと首を回す。その視線が、大山のいる自販機のあたりを横切った。" },
+        { id: 'c24-011', speaker: 'oyama', text: "（気づいただと？　この距離で……ただ者じゃねえ。）" },
+        { id: 'c24-012', text: "大山は自販機の陰へ半歩ずれた。剛は看板を確かめてから、美空に「駅の中、通ったほうが早いよ」と言った。" },
+        { id: 'c24-013', text: "俺が歩道へ戻ったときには、二人とも駅へ歩き出していた。さっき美空が置いた紙袋だけが、ベンチに残っていた。" },
+      ],
+      choices: [
+        { text: '先に選手へ弟だと伝える', to: 'tsuyoshi-tell' },
+        { text: '先に美空へ荷物を届ける', to: 'tsuyoshi-return-bag' },
+      ],
+    },
+    'tsuyoshi-tell': {
+      title: '剛の目撃',
+      lines: [
+        { id: 'c24a-001', text: "大山が横断歩道を渡ってきた。少し後ろに、同じ部の先輩がいた。" },
+        { id: 'c24a-002', speaker: 'oyama', text: "平野。あいつ、美空とどういう関係だ。" },
+        { id: 'c24a-003', speaker: 'hirano', text: "弟だよ。「姉ちゃん」って聞こえた。" },
+        { id: 'c24a-004', speaker: 'senpai', text: "弟なら、監督が何もらうと喜ぶか知ってるよな。" },
+        { id: 'c24a-005', text: "大山は先輩を見た。それから駅の入口を見て、今度は俺を見た。" },
+        { id: 'c24a-006', speaker: 'oyama', text: "平野。あいつと話すときは、先に俺を呼べ。" },
+        { id: 'c24a-007', text: "俺がベンチから紙袋を取ると、剛が一人で戻ってきた。美空が袋を置いてきたことに気づいて、取りに行かされたらしい。剛は両腕がふさがったままだったので、俺は紙袋の持ち手を、引き出物の袋と同じ手首に通した。" },
+      ],
+      next: 'tsuyoshi-end',
+    },
+    'tsuyoshi-return-bag': {
+      title: '剛の目撃',
+      lines: [
+        { id: 'c24b-001', text: "紙袋をつかんで駅の入口まで走ると、美空と剛は案内板の前にいた。後ろから誰かが走ってくる音がした。" },
+        { id: 'c24b-002', speaker: 'hirano', text: "監督。これ、ベンチにありました。" },
+        { id: 'c24b-003', speaker: 'misora', text: "あ、それ私の。ありがとう、平野くん。" },
+        { id: 'c24b-004', text: "美空は袋を受け取って、そのまま剛のほうへ差し出した。剛は持ち直した箱の上に袋を載せた。" },
+        { id: 'c24b-005', text: "俺が振り向くと、追いついてきた大山と先輩が駅の入口に立っていた。" },
+        { id: 'c24b-006', speaker: 'senpai', text: "監督、あの人の前でもお前のこと平野くんって呼んでたな。家族ぐるみか？" },
+        { id: 'c24b-007', speaker: 'hirano', text: "今初めて会いましたよ。監督の弟です。" },
+        { id: 'c24b-008', speaker: 'oyama', text: "弟だってことまで知ってるじゃねえか。" },
+      ],
+      next: 'tsuyoshi-end',
+    },
+    'tsuyoshi-end': {
+      title: '剛の目撃',
+      lines: [
+        { id: 'c24e-001', text: "駅の通路を向こうの出口へ歩いていく二人の背中が見えた。少し先を行く美空が立ち止まるたび、剛も、抱えた箱を落とさないように立ち止まった。" },
+        { id: 'c24e-002', text: "隣では、大山がまだその背中を見ていた。" },
       ],
     },
   },
