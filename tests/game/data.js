@@ -345,7 +345,14 @@ const finishThisYear = G.scenes['finish-it-this-year'];
 const finishDoc = read('docs/finish-it-this-year-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const finishLines = finishThisYear.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('今年こそ終わらせるの本文と話者が原稿と一致する', JSON.stringify(finishDoc) === JSON.stringify(finishLines));
-check('今年こそ終わらせるが現時点の最後の場面である', !finishThisYear.next && !finishThisYear.choices);
+check('鳳翔の大会準備から野原の再分析へ進む', finishThisYear.next === 'nohara-reanalysis' && !finishThisYear.choices);
+
+section('野原の再分析');
+const reanalysis = G.scenes['nohara-reanalysis'];
+const reanalysisDoc = read('docs/nohara-reanalysis-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const reanalysisLines = reanalysis.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('野原の再分析の本文と話者が原稿と一致する', JSON.stringify(reanalysisDoc) === JSON.stringify(reanalysisLines));
+check('野原の再分析が現時点の最後の場面である', !reanalysis.next && !reanalysis.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

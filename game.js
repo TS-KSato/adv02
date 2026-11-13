@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「今年こそ終わらせる」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「野原の再分析」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -1430,6 +1430,29 @@ window.KIT_GAME = {
         { id: 'c27-025a', text: "厳は小宮の中継が記された行を読み返した。アウトにはなっていない。それでも、次の打者に回ったとき、走者は3塁ではなく2塁にいた。" },
         { id: 'c27-025b', speaker: 'gen', text: "小宮も、返す先を捕る前に決めてる。あの2人、もう夏に使えるな。" },
         { id: 'c27-026', text: "厳は新しい紙を取り、先に田原と小宮の名前を書いた。" },
+      ],
+      next: 'nohara-reanalysis',
+    },
+    'nohara-reanalysis': {
+      title: '野原の再分析',
+      lines: [
+        { id: 'c28-001', text: "龍成の部室では、窓の外が暗くなっても、テレビの明かりがついていた。野原はリモコンを手に、去年の決勝を見返していた。画面には、まだ2対2の掲示板が映っている。" },
+        { id: 'c28-002', text: "鳳翔の内野が前へ出たところで映像を止めた。机の上にあった古いノートを開く。同じように内野が前へ出た場面に、日付が2つ書いてあった。どちらも厳がまだ鳳翔の監督だった年だ。" },
+        { id: 'c28-003', speaker: 'nohara', text: "ここで1点をやらない。神条さんなら、そうするよな。" },
+        { id: 'c28-004', text: "去年はそうやって、知っている相手と試合をするつもりで準備した。大山が出ないと分かってからは、打つ球も絞れた。終わってみれば4対2。その準備で取れた点は、確かにあった。" },
+        { id: 'c28-005', text: "部室の戸が開いて、選手が春の練習試合の映像を入れたタブレットを持ってきた。" },
+        { id: 'c28-006', speaker: 'ryusei_player', text: "監督、頼まれてた映像です。佐々木のヒットから出しますか？" },
+        { id: 'c28-007', speaker: 'nohara', text: "凡退した打席もあるか。" },
+        { id: 'c28-008', speaker: 'ryusei_player', text: "あります。そっちも見ますか？" },
+        { id: 'c28-009', speaker: 'nohara', text: "そっちからだ。" },
+        { id: 'c28-010', text: "映像では、佐々木が外の球を打って、セカンドの前にゴロを転がした。別の試合では、同じような球を打ち上げた。野原はどちらも、打ったあとに佐々木がベンチへ戻るところまで見た。" },
+        { id: 'c28-011', text: "次に、去年の北陵戦を再生した。8回裏、2アウト。佐々木が打席に入る。野原はバットが球に当たるところで止めた。" },
+        { id: 'c28-012', speaker: 'nohara', text: "北陵の投手も、投げ損なっちゃいないんだよな。" },
+        { id: 'c28-013', text: "選手はテレビの前に立ったまま、答えなかった。映像を少し戻すと、打席へ向かう佐々木の後ろに、ベンチへ引き返す美空が小さく映っていた。" },
+        { id: 'c28-014', text: "野原は巻き戻した。もう一度、佐々木が出てくるところから見た。" },
+        { id: 'c28-015', speaker: 'nohara', text: "打った理由なら、あとから何とでも言える。あの場面で、なんでこいつを出したんだ。" },
+        { id: 'c28-016', text: "選手が帰ったあと、野原は今年の鳳翔の試合を開いた。走者が1塁に出ると、打者はバントの構えをした。大山は初球からストライクを取った。ノートには去年の決勝の続きではなく、今年の大山の投球を1球目から書いた。" },
+        { id: 'c28-017', text: "ノートを閉じる前に、北陵戦をもう一度開いた。映像を止めたのは、本塁打のところより少し前。美空が打順表を膝に置き、立ち上がったところだった。" },
       ],
     },
   },
