@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手', muto: '武藤', hoshihama_player: '星浜選手', other_hoshihama_player: '別の星浜選手', hoshihama_coach: '星浜監督' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮', ryusei_player: '龍成選手', muto: '武藤', hoshihama_player: '星浜選手', other_hoshihama_player: '別の星浜選手', hoshihama_coach: '星浜監督', teirei_coach: '帝嶺監督', teirei_player: '帝嶺選手' },
 
   // 2年目の大会で、試合を左右する情報を確認したか
   flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false },
@@ -1933,7 +1933,25 @@ window.KIT_GAME = {
       title: '帝嶺学院との決勝',
       lines: [
         { id: 'c33d-001', text: "鳳翔は先攻だった。1回裏、先頭の新庄が大山の速球をセンター前へ打った。大山は次の打者に投げるまで、新庄が1塁で取ったリードを何度も見ていた。" },
-        { id: 'c33d-002', text: "そこから、どちらも相手を引き離せなかった。6回に鳳翔が勝ち越すと、帝嶺は8回裏に犠牲フライで追いついた。3対3。外野からの返球を受けた田原がベンチに戻ってきたときには、もう9回の先頭打者がヘルメットをかぶっていた。" },
+        { id: 'c33d-001a', text: "帝嶺はその回、先に1点を取った。鳳翔も追いつき、3回表には1アウト1塁から、打球が右中間へ抜けかけた。" },
+        { id: 'c33d-001b', text: "センターの新庄が回り込んで止めた。返球は中継に入った野手の胸へ。1塁走者は2塁を回りかけていたが、新庄の手から球が離れたところで引き返した。" },
+        { id: 'c33d-001c', text: "その回を無得点でしのいだ帝嶺のベンチで、中継に入った選手がグラブを外した。" },
+        { id: 'c33d-001d', speaker: 'teirei_player', text: "新庄、助かった。抜けてたら1点だったな。" },
+        { id: 'c33d-001e', speaker: 'teirei_coach', text: "止めたあともだ。返球がちょっと逸れたら、あいつらは次の塁まで来る。今の中継、次も頼むぞ。" },
+        { id: 'c33d-001f', text: "スタンドでは、新庄の返球を見て立ち上がった客が、攻守が替わるまで座らなかった。" },
+        { id: 'c33d-001g', speaker: 'spectator', text: "帝嶺の新庄に、鳳翔の大山か。決勝でこの二人が当たるなんて、そうそう見られねえぞ。" },
+        { id: 'c33d-001h', text: "少し離れた席で、厳は鳳翔の走者が引き返したあたりを見ていた。" },
+        { id: 'c33d-001i', speaker: 'gen', text: "新庄が止めて、中継も迷わず返す。あれだけ揃ってると、もうひとつ先が取れんな。" },
+        { id: 'c33d-001j', text: "別の列では、河本がグラウンドに身を乗り出していた。プロで投げるときも、ああいう打者に一度タイミングを合わせられると厄介だ。" },
+        { id: 'c33d-001k', speaker: 'kawamoto', text: "（新庄なら、一軍の投手とやってもそう簡単には崩れない。……大山だって、一軍で投げてるところが想像つく。気に食わねえけど。）" },
+        { id: 'c33d-001l', text: "6回表、俺は鳳翔の得点欄に3点目を書いた。2対2から、2塁の先輩がセンター前の安打で帰った。帝嶺は返球をきっちりつないだが、今度は先輩の足がわずかに早かった。" },
+        { id: 'c33d-001m', speaker: 'hiyori', text: "帝嶺、あの打球でもホームで勝負できるんだね。" },
+        { id: 'c33d-001n', speaker: 'hirano', text: "うん。でも、うちも強いよ。" },
+        { id: 'c33d-001o', text: "日和はホームを見たまま、うなずいた。それから、泥のついた先輩にタオルを渡しに行った。" },
+        { id: 'c33d-001p', text: "8回裏。新庄が外の直球をファウルにした。ベンチのすぐ上を通った球が、客席へ跳ねた。" },
+        { id: 'c33d-001q', text: "打席を外した新庄は、バットを握り直した。踏み出しは早くしたつもりだった。それでも、今の球は芯を外れた。" },
+        { id: 'c33d-001r', speaker: 'shinjo', text: "（足はもう着いてた。それでも芯に来ない。……もう半拍早く着く。手は、球が来るまで出さない。）" },
+        { id: 'c33d-002', text: "新庄は次の球を左前へ打った。続く安打で3塁まで進み、外野フライでホームを踏んだ。3対3。その回を終えて田原が鳳翔のベンチに戻ってきたときには、もう9回の先頭打者がヘルメットをかぶっていた。" },
       ],
       next: (f) => f.teireiPrep ? 'teirei-ninth' : 'teirei-recovery-choice',
     },
