@@ -324,7 +324,21 @@ const secondScorebook = G.scenes['second-scorebook'];
 const secondScorebookDoc = read('docs/second-scorebook-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const secondScorebookLines = secondScorebook.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/second-scorebook-script.md と一致する', JSON.stringify(secondScorebookDoc) === JSON.stringify(secondScorebookLines));
-check('二冊目が現時点の最後の場面である', !secondScorebook.next && !secondScorebook.choices);
+check('二冊目から田原と小宮の登場へ進む', secondScorebook.next === 'tahara-and-komiya' && !secondScorebook.choices);
+
+section('田原と小宮');
+const rookieKeys = ['tahara-and-komiya', 'tahara-catching', 'komiya-fielding', 'rookies-teirei'];
+const rookieDoc = read('docs/tahara-and-komiya-script.md').split(/^## .+$/m).slice(1);
+const rookieMismatch = rookieKeys.filter((key, i) => {
+  const expected = (rookieDoc[i] || '').trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) !== JSON.stringify(actual);
+});
+check('田原と小宮の本文と話者が原稿と一致する', rookieMismatch.length === 0, rookieMismatch.join(', '));
+check('田原か小宮を選ぶ両分岐が帝嶺学院戦で合流する',
+  JSON.stringify(G.scenes[rookieKeys[0]].choices.map(c => c.to)) === JSON.stringify(rookieKeys.slice(1, 3)) &&
+  rookieKeys.slice(1, 3).every(key => G.scenes[key].next === rookieKeys[3]));
+check('帝嶺学院戦が現時点の最後の場面である', !G.scenes[rookieKeys[3]].next && !G.scenes[rookieKeys[3]].choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();

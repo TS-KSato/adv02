@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の作品データ。冒頭から「二冊目」までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から「田原と小宮」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
@@ -10,7 +10,7 @@ window.KIT_GAME = {
   start: { scene: 'opening-ground', line: 'c01-001' },
 
   // 話者の表示名。キーは line.speaker に書く。話者のない行は地の文になる
-  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親' },
+  speakers: { hirano: '平野', oyama: '大山', senpai: '先輩', other_senpai: '別の先輩', firstyear: '1年生', misora: '美空', nakata: '中田', hiyori: '日和', sasaki: '佐々木', kawamoto: '河本', member: '部員', other_member: '別の部員', shinjo: '新庄', hokuryo_coach: '北陵監督', hokuryo_player: '北陵選手', hokuryo_first_baseman: '北陵一塁手', reporter: '記者', gen: '厳', doctor: '医者', oyama_mother: '大山母', nohara: '野原', announcer: '場内アナウンス', spectator: '観客', hosho_mother: '鳳翔の母親', other_hosho_mother: '別の母親', tsuyoshi: '剛', visitor: '男', hosho_father: '鳳翔の父親', tahara: '田原', komiya: '小宮' },
 
   // 最初の分岐は読み味だけを変えるので、フラグは使わない
   flags: {},
@@ -1320,6 +1320,71 @@ window.KIT_GAME = {
         { id: 'csecond-011', text: "背後からスパイクの音がして、大山が俺の隣に並んだ。大柄なほうの足元に、使い込んだキャッチャーミットが置いてあった。" },
         { id: 'csecond-012', speaker: 'oyama', text: "あのデブ、使えそうだな。" },
         { id: 'csecond-013', text: "そう言いながら、大山は二人のほうへ歩き出した。" },
+      ],
+      next: 'tahara-and-komiya',
+    },
+    'tahara-and-komiya': {
+      title: '田原と小宮',
+      lines: [
+        { id: 'c26-001', text: "大山は、大柄な新入生の前で足を止めた。見上げるほどではないが、横に並ぶと、大山より肩幅があった。顔つきは穏やかで、急に前に立たれても、ミットを拾ってからゆっくり顔を上げた。" },
+        { id: 'c26-002', speaker: 'oyama', text: "それ、お前のか。俺の球、受けてみろよ。" },
+        { id: 'c26-003', speaker: 'tahara', text: "はい。田原大地です。よろしくお願いします。" },
+        { id: 'c26-004', text: "大山はもうグラウンドへ入っていた。田原は頭を上げ、マスクを持ってそのあとを歩き出した。" },
+        { id: 'c26-005', text: "入口の端にいたもう1人が、俺に会釈した。" },
+        { id: 'c26-006', speaker: 'komiya', text: "小宮裕也です。ショートをやってます。あの、今の、大山先輩ですよね？" },
+        { id: 'c26-007', speaker: 'hirano', text: "そうだけど。" },
+        { id: 'c26-008', speaker: 'komiya', text: "じゃあ僕も、あっちに行きます。強い打球を捕る練習がしたかったんです。" },
+        { id: 'c26-009', text: "小宮はそう言って、俺が返事をする間に、大山に声が届くところまで小走りで追いついた。日和がボールのカゴを置くと、内野ではノックが始まった。横のブルペンでは、田原がマスクをかぶって腰を落とした。" },
+      ],
+      choices: [
+        { text: '田原の捕球練習を見に行く', to: 'tahara-catching' },
+        { text: '小宮の用事を手伝う', to: 'komiya-fielding' },
+      ],
+    },
+    'tahara-catching': {
+      title: '田原と小宮',
+      lines: [
+        { id: 'c26a-001', text: "俺がブルペンの横に着くと、大山の1球目が低く来た。先輩捕手でも受ければミットが下がるあたりだ。田原は手首を少し返しただけで捕り、その位置でミットを止めた。" },
+        { id: 'c26a-002', speaker: 'oyama', text: "おっ。俺の球、いきなり捕れるとはな。" },
+        { id: 'c26a-003', speaker: 'tahara', text: "そうですか。わりと普通の球だっぺ。" },
+        { id: 'c26a-004', speaker: 'oyama', text: "今のは1割だ。もう1球いくぞ。" },
+        { id: 'c26a-005', speaker: 'tahara', text: "はい。いつでもどうぞ。" },
+        { id: 'c26a-006', text: "大山が投げた瞬間、ブルペンの脇を歩いていた3年の先輩が足を止めた。さっきよりずっと大きな音がした。田原は同じ高さでミットを止め、立って球を返した。" },
+        { id: 'c26a-007', text: "柵の向こうを美空が通った。日和に部室の鍵を返して、帰るところだった。田原はマスクを取って頭を下げた。" },
+        { id: 'c26a-008', speaker: 'tahara', text: "監督、べっぴんさんですね。おらの嫁に来てくれませんか。" },
+        { id: 'c26a-009', speaker: 'senpai', text: "何ぃ!?" },
+        { id: 'c26a-010', text: "田原が頭を上げたときには、美空はもう柵の先を曲がっていた。大山は返ってきた球を握ったまま、田原をにらんだ。田原はもうマスクをかぶり直していた。" },
+      ],
+      next: 'rookies-teirei',
+    },
+    'komiya-fielding': {
+      title: '田原と小宮',
+      lines: [
+        { id: 'c26b-001', text: "小宮がノック用の球を拾い集めていたので、俺は空いたカゴを持ってそばへ行った。内野では、大山がバットを手に取ったところだった。" },
+        { id: 'c26b-002', speaker: 'komiya', text: "大山先輩、1本お願いしてもいいですか。思いきり打ってください。" },
+        { id: 'c26b-003', text: "大山が三遊間へ打った。小宮は横へ飛びつく前に、打球が跳ねる場所へ1歩出た。低いバウンドをすくって立ち上がると、そのまま1塁へ投げた。" },
+        { id: 'c26b-004', speaker: 'oyama', text: "お前、足は使えるな。" },
+        { id: 'c26b-005', speaker: 'komiya', text: "大山先輩に打ってもらえるなら、毎日でも鍛えられますね。" },
+        { id: 'c26b-006', text: "大山が次の球を取りに戻ったところで、別の組のボールが、通りかかった美空の足元まで転がった。美空が立ち止まる。小宮は俺の手からカゴを取ると、その球を拾いに走った。" },
+        { id: 'c26b-007', speaker: 'komiya', text: "監督、お手を煩わせません。" },
+        { id: 'c26b-008', speaker: 'misora', text: "助かる。" },
+        { id: 'c26b-009', text: "美空は空いた両手をそのまま上着のポケットに入れて、歩いていった。小宮はカゴへ球を戻した。俺にカゴを返すときまで、口元が緩んでいた。" },
+      ],
+      next: 'rookies-teirei',
+    },
+    'rookies-teirei': {
+      title: '田原と小宮',
+      lines: [
+        { id: 'c26e-001', text: "5月。帝嶺学院との練習試合で、大山が先発した。最初の回、田原のミットが鳴るたび、帝嶺のベンチでは次の打者が素振りをやめてマウンドを見た。田原は1球受けるごとに、大山の胸へ球を返した。" },
+        { id: 'c26e-002', text: "途中からショートに入った小宮は、左中間への打球で、外野からの返球を受けた。捕ると同時に3塁へ投げたので、1塁から走ってきた選手は2塁を回ったところで足を止め、ベースへ引き返した。" },
+        { id: 'c26e-003', text: "試合が終わって道具を片づけていると、小宮が帝嶺の新庄を見つけ、帽子を取って近づいた。" },
+        { id: 'c26e-004', speaker: 'komiya', text: "新庄さん。鳳翔の小宮です。ご挨拶が遅くなりました。" },
+        { id: 'c26e-005', speaker: 'shinjo', text: "小宮くん、だよね。さっきの中継、早かったね。" },
+        { id: 'c26e-006', speaker: 'komiya', text: "ありがとうございます。母が、いつも御社に……。" },
+        { id: 'c26e-007', text: "新庄が「御社？」と聞き返す前に、帝嶺の選手が用具を運ぶのを手伝ってくれと声をかけた。" },
+        { id: 'c26e-008', speaker: 'shinjo', text: "ごめん。また対戦したときに。" },
+        { id: 'c26e-009', text: "新庄が道具を取りに行くと、小宮は帽子をかぶり直した。俺がそばを通ったときには、もう鳳翔の荷物を持ち上げていた。" },
+        { id: 'c26e-010', text: "俺は新しいスコアブックに、途中から入った小宮の名前を書き足した。田原の名前は、先発の欄に最初から書いてあった。" },
       ],
     },
   },

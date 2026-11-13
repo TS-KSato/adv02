@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭から「二冊目」までの試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭から「田原と小宮」までの試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -236,8 +236,13 @@ async function practicePlaythrough(browser, choiceIndex) {
     await readScene('tsuyoshi-end');
     await readScene('parents-and-press');
     await readScene('second-scorebook');
+    await readScene('tahara-and-komiya');
+    const rookieChoice = G.scenes['tahara-and-komiya'].choices[choiceIndex];
+    await clickText(page, rookieChoice.text);
+    await readScene(rookieChoice.to);
+    await readScene('rookies-teirei');
     await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-    check('「二冊目」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
+    check('「田原と小宮」を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
     check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
   } finally {
     await ctx.close();
