@@ -283,6 +283,7 @@ async function practicePlaythrough(browser, choiceIndex) {
       await readScene('teirei-ninth');
       await readScene('teirei-battery-brief');
       await readScene('teirei-win');
+      await readScene('last-out');
     }
     await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
     check('勝利側・敗退側それぞれの末尾を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
