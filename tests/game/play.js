@@ -1,4 +1,4 @@
-// 『きみのための甲子園』の冒頭一場面の試験（ブラウザ）。
+// 『きみのための甲子園』の冒頭から龍成戦の敗退または優勝エンドまでの試験（ブラウザ）。
 // 公開先と同じ /adv02/ の下から配信し、クリックとキーだけで動かして確かめる。
 // 本文は作品データ（game.js）から読み、画面の DOM と照らす。API で行位置を飛ばして合格にはしない。
 // 文字の表示速度を 0 にするのは、一行ずつの確認を速くするための試験の設定だけ（行の進みはクリックで行う）。
@@ -127,36 +127,173 @@ async function playthrough(ctx, label, viewport, withShots) {
   check(label + '：23 行すべてで、行ID・話者・本文・行位置が docs と一致', linesOk, details.slice(0, 3).join(' | '));
   check(label + '：23 行すべてで、見切れ・横スクロールがない', fitsOk, details.slice(0, 3).join(' | '));
 
-  // 最後の行の次の入力で、タイトルへ戻る（キット標準の「ここまで」。物語の完結ではない）
   await advance(page);
-  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
-  const toast = await page.textContent('.kit-toast');
-  check(label + '：最後の行の次の入力でタイトルへ戻る', (await show(page)).screen === 'title');
-  check(label + '：「この作品はここまでです。」が出る', toast.includes('この作品はここまでです。'), toast);
-  check(label + '：読了後は「つづきから」が押せない（自動保存の位置が消える）', await page.getByRole('button', { name: 'つづきから', exact: true }).isDisabled());
-  const saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)), SAVE_KEY);
-  check(label + '：保存の自動位置は null', saved.auto === null);
-
-  // 読了後も、何も送られず、タイトルのボタンも押されない（無限送り・誤作動の確認）
-  await page.waitForTimeout(1200);
-  const after = await show(page);
-  check(label + '：読了後、行位置もタイトルも変わらない', after.screen === 'title' && after.lineId === 'c01-023', JSON.stringify(after));
-  await page.keyboard.press('Space');
-  await page.waitForTimeout(400);
-  check(label + '：タイトルで Space を押しても、はじめからにならない', (await show(page)).screen === 'title');
+  await waitFull(page, G.scenes['practice-start'].lines[0].text);
+  check(label + '：二十三行のあとに放課後の練習へ進む', (await show(page)).lineId === 'c02-001');
   return page;
 }
 
-// 読了済みの場面を、既読SKIPで最後まで送る。最後の行の後はタイトルで止まり、SKIP の状態も解除される
-async function skipToEnd(page) {
-  section('既読SKIP：読了済みの冒頭を最後まで送り、タイトルで止まる');
+// 既読SKIPは冒頭から放課後へ進み、未読の行では止まる
+async function skipIntoPractice(page) {
+  section('既読SKIP：冒頭を越え、練習の未読行で止まる');
+  await clickText(page, 'タイトル');
   await clickText(page, 'はじめから');
   await clickText(page, '既読SKIP');
-  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 20000 });
-  await page.waitForTimeout(800);
+  await page.waitForFunction(() => KIT.s.lineId === 'c02-002' && !KIT.s.skip_on, null, { timeout: 20000 });
   const s = await show(page);
-  check('既読SKIPは最後の行まで送り、タイトルで止まる', s.screen === 'title' && s.lineId === 'c01-023', JSON.stringify(s));
-  check('止まった後、SKIP の状態は解除されている', !s.skip);
+  check('冒頭から既読の続きへ進み、最初の未読行で止まる', s.scene === 'practice-start' && s.lineId === 'c02-002' && !s.skip);
+}
+
+async function practicePlaythrough(browser, choiceIndex) {
+  const ctx = await browser.newContext({ viewport: SMALL_LANDSCAPE });
+  try {
+    const page = await openGame(ctx, { speedZero: true });
+    await clickText(page, 'はじめから');
+    const start = G.scenes['practice-start'];
+    for (let i = 0; i < LINES.length; i++) await advance(page);
+    const choice = start.choices[choiceIndex];
+    section('最初の選択肢：' + choice.text);
+    async function readScene(sceneKey, { reloadAfterFirst = false } = {}) {
+      const lines = G.scenes[sceneKey].lines;
+      const issues = [];
+      for (const [index, line] of lines.entries()) {
+        const s = await show(page);
+        const speaker = line.speaker ? G.speakers[line.speaker] : '';
+        if (s.scene !== sceneKey || s.lineId !== line.id || s.prose !== line.text || s.speaker !== speaker) issues.push(line.id + ' 本文');
+        if (!fits(await layout(page))) issues.push(line.id + ' 見切れ');
+        if (reloadAfterFirst && index === 0) {
+          await page.reload();
+          await page.waitForFunction(() => window.KIT && window.KIT.s);
+          await clickText(page, 'つづきから');
+          const back = await show(page);
+          check('選んだ練習の途中でリロードして同じ行に戻る', back.scene === sceneKey && back.lineId === line.id && back.prose === line.text);
+        }
+        await advance(page);
+      }
+      check(sceneKey + ' の本文・話者が正しく表示され、横向き 667×375 で収まる', issues.length === 0, issues.slice(0, 4).join(' | '));
+    }
+    await readScene('practice-start');
+    check('内野と外野の二つの選択肢が表示される', await page.getByRole('button', { name: start.choices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: start.choices[1].text, exact: true }).isVisible());
+    await clickText(page, choice.text);
+    await readScene(choice.to, { reloadAfterFirst: choiceIndex === 0 });
+    await readScene('practice-end');
+    await readScene('scorer-first');
+    await readScene('coach-arrival');
+    await readScene('marriage-start');
+    const marriageChoices = G.scenes['marriage-start'].choices;
+    check('大山と先輩の二つの選択肢が表示される', await page.getByRole('button', { name: marriageChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: marriageChoices[1].text, exact: true }).isVisible());
+    const marriageChoice = marriageChoices[choiceIndex];
+    await clickText(page, marriageChoice.text);
+    await readScene(marriageChoice.to);
+    await readScene('marriage-end');
+    await readScene('after-ten-more');
+    await readScene('coaching-start');
+    const coachingChoices = G.scenes['coaching-start'].choices;
+    check('指示を聞くか資料を見返すか選べる', await page.getByRole('button', { name: coachingChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: coachingChoices[1].text, exact: true }).isVisible());
+    const coachingChoice = coachingChoices[choiceIndex];
+    await clickText(page, coachingChoice.text);
+    await readScene(coachingChoice.to);
+    await readScene('coaching-end');
+    await readScene('fifty-laps');
+    await readScene('convenient-scorer');
+    await readScene('desk-corner');
+    await readScene('hiyori-start');
+    const hiyoriChoices = G.scenes['hiyori-start'].choices;
+    check('飲み物か用具の片づけを選べる', await page.getByRole('button', { name: hiyoriChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: hiyoriChoices[1].text, exact: true }).isVisible());
+    const hiyoriChoice = hiyoriChoices[choiceIndex];
+    await clickText(page, hiyoriChoice.text);
+    await readScene(hiyoriChoice.to);
+    await readScene('hiyori-end');
+    await readScene('kawamoto-visit');
+    await readScene('testimony-start');
+    await readScene('testimony-memory');
+    await readScene('testimony-present');
+    const testimonyChoices = G.scenes['testimony-present'].choices;
+    check('回想のあと、平野と大山のどちらの反応を見るか選べる', await page.getByRole('button', { name: testimonyChoices[0].text, exact: true }).isVisible() && await page.getByRole('button', { name: testimonyChoices[1].text, exact: true }).isVisible());
+    const testimonyChoice = testimonyChoices[choiceIndex];
+    await clickText(page, testimonyChoice.text);
+    await readScene(testimonyChoice.to);
+    await readScene('testimony-end');
+    await readScene('kawamoto-results');
+    await readScene('shinjo-first-meeting');
+    await readScene('summer-roster');
+    await readScene('regional-quarterfinal');
+    await readScene('sasaki-called');
+    await readScene('sasaki-home-run');
+    await readScene('newspaper-and-scorebook');
+    await readScene('what-her-face-means');
+    await readScene('oyama-injury');
+    await readScene('ryusei-defeat');
+    await readScene('tears-after-the-final');
+    await readScene('blank-line');
+    await readScene('oyama-return');
+    await readScene('nakata-handover');
+    await readScene('gen-reads-the-records');
+    await readScene('tsuyoshi-sighting');
+    const sightingChoice = G.scenes['tsuyoshi-sighting'].choices[choiceIndex];
+    await clickText(page, sightingChoice.text);
+    await readScene(sightingChoice.to);
+    await readScene('tsuyoshi-end');
+    await readScene('parents-and-press');
+    await readScene('second-scorebook');
+    await readScene('tahara-and-komiya');
+    const rookieChoice = G.scenes['tahara-and-komiya'].choices[choiceIndex];
+    await clickText(page, rookieChoice.text);
+    await readScene(rookieChoice.to);
+    await readScene('rookies-teirei');
+    await readScene('finish-it-this-year');
+    await readScene('nohara-reanalysis');
+    await readScene('ryusei-rematch');
+    const prep = G.scenes['ryusei-rematch'].choices[choiceIndex];
+    await clickText(page, prep.text);
+    await readScene(prep.to);
+    await readScene('ryusei-middle');
+    if (choiceIndex === 1) {
+      await readScene('ryusei-recovery-choice');
+      const miss = G.scenes['ryusei-recovery-choice'].choices[1];
+      await clickText(page, miss.text);
+      await readScene(miss.to);
+    }
+    await readScene('ryusei-late');
+    await readScene(choiceIndex === 0 ? 'ryusei-win' : 'ryusei-loss');
+    await readScene(choiceIndex === 0 ? 'bus-to-koshien' : 'ryusei-summer');
+    if (choiceIndex === 0) {
+      await readScene('national-opponents');
+      await readScene('konan-press');
+      const pressChoice = G.scenes['konan-press'].choices[0];
+      await clickText(page, pressChoice.text);
+      await readScene(pressChoice.to);
+      await readScene('konan-coach-brief');
+      await readScene('konan-ninth');
+      await readScene('konan-win');
+      await readScene('aotake-round-three');
+      await readScene('aotake-quarterfinal');
+      const heightChoice = G.scenes['aotake-quarterfinal'].choices[0];
+      await clickText(page, heightChoice.text);
+      await readScene(heightChoice.to);
+      await readScene('aotake-game');
+      await readScene('aotake-battery-brief');
+      await readScene('aotake-eighth');
+      await readScene('aotake-win');
+      await readScene('teirei-final');
+      const shinjoChoice = G.scenes['teirei-final'].choices[0];
+      await clickText(page, shinjoChoice.text);
+      await readScene(shinjoChoice.to);
+      await readScene('teirei-game');
+      await readScene('teirei-ninth');
+      await readScene('teirei-battery-brief');
+      await readScene('teirei-win');
+      await readScene('last-out');
+      await readScene('first-koshien-title');
+      await readScene('public-proposal');
+      await readScene('real-promise');
+    }
+    await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 });
+    check('勝利側・敗退側それぞれの末尾を読み終えるとタイトルへ戻る', (await show(page)).screen === 'title');
+    check('試遊を読み終えると自動保存位置が消える', (await page.evaluate(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY)).auto === null);
+  } finally {
+    await ctx.close();
+  }
 }
 
 // 文字の流れ中の一回目のクリックは全文を出し、行は進まない。次のクリックで進む。キーでも進む。
@@ -409,7 +546,7 @@ async function main() {
 
     const desk = await browser.newContext({ viewport: DESKTOP });
     const deskPage = await playthrough(desk, 'デスクトップ 1280×720', DESKTOP, true);
-    await skipToEnd(deskPage);
+    await skipIntoPractice(deskPage);
     await desk.close();
 
     const land = await browser.newContext({ viewport: LANDSCAPE });
@@ -424,6 +561,8 @@ async function main() {
     await portraitGuide(browser);
     await smallLandscape(browser);
     await legibility(browser);
+    await practicePlaythrough(browser, 0);
+    await practicePlaythrough(browser, 1);
 
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
