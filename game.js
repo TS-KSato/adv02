@@ -1,10 +1,10 @@
-// 『きみのための甲子園』の作品データ。冒頭から甲子園準決勝までの初稿。
+// 『きみのための甲子園』の作品データ。冒頭から甲子園決勝までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
 // 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
-  dataVersion: '2026.11-3',   // 青岳学園戦の準備・回収フラグを追加
+  dataVersion: '2026.11-4',   // 帝嶺学院戦の準備・回収フラグを追加
   kit: '0.1.0',               // 使うキットの版（kit/releases/0.1.0）
 
   start: { scene: 'opening-ground', line: 'c01-001' },
@@ -15,7 +15,8 @@ window.KIT_GAME = {
   // 2年目の大会で、試合を左右する情報を確認したか
   flags: { ryuseiPrep: { type: 'boolean', default: false }, ryuseiRecovery: { type: 'boolean', default: false },
     konanPrep: { type: 'boolean', default: false }, konanRecovery: { type: 'boolean', default: false },
-    aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false } },
+    aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
+    teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
   // 素材。今回は仮背景の1枚だけ
   assets: {
@@ -1877,6 +1878,7 @@ window.KIT_GAME = {
         { id: 'c32k-004', text: "3対2。9回は別の先輩がマウンドに立った。最後のフライをセンターが捕ると、大山はベンチから真っ先に出た。" },
         { id: 'c32k-005', text: "日和がスコアブックの隣に、決勝の予定が載った紙を置いた。俺はすぐにはそちらを見られなかった。最後のアウトを書いて、日和に「勝ったね」と言われてから、ようやく紙を受け取った。" },
       ],
+      next: 'teirei-final',
     },
     'aotake-loss': {
       title: '連戦と準決勝',
@@ -1899,6 +1901,121 @@ window.KIT_GAME = {
         { id: 'c32m-006', text: "俺は監督の横顔を見た。何があと一つだったのか、聞けば答えてくれたかもしれない。グラウンドで最初の打者が構えたので、俺も前を向いた。" },
       ],
     },
+    'teirei-final': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33a-001', text: "決勝の朝、スタンド下の通路にある長机で、日和がタブレットを開いていた。帝嶺学院の準決勝。新庄が打席に入るところで、映像が止まっていた。" },
+        { id: 'c33a-002', speaker: 'hiyori', text: "春にうちとやったときの映像もあるよ。" },
+        { id: 'c33a-003', text: "春の練習試合で、大山の外寄りの直球に振り遅れた新庄は、次の打席では足を早く踏み出し、同じコースをライトへ打った。昨日の映像でも、新庄の前足が、投手の腕が出るより先に土を踏んでいる。" },
+        { id: 'c33a-004', text: "机の端には帝嶺の投手の資料もあった。先輩たちが打撃の確認に来るまでに、まだ整理できていない分がある。" },
+      ],
+      choices: [
+        { text: '春と今大会の新庄の打席を比べる', to: 'teirei-prepared', set: { teireiPrep: true } },
+        { text: '投手陣全体の資料を整理する', to: 'teirei-unprepared' },
+      ],
+    },
+    'teirei-prepared': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33b-001', text: "春と昨日の映像を、投手が踏み出すところから見比べた。外の直球をきれいに打ち返した場面では、どちらの映像でも前足が早めに着いていた。そこで体が前へ流れないから、外の球を手元まで待てる。" },
+        { id: 'c33b-002', text: "俺は新庄の打順の横に、「前足が早い。外の直球に注意」と書いた。" },
+      ],
+      next: 'teirei-game',
+    },
+    'teirei-unprepared': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33c-001', text: "帝嶺の投手ごとに、先発した試合と途中から投げた試合を分けた。確認に来た先輩に渡すと、そのまま打撃のミーティングが始まった。" },
+      ],
+      next: 'teirei-game',
+    },
+    'teirei-game': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33d-001', text: "鳳翔は先攻だった。1回裏、先頭の新庄が大山の速球をセンター前へ打った。大山は次の打者に投げるまで、新庄が1塁で取ったリードを何度も見ていた。" },
+        { id: 'c33d-002', text: "そこから、どちらも相手を引き離せなかった。6回に鳳翔が勝ち越すと、帝嶺は8回裏に犠牲フライで追いついた。3対3。外野からの返球を受けた田原がベンチに戻ってきたときには、もう9回の先頭打者がヘルメットをかぶっていた。" },
+      ],
+      next: (f) => f.teireiPrep ? 'teirei-ninth' : 'teirei-recovery-choice',
+    },
+    'teirei-recovery-choice': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33e-001', text: "俺は8回の記録を開き、新庄の打席を思い返した。打球はファウルだったが、外の直球に振り遅れていなかった。投手が投げる直前、前足がずいぶん早く着いた気がする。" },
+        { id: 'c33e-002', text: "田原は俺の隣で水を飲んでいた。反対側では、日和が9回に回りそうな帝嶺の走者を確認していた。" },
+      ],
+      choices: [
+        { text: '新庄の踏み出しを田原と照合する', to: 'teirei-recovered', set: { teireiRecovery: true } },
+        { text: '残りの走者の傾向をまとめる', to: 'teirei-unrecovered' },
+      ],
+    },
+    'teirei-recovered': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33f-001', speaker: 'hirano', text: "さっきの新庄、前足が着くの早くなかった？" },
+        { id: 'c33f-002', speaker: 'tahara', text: "ええ。外に構えたとき、早かったです。球は引きつけてるんですけど。" },
+        { id: 'c33f-003', text: "俺は春の打席でも同じ動きで外を打ったと伝え、スコアブックに書き足した。" },
+      ],
+      next: 'teirei-ninth',
+    },
+    'teirei-unrecovered': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33g-001', text: "俺は日和と、代走に出そうな選手を確認した。9回表が始まり、田原に新庄の足のことは聞けなかった。" },
+      ],
+      next: 'teirei-ninth',
+    },
+    'teirei-ninth': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33h-001', text: "9回表。大山が内寄りの球を振り抜くと、白球は左翼席へ飛び込んだ。4対3。ホームを踏んで戻ってきた大山は、俺の横を通るときにはもう、グラブを取りに手を伸ばしていた。" },
+        { id: 'c33h-002', text: "その裏、帝嶺は2アウトから8番と9番が続けて安打を打った。走者は1・2塁。打順が先頭に戻り、場内アナウンスが新庄の名前を呼んだ。" },
+      ],
+      next: (f) => (f.teireiPrep || f.teireiRecovery) ? 'teirei-battery-brief' : 'teirei-loss',
+    },
+    'teirei-battery-brief': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33i-001', text: "帝嶺が1塁に代走を送った。球審が交代を確認しているあいだに、ベンチの前まで来た田原を呼び止めた。" },
+        { id: 'c33i-002', speaker: 'hirano', text: "新庄、前足が早くなってる。春に外の真っすぐを打ったときと同じだ。あの球を待ってるかもしれない。" },
+        { id: 'c33i-003', text: "田原は新庄の素振りを一度見た。" },
+        { id: 'c33i-004', speaker: 'tahara', text: "分かりました。外からは入りません。" },
+        { id: 'c33i-005', text: "田原はマウンドまで行き、大山に短く何か言った。大山は新庄を一度見て、グラブの中で球を握り直した。" },
+      ],
+      next: 'teirei-win',
+    },
+    'teirei-win': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33j-001', text: "田原が右打者の内角、膝の近くに構えた。大山が投げた球は、真っすぐに見えて、手元で沈んだ。" },
+        { id: 'c33j-002', text: "新庄のバットは先に出た。打球が二遊間へ転がる。抜けると思ったところに、小宮が横から飛び込んだ。" },
+        { id: 'c33j-003', text: "グラブに入った。小宮は立たなかった。片膝をついたまま、1塁へ腕を振った。" },
+        { id: 'c33j-004', text: "1塁手がベースに片足を残し、腕を伸ばした。新庄の足がベースを踏むのと、球がミットに入るのが、俺にはほとんど同時に見えた。塁審の拳が上がった。4対3。試合が終わった。" },
+      ],
+    },
+    'teirei-loss': {
+      title: '帝嶺学院との決勝',
+      lines: [
+        { id: 'c33k-001', text: "田原が外に構えた。大山の直球が来るより早く、新庄の前足が土を踏んだ。" },
+        { id: 'c33k-002', text: "打球が右翼線の内側に落ち、フェンスまで転がった。2塁走者がホームを踏む。1塁から走ってきた選手も3塁を回った。" },
+        { id: 'c33k-003', text: "返球が来た。田原が腕を伸ばしたときには、走者の手がもうホームに触れていた。" },
+        { id: 'c33k-004', text: "4対5。帝嶺の選手が一斉に飛び出して、新庄のところへ走っていった。大山はマウンドに立ったまま、田原のミットを見ていた。" },
+      ],
+      next: 'teirei-champion-shinjo',
+    },
+    'teirei-champion-shinjo': {
+      title: '優勝したのは、彼だった',
+      lines: [
+        { id: 'c33l-001', text: "表彰が終わったあと、スタンド下の通路で新庄が美空に声をかけた。優勝旗を運ぶ帝嶺の選手たちが、少し離れたところで待っていた。" },
+        { id: 'c33l-002', speaker: 'shinjo', text: "神条監督。今日の最後の打席、見ていただけましたか。" },
+        { id: 'c33l-003', text: "美空は足を止めた。新庄の顔を少し睨むように見て、何も言わずに振り向いた。通路の先で日和が鞄を持って待っていた。" },
+        { id: 'c33l-004', text: "新庄は美空を追わなかった。しばらく背中を見送ってから、小さく息を吐いた。" },
+        { id: 'c33l-005', speaker: 'shinjo', text: "……あの人にとって、俺は最後に倒す相手だったんだな。" },
+        { id: 'c33l-006', text: "帝嶺の選手が「柔斗、写真」と呼んだ。新庄は「今行く」と返し、そちらへ歩きかけてから、俺に向き直った。" },
+        { id: 'c33l-007', speaker: 'shinjo', text: "プロでも野球を続けるつもりです。大山くんにも、またやろうって伝えてください。" },
+        { id: 'c33l-008', text: "大山に伝えるまでもなかった。少し先で待っていた大山は、俺が追いつくと「来年は俺が取る」とだけ言った。" },
+        { id: 'c33l-009', text: "スコアブックは鞄に入れたはずだった。バスに乗ると、俺はまた出して、9回裏を開いた。" },
+      ],
+    },
   },
 
   // 演出は行IDで指定する。今回は冒頭の背景だけ
@@ -1908,8 +2025,9 @@ window.KIT_GAME = {
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
   migrations: {
-    '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false }) },
-    '2026.11-1': { lines: 'identity', flags: (f) => ({ ryuseiPrep: f.ryuseiPrep, ryuseiRecovery: f.ryuseiRecovery, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false }) },
-    '2026.11-2': { lines: 'identity', flags: (f) => ({ ...f, aotakePrep: false, aotakeRecovery: false }) },
+    '2026.10-1': { lines: 'identity', flags: () => ({ ryuseiPrep: false, ryuseiRecovery: false, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false, teireiPrep: false, teireiRecovery: false }) },
+    '2026.11-1': { lines: 'identity', flags: (f) => ({ ryuseiPrep: f.ryuseiPrep, ryuseiRecovery: f.ryuseiRecovery, konanPrep: false, konanRecovery: false, aotakePrep: false, aotakeRecovery: false, teireiPrep: false, teireiRecovery: false }) },
+    '2026.11-2': { lines: 'identity', flags: (f) => ({ ...f, aotakePrep: false, aotakeRecovery: false, teireiPrep: false, teireiRecovery: false }) },
+    '2026.11-3': { lines: 'identity', flags: (f) => ({ ...f, teireiPrep: false, teireiRecovery: false }) },
   },
 };

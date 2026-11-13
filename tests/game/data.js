@@ -24,7 +24,7 @@ check('固定版の検証に通る', v.ok, v.errors.join(' / '));
 section('作品の識別子・版');
 check('作品IDは novelgame02-koshien', G.id === 'novelgame02-koshien', G.id);
 check('作品名は きみのための甲子園', G.title === 'きみのための甲子園', G.title);
-check('作品データの版は 2026.11-3', G.dataVersion === '2026.11-3', G.dataVersion);
+check('作品データの版は 2026.11-4', G.dataVersion === '2026.11-4', G.dataVersion);
 check('使うキットの版は 0.1.0', G.kit === '0.1.0', G.kit);
 const kitJs = read('kit/releases/0.1.0/kit.js');
 const kitVersion = (kitJs.match(/const KIT_VERSION = '([^']+)'/) || [])[1];
@@ -56,6 +56,15 @@ check('港南工業戦の旧版保存から両試合の選択と保存位置を�
   konanMigrated.mode === 'migrated' && konanMigrated.record.auto?.at === 'c31i-007' &&
   Object.entries(konanFlags).every(([k, v]) => konanMigrated.record.auto.flags[k] === v) &&
   konanMigrated.record.auto.flags.aotakePrep === false && konanMigrated.record.auto.flags.aotakeRecovery === false);
+const aotakeFlags = { ...konanFlags, aotakePrep: false, aotakeRecovery: true };
+const aotakeVersion = { ...G, dataVersion: '2026.11-3', flags: Object.fromEntries(Object.keys(aotakeFlags).map(k => [k, G.flags[k]])) };
+const aotakeRecord = { ...oldRecord, dataVersion: aotakeVersion.dataVersion, flagSchema: saves.flagSchema(aotakeVersion),
+  auto: { at: G.scenes['aotake-win'].lines.at(-1).id, flags: aotakeFlags, dataVersion: aotakeVersion.dataVersion }, slots: [] };
+const aotakeMigrated = saves.assess(G, aotakeRecord, JSON.stringify(aotakeRecord));
+check('準決勝の旧版保存から選択と保存位置を引き継ぐ',
+  aotakeMigrated.mode === 'migrated' && aotakeMigrated.record.auto?.at === aotakeRecord.auto.at &&
+  Object.entries(aotakeFlags).every(([k, v]) => aotakeMigrated.record.auto.flags[k] === v) &&
+  aotakeMigrated.record.auto.flags.teireiPrep === false && aotakeMigrated.record.auto.flags.teireiRecovery === false);
 check('最初の分岐は勝敗フラグを変えない', G.scenes['practice-start'].choices.every(c => !c.set));
 
 section('場面と行');
@@ -450,11 +459,26 @@ check('連戦・青岳戦・E3の本文と話者が原稿と一致する', aotak
   return JSON.stringify(expected) === JSON.stringify(actual);
 }));
 check('事前に球の高さを記録すれば、田原と大山への伝達を経て勝つ',
-  tournamentPath('aotake-round-three', [0]) === 'aotake-round-three → aotake-quarterfinal → aotake-prepared → aotake-game → aotake-battery-brief → aotake-eighth → aotake-win');
+  tournamentPath('aotake-round-three', [0]) === 'aotake-round-three → aotake-quarterfinal → aotake-prepared → aotake-game → aotake-battery-brief → aotake-eighth → aotake-win → teirei-final');
 check('7回終了後に田原と確認しても、田原と大山への伝達を経て勝つ',
-  tournamentPath('aotake-round-three', [1, 0]) === 'aotake-round-three → aotake-quarterfinal → aotake-unprepared → aotake-game → aotake-recovery-choice → aotake-recovered → aotake-battery-brief → aotake-eighth → aotake-win');
+  tournamentPath('aotake-round-three', [1, 0]) === 'aotake-round-three → aotake-quarterfinal → aotake-unprepared → aotake-game → aotake-recovery-choice → aotake-recovered → aotake-battery-brief → aotake-eighth → aotake-win → teirei-final');
 check('球の高さを確認しなければ、青岳戦で敗れE3へ進む',
   tournamentPath('aotake-round-three', [1, 1]) === 'aotake-round-three → aotake-quarterfinal → aotake-unprepared → aotake-game → aotake-recovery-choice → aotake-unrecovered → aotake-eighth → aotake-loss → aotake-no-tomorrow');
+
+section('帝嶺学院との決勝');
+const finalKeys = ["teirei-final", "teirei-prepared", "teirei-unprepared", "teirei-game", "teirei-recovery-choice", "teirei-recovered", "teirei-unrecovered", "teirei-ninth", "teirei-battery-brief", "teirei-win", "teirei-loss", "teirei-champion-shinjo"];
+const finalDoc = read('docs/teirei-final-script.md').split(/^## .+$/m).slice(1);
+check('決勝・E4の本文と話者が原稿と一致する', finalDoc.length === finalKeys.length && finalKeys.every((key, i) => {
+  const expected = finalDoc[i].trim().split(/\n\n+/).filter(p => !p.startsWith('**選択肢'));
+  const actual = G.scenes[key].lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+  return JSON.stringify(expected) === JSON.stringify(actual);
+}));
+check('事前に新庄の打席を比べれば、田原への伝達を経て優勝する',
+  tournamentPath('teirei-final', [0]) === 'teirei-final → teirei-prepared → teirei-game → teirei-ninth → teirei-battery-brief → teirei-win');
+check('8回終了後に田原と照合しても、伝達を経て優勝する',
+  tournamentPath('teirei-final', [1, 0]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-recovered → teirei-ninth → teirei-battery-brief → teirei-win');
+check('新庄の踏み出しを確認しなければ、敗れてE4へ進む',
+  tournamentPath('teirei-final', [1, 1]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-unrecovered → teirei-ninth → teirei-loss → teirei-champion-shinjo');
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
