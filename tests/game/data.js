@@ -289,7 +289,14 @@ const handover = G.scenes['nakata-handover'];
 const handoverDoc = read('docs/nakata-handover-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const handoverLines = handover.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/nakata-handover-script.md と一致する', JSON.stringify(handoverDoc) === JSON.stringify(handoverLines));
-check('世代交代が現時点の最後の場面である', !handover.next && !handover.choices);
+check('世代交代から厳が資料を受け取る場面へ進む', handover.next === 'gen-reads-the-records' && !handover.choices);
+
+section('厳が語る娘の決意');
+const genRecords = G.scenes['gen-reads-the-records'];
+const genRecordsDoc = read('docs/gen-reads-the-records-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
+const genRecordsLines = genRecords.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
+check('本文と話者が docs/gen-reads-the-records-script.md と一致する', JSON.stringify(genRecordsDoc) === JSON.stringify(genRecordsLines));
+check('厳が語る娘の決意が現時点の最後の場面である', !genRecords.next && !genRecords.choices);
 
 section('話者');
 const speakerKeys = [...new Set(lines.map((l) => l.speaker).filter(Boolean))].sort();
