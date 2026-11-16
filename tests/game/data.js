@@ -1,6 +1,7 @@
 // 『きみのための甲子園』の作品データの試験（ブラウザ不要）。
 // 確かめること：固定版の検証に通る、作品IDと版、冒頭一場面の23行が docs/opening-script.md と一致する、
 // 話者・素材・演出がすべて定義済みで実在する、初練習の両経路が合流する、参照がすべて相対パスである。
+// 立ち絵：素材一覧と実ファイルが1対1、35枚が透過WebP・859×1,280px、登録と初回配置（大山・美空）が決めたとおり。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -553,9 +554,34 @@ check('平野の一人称の文に、開発者向けの注記が混ざらない'
 section('素材と演出（すべて定義済み・実在）');
 const bgs = G.assets.backgrounds;
 check('背景の登録は仮背景の一枚だけ', JSON.stringify(Object.keys(bgs)) === '["field-morning-temp"]', Object.keys(bgs).join(','));
-for (const group of ['portraits', 'cgs', 'bgm', 'ambience', 'se']) {
+for (const group of ['cgs', 'bgm', 'ambience', 'se']) {
   check('素材「' + group + '」は空（今回は未登録でよい）', Object.keys(G.assets[group] || {}).length === 0);
 }
+
+section('立ち絵（assets/portraits）');
+const portraitCsv = read('assets/portraits/portraits-list.csv').replace(/^﻿/, '').trim().split(/\r?\n/);
+check('素材一覧の見出しは ファイル名・人物・衣装・差分・使用予定場面', portraitCsv[0] === 'ファイル名,人物,衣装,差分,使用予定場面', portraitCsv[0]);
+const listedPortraits = portraitCsv.slice(1).map((row) => row.split(',')[0]);
+const portraitFiles = fs.readdirSync(path.join(ROOT, 'assets', 'portraits')).filter((f) => f !== 'portraits-list.csv').sort();
+check('素材一覧は35件で、重複がない', listedPortraits.length === 35 && new Set(listedPortraits).size === 35, String(listedPortraits.length));
+check('素材一覧と assets/portraits の実ファイルが1対1で一致する（一覧以外のファイルがない）',
+  JSON.stringify([...listedPortraits].sort()) === JSON.stringify(portraitFiles),
+  portraitFiles.filter((f) => !listedPortraits.includes(f)).concat(listedPortraits.filter((f) => !portraitFiles.includes(f))).join(','));
+const registered = Object.entries(G.assets.portraits).flatMap(([char, exprs]) => Object.entries(exprs).map(([expr, file]) => ({ char, expr, file })));
+check('35枚すべてが assets.portraits に一度ずつ登録されている',
+  registered.length === 35 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
+check('登録のキーは「人物-衣装と差分.webp」のファイル名から作り、人物のキーは話者と同じ',
+  registered.every((r) => r.file === 'assets/portraits/' + r.char + '-' + r.expr + '.webp' && Object.prototype.hasOwnProperty.call(G.speakers, r.char)),
+  registered.filter((r) => r.file !== 'assets/portraits/' + r.char + '-' + r.expr + '.webp' || !G.speakers[r.char]).map((r) => r.file).join(','));
+const badWebp = [];
+for (const f of portraitFiles) {
+  const b = fs.readFileSync(path.join(ROOT, 'assets', 'portraits', f));
+  const ok = b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8X' && (b[20] & 0x10) !== 0 &&
+    1 + b.readUIntLE(24, 3) === 859 && 1 + b.readUIntLE(27, 3) === 1280;
+  if (!ok) badWebp.push(f);
+}
+check('立ち絵はすべて透過付きの WebP で、859×1,280px', badWebp.length === 0, badWebp.join(','));
+check('PNG の原本や元画像の ZIP をリポジトリに入れていない', !portraitFiles.some((f) => /\.(png|zip)$/i.test(f)) && !fs.existsSync(path.join(ROOT, 'adv02-portraits-source-png.zip')));
 for (const [key, file] of Object.entries(bgs)) {
   check('背景 ' + key + ' のパスは作品基準の相対パス', file.startsWith('assets/') && !file.startsWith('/'), file);
   const full = path.join(ROOT, file);
@@ -565,7 +591,25 @@ for (const [key, file] of Object.entries(bgs)) {
     check('背景 ' + key + ' は PNG', sig === '89504e470d0a1a0a', sig);
   }
 }
-check('演出は背景の一つだけ（c01-001）', G.cues.length === 1 && G.cues[0].at === 'c01-001' && G.cues[0].bg === 'field-morning-temp', JSON.stringify(G.cues));
+check('背景の演出は一つだけ（c01-001）', G.cues.filter((c) => c.bg !== undefined).length === 1 && G.cues[0].at === 'c01-001' && G.cues[0].bg === 'field-morning-temp', JSON.stringify(G.cues));
+const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
+check('立ち絵の演出は、冒頭の大山と5-4の美空の登場・退場の4つだけ', JSON.stringify(portraitCues) === JSON.stringify([
+  { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },
+  { at: 'c01-021', portrait: { slot: 'right', clear: true } },
+  { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } },
+  { at: 'c05-001', portrait: { slot: 'right', clear: true } },
+]), JSON.stringify(portraitCues));
+check('視点人物の平野は立ち絵で出さない', portraitCues.every((c) => c.portrait.char !== 'hirano'));
+const shownAt = (id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map((x) => x.char + '/' + x.expr).join(',') || '-'; };
+const portraitSpans = [
+  ['c01-013', '-'], ['c01-014', 'oyama/school-winter-normal'], ['c01-020', 'oyama/school-winter-normal'], ['c01-021', '-'], ['c01-023', '-'],
+  ['c04-004', '-'], ['c04-005', 'misora/game-uniform-normal'], ['c04-037', 'misora/game-uniform-normal'], ['c05-001', '-'], ['c36-021', '-'],
+];
+check('行ごとの立ち絵：大山は c01-014〜c01-020、美空は c04-005〜c04-037 にだけ出る',
+  portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.map(([id]) => id + '=' + shownAt(id)).join(' '));
+const withPortrait = allIds.filter((id) => shownAt(id) !== '-');
+check('立ち絵が出る行は、その2区間（7行＋31行）の外にない', withPortrait.length === 7 + 31 &&
+  withPortrait.every((id) => /^c01-01[4-9]$|^c01-020$|^c04-/.test(id)), withPortrait.length + ' 行');
 
 section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');

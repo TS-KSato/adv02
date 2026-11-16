@@ -18,10 +18,74 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。今回は仮背景の1枚だけ
+  // 素材。背景は仮の1枚。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: { 'field-morning-temp': 'assets/backgrounds/field-morning-temp.png' },
-    portraits: {},
+    portraits: {
+      hirano: {
+        'school-winter-normal': 'assets/portraits/hirano-school-winter-normal.webp',
+        'practice-normal': 'assets/portraits/hirano-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/hirano-game-uniform-normal.webp',
+      },
+      oyama: {
+        'school-winter-normal': 'assets/portraits/oyama-school-winter-normal.webp',
+        'practice-normal': 'assets/portraits/oyama-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/oyama-game-uniform-normal.webp',
+        'school-summer-injured': 'assets/portraits/oyama-school-summer-injured.webp',
+      },
+      hiyori: {
+        'school-winter-normal': 'assets/portraits/hiyori-school-winter-normal.webp',
+        'jersey-normal': 'assets/portraits/hiyori-jersey-normal.webp',
+        'gym-normal': 'assets/portraits/hiyori-gym-normal.webp',
+        'school-summer-normal': 'assets/portraits/hiyori-school-summer-normal.webp',
+        'school-summer-bench': 'assets/portraits/hiyori-school-summer-bench.webp',
+      },
+      nakata: {
+        'practice-normal': 'assets/portraits/nakata-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/nakata-game-uniform-normal.webp',
+      },
+      sasaki: {
+        'practice-normal': 'assets/portraits/sasaki-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/sasaki-game-uniform-normal.webp',
+      },
+      tahara: {
+        'practice-normal': 'assets/portraits/tahara-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/tahara-game-uniform-normal.webp',
+      },
+      komiya: {
+        'practice-normal': 'assets/portraits/komiya-practice-normal.webp',
+        'game-uniform-normal': 'assets/portraits/komiya-game-uniform-normal.webp',
+      },
+      shinjo: {
+        'game-uniform-normal': 'assets/portraits/shinjo-game-uniform-normal.webp',
+        'school-winter-normal': 'assets/portraits/shinjo-school-winter-normal.webp',
+      },
+      muto: {
+        'game-uniform-normal': 'assets/portraits/muto-game-uniform-normal.webp',
+      },
+      nohara: {
+        'game-uniform-normal': 'assets/portraits/nohara-game-uniform-normal.webp',
+      },
+      tsuyoshi: {
+        'formal-suit-normal': 'assets/portraits/tsuyoshi-formal-suit-normal.webp',
+      },
+      kawamoto: {
+        'casual-normal': 'assets/portraits/kawamoto-casual-normal.webp',
+      },
+      gen: {
+        'casual-normal': 'assets/portraits/gen-casual-normal.webp',
+      },
+      misora: {
+        'windbreaker-normal': 'assets/portraits/misora-windbreaker-normal.webp',
+        'game-uniform-normal': 'assets/portraits/misora-game-uniform-normal.webp',
+        'bench-coat-normal': 'assets/portraits/misora-bench-coat-normal.webp',
+        'pantsuit-normal': 'assets/portraits/misora-pantsuit-normal.webp',
+        'pantsuit-first-day': 'assets/portraits/misora-pantsuit-first-day.webp',
+        'outing-normal': 'assets/portraits/misora-outing-normal.webp',
+        'loungewear-winter-chibi': 'assets/portraits/misora-loungewear-winter-chibi.webp',
+        'loungewear-summer-chibi': 'assets/portraits/misora-loungewear-summer-chibi.webp',
+      },
+    },
     cgs: {},
     bgm: {},
     ambience: {},
@@ -2145,6 +2209,14 @@ window.KIT_GAME = {
   // 演出は行IDで指定する。今回は冒頭の背景だけ
   cues: [
     { at: 'c01-001', bg: 'field-morning-temp' },
+    // 立ち絵の初回配置。平野は視点人物なので出さない。残りの場面は表示方針が決まってから置く。
+    // 冒頭：振り向いた平野が大山を見る行で出し、大山がグラウンドの入口へ歩いていく行で消す。
+    { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },
+    { at: 'c01-021', portrait: { slot: 'right', clear: true } },
+    // 5-4：美空が入口から歩いてくる行で出す。本文の「帽子の下から出た黒髪」に合わせ、帽子をかぶった試合用ユニフォームを使う。
+    // 美空は場面の終わりまでベンチの端にいるので、次の場面の最初の行で消す。
+    { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } },
+    { at: 'c05-001', portrait: { slot: 'right', clear: true } },
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
