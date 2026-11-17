@@ -424,6 +424,95 @@ async function portraitsInPlay(browser, viewport, label) {
   await ctx.close();
 }
 
+// 背景：冒頭の朝のフェンス、5-2で放課後のグラウンドへ入る行、最初の二択の両側と合流、場面転換直後の保存・つづきから。
+// 画面いっぱいに覆い（cover）、画像が読み込まれていることも確かめる。
+const bgNow = (page) => page.evaluate(() => {
+  const el = document.querySelector('.kit-bg');
+  const m = (el.style.backgroundImage || '').match(/url\("(.+)"\)/);
+  const r = el.getBoundingClientRect();
+  return { file: m ? m[1] : '', size: getComputedStyle(el).backgroundSize, fills: r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight };
+});
+const waitBgLoaded = (page) => page.waitForFunction(() => {
+  const m = (document.querySelector('.kit-bg').style.backgroundImage || '').match(/url\("(.+)"\)/);
+  if (!m) return false;
+  const img = new Image(); img.src = m[1];
+  return img.complete && img.naturalWidth > 0;
+}, null, { timeout: 8000 });
+const bgIs = async (page, key) => {
+  await waitBgLoaded(page);
+  const b = await bgNow(page);
+  const want = G.assets.backgrounds[key];
+  return { ok: b.file === want && b.size === 'cover' && b.fills, got: b };
+};
+async function advanceToPicking(page, lineId, pick) {
+  for (let i = 0; i < 400; i++) {
+    const s = await show(page);
+    if (s.lineId === lineId && !s.choices) return true;
+    if (s.choices) await page.locator('.kit-choice').nth(pick).click();
+    else await advance(page);
+  }
+  return false;
+}
+async function backgroundsInPlay(browser, viewport, label, pick) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  const branch = pick === 0 ? 'practice-infield' : 'practice-outfield';
+  section('背景（' + label + '・最初の二択は' + (pick === 0 ? '内野' : '外野') + '）：切り替えと、場面転換直後のつづきから');
+  await clickText(page, 'はじめから');
+  let r = await bgIs(page, 'hosho-field-fence-morning');
+  check('c01-001：冒頭は朝のフェンスの外（hosho-field-fence-morning）が画面いっぱいに出る', r.ok, JSON.stringify(r.got));
+  await advanceTo(page, 'c01-023');
+  await advance(page);
+  r = await bgIs(page, 'unassigned');
+  check('c02-001：教室の区間は、グラウンドの絵を残さず無地になる', (await show(page)).lineId === 'c02-001' && r.ok, JSON.stringify(r.got));
+  await advanceTo(page, 'c02-005');
+  check('c02-005：放課後、グラブを出すところまでは無地のまま', (await bgIs(page, 'unassigned')).ok);
+  await advance(page);
+  r = await bgIs(page, 'hosho-field-afternoon');
+  check('c02-006：練習着でグラウンドへ入る行で、放課後のグラウンドに切り替わる', (await show(page)).lineId === 'c02-006' && r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, G.scenes[branch].lines[0].id, pick);
+  r = await bgIs(page, 'hosho-field-afternoon');
+  check(branch + ' の最初の行：選んだ側でも放課後のグラウンド', r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, 'c02e-001', pick);
+  check('合流（c02e-001）：放課後のグラウンド', (await bgIs(page, 'hosho-field-afternoon')).ok);
+  await resumeHere(page);
+  r = await bgIs(page, 'hosho-field-afternoon');
+  check('合流の直後にリロードし、つづきからで同じ背景に戻る', (await show(page)).lineId === 'c02e-001' && r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, 'c03-001', pick);
+  await resumeHere(page);
+  check('場面が変わった直後（c03-001）に保存して、つづきからで放課後のグラウンド', (await show(page)).lineId === 'c03-001' && (await bgIs(page, 'hosho-field-afternoon')).ok);
+  await advanceToPicking(page, 'c03-012', pick);
+  check('c03-012：ベンチでスコアブックを任される行で、ベンチ付近に切り替わる', (await bgIs(page, 'hosho-field-bench')).ok);
+
+  // 後半の場面。実際に保存された自動セーブの位置だけを書き換え、リロードして「つづきから」で戻す
+  const resumeAt = async (lineId, flags) => {
+    await page.evaluate(([key, at, fl]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at, flags: { ...raw.auto.flags, ...fl } };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId, flags]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  const late = [
+    ['c20-001', {}, 'regional-stadium-dugout-sunset', '5-20：敗戦直後のベンチは夕日'],
+    ['c31a-001', { ryuseiPrep: true }, 'unassigned', '5-31：宿舎の区間は保留のため無地（前の場面の行きのバス・甲子園が残らない）'],
+    ['c31k-001', { ryuseiPrep: true }, 'bus-interior-sunset', 'E2：帰りのバスは西日'],
+    ['c32a-001', { ryuseiPrep: true, konanPrep: true }, 'koshien-dugout', '5-32：並び順で直前にあるE2のバスが残らず、甲子園のベンチ'],
+    ['c32m-002', { ryuseiPrep: true, konanPrep: true }, 'koshien-field', 'E3：観客席から決勝を見る'],
+    ['clastout-001', { ryuseiPrep: true, konanPrep: true, aotakePrep: true, teireiPrep: true }, 'koshien-dugout', '最後のアウト：並び順で直前にあるE4の帰りのバスが残らず、甲子園のベンチ'],
+  ];
+  for (const [lineId, flags, key, name] of late) {
+    const at = await resumeAt(lineId, flags);
+    r = await bgIs(page, key);
+    check(name + '（' + lineId + ' でつづきから）', at && r.ok, JSON.stringify(r.got));
+  }
+  await advance(page);
+  check('最後のアウトの次の行でも甲子園のベンチのまま', (await bgIs(page, 'koshien-dugout')).ok);
+  await snap(page, 'backgrounds-' + viewport.width + '-' + pick);
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -440,7 +529,7 @@ async function resumeAndManualSave(browser) {
   await page.waitForFunction(() => KIT.s.screen === 'play', null, { timeout: 5000 });
   const back = await show(page);
   check('つづきからで同じ行（c01-015）・話者（平野）・本文へ戻る', back.lineId === 'c01-015' && back.speaker === '平野' && back.prose === LINES[14].text && back.page === '15 / 23', JSON.stringify(back));
-  check('背景も戻る（仮背景）', back.bg.includes('field-morning-temp.png'), back.bg);
+  check('背景も戻る（朝のフェンスの外）', back.bg.includes('hosho-field-fence-morning.webp'), back.bg);
   check('つづきから の通知が出る', (await page.textContent('.kit-toast')).includes('つづきから再開しました'));
 
   section('手動セーブ：別の行へ進んでから、読込で戻る');
@@ -590,14 +679,19 @@ async function mountCheck(origin) {
   check('ルート直下の index.html は配信されない（404）', rootIndex.status === 404, String(rootIndex.status));
   const rootGame = await fetch(origin + '/game.js');
   check('ルート直下の game.js は配信されない（404）', rootGame.status === 404, String(rootGame.status));
-  for (const p of ['index.html', 'game.js', 'kit/releases/0.1.0/kit.js', 'kit/releases/0.1.0/kit.css', 'assets/backgrounds/field-morning-temp.png']) {
+  for (const p of ['index.html', 'game.js', 'kit/releases/0.1.0/kit.js', 'kit/releases/0.1.0/kit.css']) {
     const res = await fetch(BASE + p);
     await res.arrayBuffer();
     check('/adv02/ の下で ' + p + ' が 200', res.status === 200, String(res.status));
   }
-  const png = await fetch(BASE + 'assets/backgrounds/field-morning-temp.png');
-  check('背景の Content-Type は image/png', (png.headers.get('content-type') || '').startsWith('image/png'));
-  await png.arrayBuffer();
+  const missingBg = [];
+  for (const file of Object.values(G.assets.backgrounds)) {
+    const res = await fetch(BASE + file);
+    await res.arrayBuffer();
+    const type = res.headers.get('content-type') || '';
+    if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
+  }
+  check('/adv02/ の下で、登録した背景18枚がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 async function main() {
@@ -627,12 +721,16 @@ async function main() {
     await legibility(browser);
     await portraitsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await portraitsInPlay(browser, DESKTOP, '1280×720');
+    await backgroundsInPlay(browser, SMALL_LANDSCAPE, '667×375', 0);
+    await backgroundsInPlay(browser, DESKTOP, '1280×720', 1);
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
-    const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css', BASE + 'assets/backgrounds/field-morning-temp.png',
+    const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
+      ...['hosho-field-fence-morning', 'unassigned', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
+        'bus-interior-sunset', 'koshien-dugout', 'koshien-field'].map((k) => BASE + G.assets.backgrounds[k]),
       BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];
     check('必要な素材がすべて 200 で読み込まれた', needed.every((u) => OK_URLS.has(u)), needed.filter((u) => !OK_URLS.has(u)).join(' '));
   } finally {
