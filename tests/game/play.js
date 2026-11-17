@@ -360,6 +360,70 @@ async function skipUnreadAndRead(browser) {
   await ctx.close();
 }
 
+// 立ち絵：登場の行で出て、退場の行で消える。途中でリロードしても、つづきからでその行の立ち絵が戻る。
+// 横向きの小さな画面（667×375）では上半身寄り、PC（1280×720）では全身で、頭の上が切れない。
+const portraitNow = (page) => page.evaluate(() => [...document.querySelectorAll('.kit-portrait img')].map((img) => {
+  const r = img.getBoundingClientRect();
+  return { file: img.getAttribute('src'), loaded: img.complete && img.naturalWidth === 859 && img.naturalHeight === 1280, top: r.top, height: r.height, bottom: r.bottom };
+}));
+const waitPortraitLoaded = (page) => page.waitForFunction(() => [...document.querySelectorAll('.kit-portrait img')].every((i) => i.complete), null, { timeout: 8000 });
+// 選択肢があれば一つ目を選び、なければクリックで進めて、目的の行まで行く
+async function advanceTo(page, lineId) {
+  for (let i = 0; i < 400; i++) {
+    const s = await show(page);
+    if (s.lineId === lineId && !s.choices) return true;
+    if (s.choices) await page.locator('.kit-choice').first().click();
+    else await advance(page);
+  }
+  return false;
+}
+async function resumeHere(page) {
+  await page.reload();
+  await page.waitForFunction(() => window.KIT && window.KIT.s);
+  await clickText(page, 'つづきから');
+  await page.waitForFunction(() => KIT.s.screen === 'play', null, { timeout: 5000 });
+  await page.evaluate(() => { KIT.s.speed = 0; });
+  await waitPortraitLoaded(page);
+}
+async function portraitsInPlay(browser, viewport, label) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('立ち絵（' + label + '）：登場・退場・つづきから');
+  await clickText(page, 'はじめから');
+  await advanceTo(page, 'c01-013');
+  check('c01-013：大山の声だけの行では、まだ立ち絵がない', (await portraitNow(page)).length === 0);
+  await advance(page);
+  await waitPortraitLoaded(page);
+  let p = await portraitNow(page);
+  check('c01-014：振り向いた行で、大山（冬の学校制服）が出る', p.length === 1 && p[0].file === 'assets/portraits/oyama-school-winter-normal.webp' && p[0].loaded, JSON.stringify(p));
+  check('立ち絵の頭の上が画面の上で切れない', p.length === 1 && p[0].top >= 0, JSON.stringify(p));
+  if (viewport.height <= 500) check('小さな横向きでは上半身寄り（画像が画面の高さより大きい）', p[0].height > viewport.height, JSON.stringify(p));
+  else check('PC では全身（画像の下端が画面の下端、高さは画面の78%）', Math.abs(p[0].bottom - viewport.height) < 2 && Math.abs(p[0].height - viewport.height * 0.78) < 2, JSON.stringify(p));
+  await advanceTo(page, 'c01-016');
+  await resumeHere(page);
+  p = await portraitNow(page);
+  check('c01-016 でリロードし、つづきからで大山の立ち絵が戻る', (await show(page)).lineId === 'c01-016' && p.length === 1 && p[0].file.endsWith('oyama-school-winter-normal.webp') && p[0].loaded, JSON.stringify(p));
+  await advanceTo(page, 'c01-020');
+  check('c01-020：去り際の台詞まで大山が出ている', (await portraitNow(page)).length === 1);
+  await advance(page);
+  check('c01-021：入口へ歩いていく行で、大山が消える', (await show(page)).lineId === 'c01-021' && (await portraitNow(page)).length === 0);
+  check('練習へ進むまで、立ち絵は出ない', await advanceTo(page, 'c04-004') && (await portraitNow(page)).length === 0);
+  await advance(page);
+  await waitPortraitLoaded(page);
+  p = await portraitNow(page);
+  check('c04-005：入口から歩いてくる行で、美空（帽子のあるユニフォーム）が出る', (await show(page)).lineId === 'c04-005' && p.length === 1 && p[0].file === 'assets/portraits/misora-game-uniform-normal.webp' && p[0].loaded && p[0].top >= 0, JSON.stringify(p));
+  await advanceTo(page, 'c04-025');
+  await resumeHere(page);
+  p = await portraitNow(page);
+  check('c04-025 でリロードし、つづきからで美空の立ち絵が戻る', (await show(page)).lineId === 'c04-025' && p.length === 1 && p[0].file.endsWith('misora-game-uniform-normal.webp') && p[0].loaded, JSON.stringify(p));
+  await advanceTo(page, 'c04-037');
+  check('c04-037：場面の最後の行まで美空が出ている', (await portraitNow(page)).length === 1);
+  await advance(page);
+  check('c05-001：次の場面へ移ると、美空が消える', (await show(page)).lineId === 'c05-001' && (await portraitNow(page)).length === 0);
+  await snap(page, 'portraits-' + viewport.width);
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -561,12 +625,15 @@ async function main() {
     await portraitGuide(browser);
     await smallLandscape(browser);
     await legibility(browser);
+    await portraitsInPlay(browser, SMALL_LANDSCAPE, '667×375');
+    await portraitsInPlay(browser, DESKTOP, '1280×720');
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
-    const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css', BASE + 'assets/backgrounds/field-morning-temp.png'];
+    const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css', BASE + 'assets/backgrounds/field-morning-temp.png',
+      BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];
     check('必要な素材がすべて 200 で読み込まれた', needed.every((u) => OK_URLS.has(u)), needed.filter((u) => !OK_URLS.has(u)).join(' '));
   } finally {
     await browser.close();

@@ -9,3 +9,14 @@
 }
 .kit-scene { align-self: flex-start; margin: 0 0 6px; font-size: 13px; }
 .kit-page { font-size: 12px; }
+
+/* 下の操作ボタンは、立ち絵（白いユニフォームなど）の上でも文字が読めるように、場面名と同じ暗い下地を敷く。 */
+.kit-bar .kit-btn, .kit-bar .kit-sound { background: rgba(12, 12, 18, 0.85); }
+
+/* 立ち絵。PC など高さのある画面は、キットの既定（全身・画面の高さの 78%）のまま。
+   横向きのスマホなど高さの小さい画面では全身だと顔が小さいので、画像は変えずに上端を揃えて拡大し、上半身寄りに見せる。
+   画像の上端から髪・帽子までは余白があるので、上端を画面の上端に合わせても見切れない。 */
+@media (max-height: 500px) {
+  .kit-portrait { align-items: flex-start; }
+  .kit-portrait-img { height: 165%; max-width: none; }
+}

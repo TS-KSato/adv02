@@ -9,7 +9,8 @@
 ## 注意
 
 - **背景は仮素材**です。手続きで描いた朝のグラウンドの PNG（`assets/backgrounds/field-morning-temp.png`）で、本番用の画像ではありません。後で同じ素材の名前から差し替えられるようにしています。
-- 人物の立ち絵・BGM・環境音・効果音は**未登録**です。話者名と本文だけで読めます。
+- 人物の立ち絵は `assets/portraits/` に35枚（透過WebP・859×1,280px、一覧は `portraits-list.csv`）を登録済みです。画面に出すのは今のところ、冒頭の大山（c01-014〜c01-020）と5-4の美空（c04-005〜c04-037）だけで、ほかの場面は表示方針を決めてから配置します。横向きのスマホなど高さ500px以下の画面では上半身寄り、PCでは全身で表示します（`game.css`）。
+- BGM・環境音・効果音は**未登録**です。
 - 横向き専用です。縦向きでは案内を出して進行を止めます。
 - 試験はデスクトップ版 Chromium で行っています。スマホ実機（iPhone・Android の Safari・Chrome）では確かめていません。
 
@@ -20,6 +21,7 @@ index.html                 入口（/adv02/ の下で動く。相対パスのみ
 game.js                    作品データ（window.KIT_GAME）
 game.css                   新作専用の見た目（場面名・ページ数の札）
 assets/backgrounds/        仮背景
+assets/portraits/          立ち絵（35枚）と素材一覧 portraits-list.csv
 kit/releases/0.1.0/        作品が実行時に読む、固定版のキット（4 ファイル）
 kit/engine/                上流の複製（回帰試験が参照）
 kit/samples/               キットの回帰試験用の作品（新作の下敷きではない）
