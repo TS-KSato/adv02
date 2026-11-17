@@ -36,7 +36,7 @@
 | `package.json` | 名前を `novelgame02-kit-and-tests` に変更。スクリプトを `serve` `test` `test:unit` `test:browser` `test:saves` `test:game` に組み直した | ゼルグ試験（`test:zelg`）と、取り込んでいない tools を外すため |
 | `package-lock.json` | ルートの `name` だけを新作名に揃えた（依存は変更なし） | `npm ci` の整合のため |
 | `tests/run.js` | `zelg` 群を外し、`game` 群（`tests/game/`）を加えた | ゼルグの試験を呼ばないため |
-| `tests/lib/serve.js` | 第二引数 `prefix` を追加（例：`/adv02`）。省略時は従来どおり | 公開先 `/adv02/` と同じ形で配信して試すため。ルート直下の参照は 404 にする |
+| `tests/lib/serve.js` | 第二引数 `prefix` を追加（例：`/adv02`）。省略時は従来どおり。`.webp` を `image/webp` で返す | 公開先 `/adv02/` と同じ形で配信して試すため。ルート直下の参照は 404 にする |
 
 ## 4. 作品固有のファイル（新作で書いたもの）
 

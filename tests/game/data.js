@@ -552,8 +552,6 @@ check('話者の表示名は 平野・大山', G.speakers.hirano === '平野' &&
 check('平野の一人称の文に、開発者向けの注記が混ざらない', allLines.every((l) => !/TODO|注:|※/.test(l.text)));
 
 section('素材と演出（すべて定義済み・実在）');
-const bgs = G.assets.backgrounds;
-check('背景の登録は仮背景の一枚だけ', JSON.stringify(Object.keys(bgs)) === '["field-morning-temp"]', Object.keys(bgs).join(','));
 for (const group of ['cgs', 'bgm', 'ambience', 'se']) {
   check('素材「' + group + '」は空（今回は未登録でよい）', Object.keys(G.assets[group] || {}).length === 0);
 }
@@ -582,16 +580,69 @@ for (const f of portraitFiles) {
 }
 check('立ち絵はすべて透過付きの WebP で、859×1,280px', badWebp.length === 0, badWebp.join(','));
 check('PNG の原本や元画像の ZIP をリポジトリに入れていない', !portraitFiles.some((f) => /\.(png|zip)$/i.test(f)) && !fs.existsSync(path.join(ROOT, 'adv02-portraits-source-png.zip')));
-for (const [key, file] of Object.entries(bgs)) {
-  check('背景 ' + key + ' のパスは作品基準の相対パス', file.startsWith('assets/') && !file.startsWith('/'), file);
-  const full = path.join(ROOT, file);
-  check('背景 ' + key + ' の実ファイルがある', fs.existsSync(full), file);
-  if (fs.existsSync(full)) {
-    const sig = fs.readFileSync(full).subarray(0, 8).toString('hex');
-    check('背景 ' + key + ' は PNG', sig === '89504e470d0a1a0a', sig);
+section('背景（assets/backgrounds）');
+const bgs = G.assets.backgrounds;
+check('背景のパスはすべて作品基準の相対パスで、実ファイルがある',
+  Object.values(bgs).every((f) => f.startsWith('assets/backgrounds/') && fs.existsSync(path.join(ROOT, f))),
+  Object.values(bgs).filter((f) => !fs.existsSync(path.join(ROOT, f))).join(','));
+const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afternoon', 'hosho-field-bench', 'hosho-clubroom',
+  'regional-stadium-field', 'regional-stadium-dugout', 'regional-stadium-dugout-sunset', 'regional-stadium-concourse',
+  'koshien-field', 'koshien-dugout', 'koshien-concourse', 'kamijo-living-room-night', 'oyama-home-entry', 'hospital-exam-room',
+  'station-plaza-autumn', 'bus-interior', 'bus-interior-sunset'];
+check('背景の登録は、納品の17枚と、該当なしの区間に使う無地だけ',
+  JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, 'unassigned'].sort()), Object.keys(bgs).join(','));
+check('納品の背景は「キー.webp」、無地は unassigned.png', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp') && bgs.unassigned === 'assets/backgrounds/unassigned.png');
+const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
+check('assets/backgrounds には登録した18ファイルだけがある（仮背景・旧版の宿舎・CSV・PNG原本を置かない）',
+  JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
+check('宿舎（食堂の札が残った旧版）は登録も配置もしない', !bgs['lodging-dining-hallway'] && !bgFiles.includes('lodging-dining-hallway.webp'));
+const badBg = [];
+for (const k of DELIVERED_BACKGROUNDS) {
+  const b = fs.readFileSync(path.join(ROOT, bgs[k]));
+  // 不透明な WebP（VP8）。フレームの開始コードの後ろに幅と高さがある
+  const ok = b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' &&
+    b[23] === 0x9d && b[24] === 0x01 && b[25] === 0x2a && (b.readUInt16LE(26) & 0x3fff) === 1920 && (b.readUInt16LE(28) & 0x3fff) === 1080;
+  if (!ok) badBg.push(k);
+}
+check('納品の背景はすべて不透明な WebP で、1920×1080px', badBg.length === 0, badBg.join(','));
+check('無地の背景は PNG', fs.readFileSync(path.join(ROOT, bgs.unassigned)).subarray(0, 8).toString('hex') === '89504e470d0a1a0a');
+check('作品データに Magnific の管理IDを書かない', !/magnific/i.test(read('game.js')));
+
+const bgCues = G.cues.filter((c) => c.bg !== undefined);
+check('冒頭 c01-001 は、朝のフェンスの外（hosho-field-fence-morning）', bgCues[0].at === 'c01-001' && bgCues[0].bg === 'hosho-field-fence-morning', JSON.stringify(bgCues[0]));
+const lineOrder = new Map(allIds.map((id, i) => [id, i]));
+check('背景の演出は本文の並び順に並ぶ（キットは配列の後ろの指定を優先する）', bgCues.every((c, i) => i === 0 || lineOrder.get(c.at) > lineOrder.get(bgCues[i - 1].at)));
+const sceneOfLine = new Map(scenes.flatMap((key) => G.scenes[key].lines.map((l) => [l.id, key])));
+const noEntryBg = scenes.filter((key) => !bgCues.some((c) => c.at === G.scenes[key].lines[0].id));
+check('分岐の入口・合流点を含め、すべての場面の最初の行で背景を明示している', noEntryBg.length === 0, noEntryBg.join(','));
+// 場面の中の背景は、その場面の演出だけで決まる。stateAt が並び順で戻す背景が、どの行でも一致すれば、別ルートの背景は残らない
+const leaked = [];
+for (const key of scenes) {
+  let expected = null;
+  for (const l of G.scenes[key].lines) {
+    const own = bgCues.find((c) => c.at === l.id);
+    if (own) expected = own.bg;
+    if (V.stateAt(G, l.id).bg !== expected) leaked.push(l.id);
   }
 }
-check('背景の演出は一つだけ（c01-001）', G.cues.filter((c) => c.bg !== undefined).length === 1 && G.cues[0].at === 'c01-001' && G.cues[0].bg === 'field-morning-temp', JSON.stringify(G.cues));
+check('全' + allIds.length + '行で、復元される背景がその場面の中の指定と一致する（別ルートの背景が残らない）', leaked.length === 0, leaked.slice(0, 5).join(','));
+check('登録した背景は、すべてどこかの行で使っている', Object.keys(bgs).every((k) => bgCues.some((c) => c.bg === k)), Object.keys(bgs).filter((k) => !bgCues.some((c) => c.bg === k)).join(','));
+const bgAt = (id) => V.stateAt(G, id).bg;
+const bgSpans = [
+  ['c01-001', 'hosho-field-fence-morning'], ['c01-023', 'hosho-field-fence-morning'],
+  ['c02-001', 'unassigned'], ['c02-005', 'unassigned'], ['c02-006', 'hosho-field-afternoon'],
+  ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'],
+  ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
+  ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
+  ['c19-032', 'regional-stadium-dugout'], ['c20-001', 'regional-stadium-dugout-sunset'], ['c20-018', 'regional-stadium-dugout-sunset'],
+  ['c31a-001', 'unassigned'], ['c31d-001', 'koshien-concourse'], ['c31k-001', 'bus-interior-sunset'], ['c31k-008', 'bus-interior-sunset'],
+  ['c32a-001', 'koshien-dugout'], ['c32m-001', 'koshien-concourse'], ['c32m-002', 'koshien-field'], ['c32m-006', 'koshien-field'],
+  ['c33l-001', 'koshien-concourse'], ['clastout-001', 'koshien-dugout'], ['c36-021', 'koshien-dugout'],
+];
+check('主な切り替え：冒頭・5-2・5-18・5-20の夕日・5-31・E2の西日のバス・E3の観客席・E4から最後のアウト',
+  bgSpans.every(([id, want]) => bgAt(id) === want), bgSpans.filter(([id, want]) => bgAt(id) !== want).map(([id]) => id + '=' + bgAt(id)).join(' '));
+check('5-2：放課後にグラウンドへ入る行（c02-006）で切り替わる', bgAt('c02-005') !== 'hosho-field-afternoon' && bgAt('c02-006') === 'hosho-field-afternoon');
+check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
 const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
 check('立ち絵の演出は、冒頭の大山と5-4の美空の登場・退場の4つだけ', JSON.stringify(portraitCues) === JSON.stringify([
   { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },

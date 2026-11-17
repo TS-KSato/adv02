@@ -18,9 +18,29 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は仮の1枚。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の17枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
-    backgrounds: { 'field-morning-temp': 'assets/backgrounds/field-morning-temp.png' },
+    backgrounds: {
+      'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
+      'hosho-field-afternoon': 'assets/backgrounds/hosho-field-afternoon.webp',
+      'hosho-field-bench': 'assets/backgrounds/hosho-field-bench.webp',
+      'hosho-clubroom': 'assets/backgrounds/hosho-clubroom.webp',
+      'regional-stadium-field': 'assets/backgrounds/regional-stadium-field.webp',
+      'regional-stadium-dugout': 'assets/backgrounds/regional-stadium-dugout.webp',
+      'regional-stadium-dugout-sunset': 'assets/backgrounds/regional-stadium-dugout-sunset.webp',
+      'regional-stadium-concourse': 'assets/backgrounds/regional-stadium-concourse.webp',
+      'koshien-field': 'assets/backgrounds/koshien-field.webp',
+      'koshien-dugout': 'assets/backgrounds/koshien-dugout.webp',
+      'koshien-concourse': 'assets/backgrounds/koshien-concourse.webp',
+      'kamijo-living-room-night': 'assets/backgrounds/kamijo-living-room-night.webp',
+      'oyama-home-entry': 'assets/backgrounds/oyama-home-entry.webp',
+      'hospital-exam-room': 'assets/backgrounds/hospital-exam-room.webp',
+      'station-plaza-autumn': 'assets/backgrounds/station-plaza-autumn.webp',
+      'bus-interior': 'assets/backgrounds/bus-interior.webp',
+      'bus-interior-sunset': 'assets/backgrounds/bus-interior-sunset.webp',
+      // 該当する背景がない区間に使う無地（キットの背景なしと同じ色）。別の場所の絵が残らないようにする
+      unassigned: 'assets/backgrounds/unassigned.png',
+    },
     portraits: {
       hirano: {
         'school-winter-normal': 'assets/portraits/hirano-school-winter-normal.webp',
@@ -2206,9 +2226,181 @@ window.KIT_GAME = {
     },
   },
 
-  // 演出は行IDで指定する。今回は冒頭の背景だけ
+  // 演出は行IDで指定する。背景（場所の切り替え）と、立ち絵の初回配置
   cues: [
-    { at: 'c01-001', bg: 'field-morning-temp' },
+    // 背景。場所が変わる行で切り替える。キットは通ったルートではなく本文の並び順で背景を戻すので、
+    // 分岐の入口・合流点を含め、すべての場面の最初の行で背景を明示する（別ルートの背景が残らないようにする）。
+    { at: 'c01-001', bg: 'hosho-field-fence-morning' }, // 5-1：朝、フェンスの外からグラウンドを見る
+    { at: 'c02-001', bg: 'unassigned' }, // 5-2：教室（該当なし）
+    { at: 'c02-006', bg: 'hosho-field-afternoon' }, // 放課後、練習着で門からグラウンドへ入る
+    { at: 'c02i-001', bg: 'hosho-field-afternoon' }, // 分岐：内野
+    { at: 'c02o-001', bg: 'hosho-field-afternoon' }, // 分岐：外野
+    { at: 'c02e-001', bg: 'hosho-field-afternoon' }, // 合流：給水台・球拾い
+    { at: 'c02e-018', bg: 'unassigned' }, // 駅までの道（該当なし）
+    { at: 'c03-001', bg: 'hosho-field-afternoon' }, // 5-3：翌日の練習
+    { at: 'c03-012', bg: 'hosho-field-bench' }, // ベンチでスコアブックを任される
+    { at: 'c04-001', bg: 'hosho-field-bench' }, // 5-4：ベンチで記録を埋めている
+    { at: 'c05-001', bg: 'hosho-field-bench' }, // 5-5：練習後のベンチ
+    { at: 'c05o-001', bg: 'hosho-field-bench' }, // 分岐：大山に聞く
+    { at: 'c05s-001', bg: 'hosho-field-bench' }, // 分岐：先輩に聞く
+    { at: 'c05e-001', bg: 'hosho-field-bench' }, // 合流
+    { at: 'c05b-001', bg: 'hosho-field-afternoon' }, // 幕間：ネット前でティー打撃
+    { at: 'c06-001', bg: 'hosho-field-bench' }, // 5-6：ベンチからバント守備を記録
+    { at: 'c06a-001', bg: 'hosho-field-bench' }, // 分岐：監督に聞く
+    { at: 'c06b-001', bg: 'hosho-field-bench' }, // 分岐：ベンチ脇の棚の資料
+    { at: 'c06e-001', bg: 'hosho-field-bench' }, // 合流：給水中のベンチ前
+    { at: 'c07-001', bg: 'hosho-field-bench' }, // 5-7：ベンチ前
+    { at: 'c07-023', bg: 'hosho-field-afternoon' }, // 外周に出る門へ向かってグラウンドを歩く
+    { at: 'c07-032', bg: 'hosho-field-bench' }, // ベンチへ引き返す
+    { at: 'c08-001', bg: 'hosho-field-bench' }, // 5-8：ベンチの端で紙を渡される
+    { at: 'c08b-001', bg: 'hosho-clubroom' }, // 幕間：部室
+    { at: 'c09-001', bg: 'hosho-field-bench' }, // 5-9：練習帰りのベンチ
+    { at: 'c09d-001', bg: 'hosho-field-bench' }, // 分岐：飲み物
+    { at: 'c09t-001', bg: 'hosho-field-bench' }, // 分岐：用具
+    { at: 'c09e-001', bg: 'unassigned' }, // 合流：翌日、自販機の前（該当なし）
+    { at: 'c09e-006', bg: 'hosho-clubroom' }, // 部室に戻る
+    { at: 'c10-001', bg: 'hosho-field-bench' }, // 5-10：練習後のベンチ
+    { at: 'c11s-001', bg: 'hosho-field-bench' }, // 5-11：ベンチ
+    { at: 'c11m-001', bg: 'hosho-field-afternoon' }, // 回想：就任初日、グラウンドに整列
+    { at: 'c11m-021', bg: 'unassigned' }, // 回想：外周を走る（該当なし）
+    { at: 'c11m-029', bg: 'hosho-field-afternoon' }, // 回想：1周して監督の前に戻る
+    { at: 'c11p-001', bg: 'hosho-field-bench' }, // 現在：ベンチ
+    { at: 'c11a-001', bg: 'hosho-field-bench' }, // 分岐：平野が聞く
+    { at: 'c11w-001', bg: 'hosho-field-bench' }, // 分岐：大山を待つ
+    { at: 'c11e-001', bg: 'hosho-field-bench' }, // 合流
+    { at: 'c12-001', bg: 'hosho-field-bench' }, // 5-12：ベンチの奥
+    { at: 'c13-001', bg: 'hosho-field-bench' }, // 5-13：鳳翔での練習試合（ベンチ）
+    { at: 'csummer-001', bg: 'hosho-clubroom' }, // 幕間：部室
+    { at: 'csummer-010', bg: 'hosho-field-afternoon' }, // 練習：打撃ケージ
+    { at: 'csummer-014', bg: 'hosho-clubroom' }, // 帰り支度の部室
+    { at: 'c14-001', bg: 'regional-stadium-dugout' }, // 5-14：準々決勝のベンチ
+    { at: 'c15-001', bg: 'regional-stadium-dugout' }, // 5-15：ベンチ
+    { at: 'c15-008', bg: 'unassigned' }, // 回想：廊下で名簿を確かめる（該当なし）
+    { at: 'c15-014', bg: 'regional-stadium-dugout' }, // ベンチに戻る
+    { at: 'c16-001', bg: 'regional-stadium-dugout' }, // 5-16：ベンチ
+    { at: 'c16-004', bg: 'regional-stadium-field' }, // 佐々木が打席から見る景色
+    { at: 'c16-005a', bg: 'regional-stadium-dugout' }, // 北陵ベンチ
+    { at: 'c16-005d', bg: 'regional-stadium-field' }, // 一塁の大山
+    { at: 'c16-005c', bg: 'regional-stadium-dugout' }, // 鳳翔ベンチ
+    { at: 'c16-007', bg: 'regional-stadium-field' }, // 投球から本塁打、生還まで
+    { at: 'c16-015', bg: 'regional-stadium-dugout' }, // ベンチが沸く
+    { at: 'c16-022', bg: 'regional-stadium-concourse' }, // 整列後、スタンド下の通路で取材
+    { at: 'cnews-001', bg: 'hosho-clubroom' }, // 幕間：部室の机に新聞
+    { at: 'c17-001', bg: 'hosho-clubroom' }, // 5-17：スコアの清書（部室）
+    { at: 'c17-002', bg: 'regional-stadium-dugout' }, // 思い返す北陵戦のベンチ
+    { at: 'c17-007', bg: 'kamijo-living-room-night' }, // 準決勝の前夜、神条家の居間
+    { at: 'c18-pre-a', bg: 'hosho-field-afternoon' }, // 5-18：全体練習のあと、ポール間を走る
+    { at: 'c18-pre-f', bg: 'unassigned' }, // その晩、大山家の前（屋外・該当なし）
+    { at: 'c18-pre-k', bg: 'oyama-home-entry' }, // 玄関で靴を脱ぎ捨てる
+    { at: 'c18-001', bg: 'regional-stadium-dugout' }, // 翌日、準決勝のベンチで記録
+    { at: 'c18-003', bg: 'regional-stadium-field' }, // ライトの捕球と負傷
+    { at: 'c18-010', bg: 'regional-stadium-dugout' }, // ベンチから見る
+    { at: 'c18-017', bg: 'unassigned' }, // 病院の待合室（該当なし）
+    { at: 'c18-018', bg: 'hospital-exam-room' }, // 診察室
+    { at: 'c19-001', bg: 'regional-stadium-dugout' }, // 5-19：決勝のベンチ
+    { at: 'c19-021', bg: 'regional-stadium-field' }, // 武藤の本塁打
+    { at: 'c19-024', bg: 'regional-stadium-dugout' }, // ベンチ
+    { at: 'c19-028', bg: 'regional-stadium-field' }, // 最後の打球
+    { at: 'c19-032', bg: 'regional-stadium-dugout' }, // ベンチ
+    { at: 'c20-001', bg: 'regional-stadium-dugout-sunset' }, // 5-20：敗戦直後のベンチ（夕日）
+    { at: 'cblank-001', bg: 'hosho-clubroom' }, // 幕間：学校へ戻った部室
+    { at: 'cblank-011', bg: 'unassigned' }, // 夏休み、自宅でメッセージ（該当なし）
+    { at: 'c21-001', bg: 'hosho-field-afternoon' }, // 5-21：グラウンドの外野フェンス際
+    { at: 'c21-009', bg: 'hospital-exam-room' }, // 病院で再診
+    { at: 'c21-017', bg: 'unassigned' }, // 診察室を出た廊下（該当なし）
+    { at: 'c21-018', bg: 'hosho-field-afternoon' }, // 誰もいないグラウンドでキャッチボール
+    { at: 'c22-001', bg: 'hosho-clubroom' }, // 5-22：部室
+    { at: 'c23-001', bg: 'hosho-clubroom' }, // 5-23：部室
+    { at: 'c23-005', bg: 'kamijo-living-room-night' }, // その晩、神条家の居間
+    { at: 'c24-001', bg: 'station-plaza-autumn' }, // 5-24：駅前の広場
+    { at: 'c24a-001', bg: 'station-plaza-autumn' }, // 分岐：弟だと伝える
+    { at: 'c24b-001', bg: 'station-plaza-autumn' }, // 分岐：荷物を届ける（駅の入口）
+    { at: 'c24e-001', bg: 'station-plaza-autumn' }, // 合流
+    { at: 'c25-001', bg: 'regional-stadium-concourse' }, // 5-25：練習試合の球場、スタンド下の通路
+    { at: 'csecond-001', bg: 'hosho-clubroom' }, // 幕間：2年の最初の朝練、部室
+    { at: 'csecond-009', bg: 'hosho-field-fence-morning' }, // グラウンドの入口に新入生
+    { at: 'c26-001', bg: 'hosho-field-fence-morning' }, // 5-26：入口の新入生
+    { at: 'c26a-001', bg: 'hosho-field-afternoon' }, // 分岐：ブルペン（朝。光は目立たないと判断）
+    { at: 'c26b-001', bg: 'hosho-field-afternoon' }, // 分岐：内野のノック
+    { at: 'c26e-001', bg: 'unassigned' }, // 合流：5月の帝嶺との練習試合（場所の記載なし）
+    { at: 'c27-001', bg: 'hosho-field-bench' }, // 5-27：練習の終わり、ベンチの前
+    { at: 'c27-018', bg: 'kamijo-living-room-night' }, // その晩、神条家の居間
+    { at: 'c28-001', bg: 'unassigned' }, // 5-28：龍成の部室（該当なし）
+    { at: 'c29a-001', bg: 'regional-stadium-concourse' }, // 5-29：スタンド下の通路の長机
+    { at: 'c29b-001', bg: 'regional-stadium-concourse' }, // 分岐：映像を見る
+    { at: 'c29c-001', bg: 'regional-stadium-dugout' }, // 分岐：打順表をベンチへ
+    { at: 'c29d-001', bg: 'regional-stadium-dugout' }, // 合流：6回表
+    { at: 'c29d-002', bg: 'regional-stadium-field' }, // 武藤の同点本塁打
+    { at: 'c29d-004', bg: 'regional-stadium-dugout' }, // 龍成ベンチ
+    { at: 'c29e-001', bg: 'regional-stadium-dugout' }, // 当日確認の選択
+    { at: 'c29f-001', bg: 'regional-stadium-dugout' }, // 分岐：田原と確認
+    { at: 'c29g-001', bg: 'regional-stadium-dugout' }, // 分岐：確認しない
+    { at: 'c29h-001', bg: 'regional-stadium-dugout' }, // 合流：8回
+    { at: 'c29i-001', bg: 'regional-stadium-dugout' }, // 勝利：ベンチを出る大山
+    { at: 'c29i-004', bg: 'regional-stadium-field' }, // 大山の本塁打
+    { at: 'c29i-006', bg: 'regional-stadium-dugout' }, // ベンチ
+    { at: 'c29j-001', bg: 'regional-stadium-field' }, // 敗戦：大山の打席
+    { at: 'c29j-004', bg: 'regional-stadium-dugout' }, // 敗戦の記録
+    { at: 'c29k-001', bg: 'regional-stadium-dugout' }, // E1：整列後のベンチ
+    { at: 'c29k-004', bg: 'hosho-clubroom' }, // E1：翌日の部室
+    { at: 'cbus-001', bg: 'unassigned' }, // 幕間：校門前のバスの外（該当なし）
+    { at: 'cbus-002', bg: 'bus-interior' }, // バスの車内
+    { at: 'c30-001', bg: 'koshien-dugout' }, // 5-30：甲子園のベンチ
+    { at: 'c31a-001', bg: 'unassigned' }, // 5-31：宿舎・食堂前の廊下（保留：旧版の背景）
+    { at: 'c31b-001', bg: 'unassigned' }, // 分岐：食堂の端（保留）
+    { at: 'c31c-001', bg: 'unassigned' }, // 分岐：廊下と食堂（保留）
+    { at: 'c31d-001', bg: 'koshien-concourse' }, // 試合当日、スタンド下の通路
+    { at: 'c31e-001', bg: 'koshien-dugout' }, // 分岐：グラウンドへ出る
+    { at: 'c31f-001', bg: 'koshien-dugout' }, // 分岐：面会を案内してからグラウンドへ
+    { at: 'c31g-001', bg: 'koshien-dugout' }, // 3塁コーチへの伝達
+    { at: 'c31h-001', bg: 'koshien-dugout' }, // 合流：9回
+    { at: 'c31i-001', bg: 'koshien-dugout' }, // 勝利
+    { at: 'c31j-001', bg: 'koshien-dugout' }, // 敗戦
+    { at: 'c31k-001', bg: 'bus-interior-sunset' }, // E2：帰りのバス（西日）
+    { at: 'c32a-001', bg: 'koshien-dugout' }, // 5-32：3回戦のベンチ
+    { at: 'c32b-001', bg: 'koshien-dugout' }, // 準々決勝
+    { at: 'c32b-007', bg: 'unassigned' }, // その晩、宿の食堂（保留）
+    { at: 'c32c-001', bg: 'unassigned' }, // 分岐：映像を見直す（保留）
+    { at: 'c32d-001', bg: 'unassigned' }, // 分岐：打順表を整理（保留）
+    { at: 'c32e-001', bg: 'koshien-dugout' }, // 合流：準決勝
+    { at: 'c32f-001', bg: 'koshien-dugout' }, // 当日確認の選択
+    { at: 'c32g-001', bg: 'koshien-dugout' }, // 分岐：田原に聞く
+    { at: 'c32h-001', bg: 'koshien-dugout' }, // 分岐：聞かない
+    { at: 'c32i-001', bg: 'koshien-dugout' }, // バッテリーへの伝達
+    { at: 'c32j-001', bg: 'koshien-dugout' }, // 合流：8回表
+    { at: 'c32k-001', bg: 'koshien-dugout' }, // 勝利
+    { at: 'c32l-001', bg: 'koshien-dugout' }, // 敗戦
+    { at: 'c32m-001', bg: 'koshien-concourse' }, // E3：スタンドの階段と売店
+    { at: 'c32m-002', bg: 'koshien-field' }, // E3：観客席から決勝を見る
+    { at: 'c33a-001', bg: 'koshien-concourse' }, // 5-33：決勝の朝、スタンド下の通路の長机
+    { at: 'c33b-001', bg: 'koshien-concourse' }, // 分岐：映像を見比べる
+    { at: 'c33c-001', bg: 'koshien-concourse' }, // 分岐：投手の資料
+    { at: 'c33d-001', bg: 'koshien-dugout' }, // 合流：試合
+    { at: 'c33d-001f', bg: 'koshien-field' }, // スタンドの観客・厳・河本
+    { at: 'c33d-001l', bg: 'koshien-dugout' }, // ベンチ
+    { at: 'c33e-001', bg: 'koshien-dugout' }, // 当日確認の選択
+    { at: 'c33f-001', bg: 'koshien-dugout' }, // 分岐：田原と照合
+    { at: 'c33g-001', bg: 'koshien-dugout' }, // 分岐：照合しない
+    { at: 'c33h-001', bg: 'koshien-dugout' }, // 合流：9回
+    { at: 'c33i-001', bg: 'koshien-dugout' }, // 田原への伝達
+    { at: 'c33j-001', bg: 'koshien-dugout' }, // 勝利側：最後の打席
+    { at: 'c33k-001', bg: 'koshien-dugout' }, // 敗戦側：最後の打席
+    { at: 'c33l-001', bg: 'koshien-concourse' }, // E4：表彰後、スタンド下の通路
+    { at: 'c33l-009', bg: 'bus-interior' }, // E4：帰りのバス
+    { at: 'clastout-001', bg: 'koshien-dugout' }, // 幕間：ベンチで見る最後のアウト
+    { at: 'c34-001', bg: 'koshien-dugout' }, // 5-34：優勝の瞬間
+    { at: 'c34-005', bg: 'koshien-field' }, // 応援席の中田
+    { at: 'c34-006', bg: 'koshien-dugout' }, // ベンチ
+    { at: 'c35-001', bg: 'koshien-dugout' }, // 5-35：ベンチ前のインタビュー
+    { at: 'c35-014', bg: 'koshien-field' }, // 応援席の中田
+    { at: 'c35-016', bg: 'koshien-dugout' }, // 帝嶺のベンチ前・ベンチの出口
+    { at: 'c36-001', bg: 'koshien-dugout' }, // 5-36：ベンチ前
+    { at: 'c36-005', bg: 'koshien-field' }, // 応援席の母親
+    { at: 'c36-008', bg: 'koshien-dugout' }, // 応援席を見上げる監督
+    { at: 'c36-010', bg: 'koshien-field' }, // 応援席の厳
+    { at: 'c36-012', bg: 'koshien-dugout' }, // 大山
+    { at: 'c36-013', bg: 'koshien-field' }, // 応援席の厳と掲示板
+    { at: 'c36-019', bg: 'koshien-dugout' }, // ベンチの出口
     // 立ち絵の初回配置。平野は視点人物なので出さない。残りの場面は表示方針が決まってから置く。
     // 冒頭：振り向いた平野が大山を見る行で出し、大山がグラウンドの入口へ歩いていく行で消す。
     { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },
