@@ -2230,7 +2230,7 @@ window.KIT_GAME = {
     },
   },
 
-  // 演出は行IDで指定する。背景（場所の切り替え）と、立ち絵の初回配置
+  // 演出は行IDで指定する。背景（場所の切り替え）と、立ち絵の登場・退場
   cues: [
     // 背景。場所が変わる行で切り替える。キットは通ったルートではなく本文の並び順で背景を戻すので、
     // 分岐の入口・合流点を含め、すべての場面の最初の行で背景を明示する（別ルートの背景が残らないようにする）。
@@ -2405,14 +2405,110 @@ window.KIT_GAME = {
     { at: 'c36-012', bg: 'koshien-dugout' }, // 大山
     { at: 'c36-013', bg: 'koshien-field' }, // 応援席の厳と掲示板
     { at: 'c36-019', bg: 'koshien-dugout' }, // ベンチの出口
-    // 立ち絵の初回配置。平野は視点人物なので出さない。残りの場面は表示方針が決まってから置く。
-    // 冒頭：振り向いた平野が大山を見る行で出し、大山がグラウンドの入口へ歩いていく行で消す。
-    { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },
-    { at: 'c01-021', portrait: { slot: 'right', clear: true } },
-    // 5-4：美空が入口から歩いてくる行で出す。本文の「帽子の下から出た黒髪」に合わせ、帽子をかぶった試合用ユニフォームを使う。
-    // 美空は場面の終わりまでベンチの端にいるので、次の場面の最初の行で消す。
-    { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } },
-    { at: 'c05-001', portrait: { slot: 'right', clear: true } },
+    // 立ち絵。平野は視点人物なので出さない。話者ではなく、平野が見ている人物とその居場所に合わせて出す。
+    // キットは通ったルートではなく本文の並び順で立ち絵を戻すので、5-2〜5-13 の各場面の最初の行で左右の枠を明示する。
+    // 名前のない先輩・1年生は出さない。通常顔と食い違う区間（激怒・大きな驚き・青ざめるなど）は出さない。
+    { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } }, // 冒頭：振り向いた平野が大山を見る（既存）
+    { at: 'c01-021', portrait: { slot: 'right', clear: true } }, // 大山がグラウンドの入口へ歩いていく（既存）
+    { at: 'c02-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（練習へ交ざる）：左を明示して消す
+    { at: 'c02-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（練習へ交ざる）：右を明示して消す
+    { at: 'c02i-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（練習へ交ざる）：左を明示して消す
+    { at: 'c02i-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（練習へ交ざる）：右を明示して消す
+    { at: 'c02o-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（練習へ交ざる）：左を明示して消す
+    { at: 'c02o-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（練習へ交ざる）：右を明示して消す
+    { at: 'c02e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（練習へ交ざる）：左を明示して消す
+    { at: 'c02e-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（練習へ交ざる）：右を明示して消す
+    { at: 'c03-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（記録する1年生）：左を明示して消す
+    { at: 'c03-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（記録する1年生）：右を明示して消す
+    { at: 'c04-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（美空の登場）：左を明示して消す
+    { at: 'c04-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（美空の登場）：右を明示して消す
+    { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-4：美空が入口から歩いてくる。帽子のある試合用ユニフォーム（既存）
+    { at: 'c04-035', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 5-4：グラブを膝に乗せたまま平野を見ている中田
+    { at: 'c04-036', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // バットを肩に乗せて立つ大山へ視線が移る
+    { at: 'c05-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（優勝と結婚）：左を明示して消す
+    { at: 'c05-001', portrait: { slot: 'right', clear: true } }, // 5-5：監督は先に帰った（既存）
+    { at: 'c05-004', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 5-5：バットを片づけに来た大山が平野の前で足を止める
+    { at: 'c05o-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（優勝と結婚）：左を明示して消す
+    { at: 'c05o-001', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 分岐：大山に聞く
+    { at: 'c05s-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（優勝と結婚）：左を明示して消す
+    { at: 'c05s-001', portrait: { slot: 'right', clear: true } }, // 分岐：名前のない先輩に聞く（立ち絵なし）
+    { at: 'c05e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（優勝と結婚）：左を明示して消す
+    { at: 'c05e-001', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 合流：先輩に呼ばれる大山
+    { at: 'c05e-012', portrait: { slot: 'right', clear: true } }, // 大山たちが出ていき、ベンチに平野が残る
+    { at: 'c05b-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（あと10本）：左を明示して消す
+    { at: 'c05b-001', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 幕間「あと10本」：ネットの前で打ち続ける大山
+    { at: 'c06-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（指導の出所）：左を明示して消す
+    { at: 'c06-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（指導の出所）：右を明示して消す
+    { at: 'c06-009', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-6：監督の声がする
+    { at: 'c06a-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（指導の出所）：左を明示して消す
+    { at: 'c06a-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 分岐：ベンチの端の監督に聞く
+    { at: 'c06b-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（指導の出所）：左を明示して消す
+    { at: 'c06b-001', portrait: { slot: 'right', clear: true } }, // 分岐：棚の資料を見る（監督は画面に出さない）
+    { at: 'c06e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（指導の出所）：左を明示して消す
+    { at: 'c06e-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 合流：給水中、同じ所に立つ監督
+    { at: 'c06e-004a', portrait: { slot: 'right', clear: true } }, // 顔から色が引く〜「馬鹿野郎」：通常顔では食い違うので出さない
+    { at: 'c07-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（外周50周）：左を明示して消す
+    { at: 'c07-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（外周50周）：右を明示して消す
+    { at: 'c07-020', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 5-7：振り返った中田の眉間にしわ
+    { at: 'c07-023', portrait: { slot: 'left', clear: true } }, // 外周の門へ向かう
+    { at: 'c07-026', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 振り向くと監督がベンチの前で手招き
+    { at: 'c07-031', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 引き返す途中で中田の横を通る
+    { at: 'c08-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（便利な部員、特別な相手）：左を明示して消す
+    { at: 'c08-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-8：ベンチの端で紙を引き寄せる監督
+    { at: 'c08-027', portrait: { slot: 'right', clear: true } }, // 翌日、紙が戻る
+    { at: 'c08-030', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 監督に読んだか聞く
+    { at: 'c08-033', portrait: { slot: 'right', clear: true } }, // まとめの地の文
+    { at: 'c08-034', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 写しを渡すと、監督の目が名前で止まる
+    { at: 'c08-041', portrait: { slot: 'right', clear: true } }, // 隣の中田が固まる（驚きの差分がないので中田も出さない）
+    { at: 'c08b-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（机の端）：左を明示して消す
+    { at: 'c08b-001', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 幕間：部室の机の端を空けてくれる日和
+    { at: 'c09-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（日和との日常）：左を明示して消す
+    { at: 'c09-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（日和との日常）：右を明示して消す
+    { at: 'c09-002', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 5-9：ベンチの前でクーラーボックスと用具かごを持つ日和
+    { at: 'c09d-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（日和との日常）：左を明示して消す
+    { at: 'c09d-001', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 分岐：飲み物
+    { at: 'c09d-002', portrait: { slot: 'left', char: 'sasaki', expr: 'practice-normal' } }, // 紐を結んでいた佐々木にいちご牛乳を差し出す
+    { at: 'c09d-010', portrait: { slot: 'left', clear: true } }, // 平野が先に部室へ運ぶ
+    { at: 'c09d-010', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c09t-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（日和との日常）：左を明示して消す
+    { at: 'c09t-001', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 分岐：用具
+    { at: 'c09t-004', portrait: { slot: 'left', char: 'sasaki', expr: 'practice-normal' } }, // 佐々木が戻ってくる
+    { at: 'c09e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（日和との日常）：左を明示して消す
+    { at: 'c09e-001', portrait: { slot: 'right', char: 'sasaki', expr: 'practice-normal' } }, // 合流：翌日、自販機の前の佐々木
+    { at: 'c09e-006', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 部室でクーラーボックスを拭く日和
+    { at: 'c09e-007', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 監督が部室に顔を出し、日和の隣に座る
+    { at: 'c09e-014', portrait: { slot: 'left', clear: true } }, // 平野が部室を出る
+    { at: 'c09e-014', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c10-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（河本の来校）：左を明示して消す
+    { at: 'c10-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（河本の来校）：右を明示して消す
+    { at: 'c10-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 5-10：グラウンドの入口に立つ河本
+    { at: 'c10-008', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 机の端で紙を揃える監督
+    { at: 'c10-020', portrait: { slot: 'right', clear: true } }, // 河本の口が開いたまま止まる：大きな驚きなので出さない
+    { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入り、言い争いになる：激怒の区間は出さない
+    { at: 'c10-031', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 河本が大山に向き直り、就任初日のことを言う
+    { at: 'c11s-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 5-11：大山と河本
+    { at: 'c11s-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // （同じ）
+    { at: 'c11m-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（美空の就任初日）：左を明示して消す
+    { at: 'c11m-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（美空の就任初日）：右を明示して消す
+    { at: 'c11m-001d', portrait: { slot: 'right', char: 'misora', expr: 'pantsuit-first-day' } }, // 回想：長い黒髪の女が歩いてくる（就任初日のスーツ）
+    { at: 'c11m-021', portrait: { slot: 'right', clear: true } }, // 回想：外周を走る
+    { at: 'c11m-029', portrait: { slot: 'right', char: 'misora', expr: 'pantsuit-first-day' } }, // 回想：1周して美空の前に戻る
+    { at: 'c11p-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（河本の証言）：左を明示して消す
+    { at: 'c11p-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 現在へ戻る：話し終えた河本（大山の「ちっ」は通常顔と合わないので出さない）
+    { at: 'c11a-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（河本の証言）：左を明示して消す
+    { at: 'c11a-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 分岐：平野が河本に聞く
+    { at: 'c11w-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 分岐：大山が河本に言い返す
+    { at: 'c11w-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // （同じ）
+    { at: 'c11w-006', portrait: { slot: 'left', clear: true } }, // 大山が黙って目をそらす：通常顔では食い違うので出さない
+    { at: 'c11e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（河本の証言）：左を明示して消す
+    { at: 'c11e-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 合流：襟を直す河本
+    { at: 'c11e-002', portrait: { slot: 'right', clear: true } }, // ベンチの奥へ戻る
+    { at: 'c12-001', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 5-12：ベンチの奥の監督
+    { at: 'c12-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（実績では伝わらない）：右を明示して消す
+    { at: 'c12-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 腰掛けの端まで来て待つ河本
+    { at: 'c12-016', portrait: { slot: 'right', clear: true } }, // 河本がベンチを出たあと
+    { at: 'c13-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（新庄との接触）：左を明示して消す
+    { at: 'c13-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（新庄との接触）：右を明示して消す
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。

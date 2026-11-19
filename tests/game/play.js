@@ -417,7 +417,8 @@ async function portraitsInPlay(browser, viewport, label) {
   p = await portraitNow(page);
   check('c04-025 でリロードし、つづきからで美空の立ち絵が戻る', (await show(page)).lineId === 'c04-025' && p.length === 1 && p[0].file.endsWith('misora-game-uniform-normal.webp') && p[0].loaded, JSON.stringify(p));
   await advanceTo(page, 'c04-037');
-  check('c04-037：場面の最後の行まで美空が出ている', (await portraitNow(page)).length === 1);
+  p = await portraitNow(page);
+  check('c04-037：場面の最後の行まで美空が出ていて、平野を見ている大山が左に並ぶ', p.length === 2 && p.some((x) => x.file.endsWith('misora-game-uniform-normal.webp')) && p.some((x) => x.file.endsWith('oyama-practice-normal.webp')), JSON.stringify(p));
   await advance(page);
   check('c05-001：次の場面へ移ると、美空が消える', (await show(page)).lineId === 'c05-001' && (await portraitNow(page)).length === 0);
   await snap(page, 'portraits-' + viewport.width);
@@ -579,6 +580,86 @@ async function lodgingInPlay(browser, viewport, label, pick) {
   r = await bgIs(page, 'koshien-dugout');
   check('準決勝（c32e-001）へ進むと甲子園のベンチに戻り、夜の食堂が残らない', r.ok, JSON.stringify(r.got));
   await snap(page, 'lodging-' + viewport.width + '-' + pick);
+  await ctx.close();
+}
+
+// 5-5〜5-12 の立ち絵：代表的な会話、5-9の両分岐、河本の来校、5-11の回想と現在への復帰、5-13で残らないこと。
+// 各区間の行で保存し、リロード後の「つづきから」でその行の人物が戻ることも確かめる。
+const portraitSet = (page) => page.evaluate(() => ['left', 'right'].map((slot) => {
+  const img = document.querySelector('.kit-portrait-' + slot + ' img');
+  if (!img) return '-';
+  const m = img.getAttribute('src').match(/([a-z]+)-(.+)\.webp$/);
+  return (img.complete && img.naturalWidth === 859 ? '' : '(未読込)') + m[1] + '/' + m[2];
+}).join(','));
+async function portraitsLater(browser, viewport, label, pick) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('立ち絵 5-5〜5-12（' + label + '・分岐は' + (pick === 0 ? '一つ目' : '二つ目') + '）');
+  await clickText(page, 'はじめから');
+  const resumeAt = async (lineId) => {
+    await page.evaluate(([key, at]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  const expectAt = async (lineId, want, name) => {
+    await advanceToPicking(page, lineId, pick);
+    await waitPortraitLoaded(page);
+    const got = await portraitSet(page);
+    check(name + '（' + lineId + '）', (await show(page)).lineId === lineId && got === want, got);
+  };
+  const O = 'oyama/practice-normal', M = 'misora/game-uniform-normal', H = 'hiyori/jersey-normal', S = 'sasaki/practice-normal';
+  const K = 'kawamoto/casual-normal', F = 'misora/pantsuit-first-day';
+
+  // 5-5：大山との会話。分岐（大山に聞く／先輩に聞く）と合流
+  check('5-5 の大山の宣言（c05-014）でつづきから：大山', await resumeAt('c05-014') && await portraitSet(page) === '-,' + O, await portraitSet(page));
+  if (pick === 0) await expectAt('c05o-001', '-,' + O, '分岐「大山に聞く」：大山');
+  else await expectAt('c05s-001', '-,-', '分岐「先輩に聞く」：名前のない先輩なので立ち絵なし（大山も残らない）');
+  await expectAt('c05e-001', '-,' + O, '合流：先輩に呼ばれる大山');
+  await expectAt('c05e-012', '-,-', 'ベンチに平野が残る');
+
+  // 5-9：日和の両分岐と合流
+  check('5-9 の最初の行（c09-001）でつづきから：まだ誰もいない', await resumeAt('c09-001') && await portraitSet(page) === '-,-', await portraitSet(page));
+  await expectAt('c09-002', '-,' + H, 'ベンチの前の日和（ジャージ）');
+  const side = pick === 0 ? 'c09d-002' : 'c09t-004';
+  await expectAt(side, S + ',' + H, pick === 0 ? '分岐「飲み物」：佐々木にいちご牛乳を差し出す' : '分岐「用具」：佐々木が戻ってくる');
+  await resumeHere(page);
+  check('分岐の途中でリロードし、つづきからで日和と佐々木が戻る', (await show(page)).lineId === side && await portraitSet(page) === S + ',' + H, await portraitSet(page));
+  await expectAt('c09e-001', '-,' + S, '合流：翌日、自販機の前の佐々木（日和は残らない）');
+  await expectAt('c09e-007', M + ',' + H, '部室で日和の隣に座る監督');
+  await expectAt('c09e-014', '-,-', '平野が部室を出る');
+
+  // 5-10：河本の来校
+  check('5-10 の最初の行（c10-001）でつづきから：まだ誰もいない', await resumeAt('c10-001') && await portraitSet(page) === '-,-', await portraitSet(page));
+  await expectAt('c10-002', '-,' + K, 'グラウンドの入口に立つ河本（私服）');
+  await expectAt('c10-012', M + ',' + K, '監督に8勝を報告する河本');
+  await resumeHere(page);
+  check('c10-012 でリロードし、つづきからで監督と河本が戻る', await portraitSet(page) === M + ',' + K, await portraitSet(page));
+  await expectAt('c10-020', M + ',-', '河本の口が開いたまま止まる行は、河本を出さない');
+  await expectAt('c10-021', '-,-', '言い争いの区間は出さない');
+  await expectAt('c10-031', '-,' + K, '大山に向き直る河本');
+
+  // 5-11：回想の開始と終了、現在への復帰
+  await expectAt('c11s-005', O + ',' + K, '5-11：大山と河本');
+  await expectAt('c11m-001', '-,-', '回想の始まり：現在の大山・河本は残らない');
+  await expectAt('c11m-001d', '-,' + F, '回想：長い黒髪の女が歩いてくる（就任初日のスーツ）');
+  await resumeHere(page);
+  check('回想の途中でリロードし、つづきからで就任初日の美空が戻る', (await show(page)).lineId === 'c11m-001d' && await portraitSet(page) === '-,' + F, await portraitSet(page));
+  await expectAt('c11m-021', '-,-', '回想：外周を走る');
+  await expectAt('c11m-029', '-,' + F, '回想：1周して美空の前に戻る');
+  await expectAt('c11p-001', '-,' + K, '現在へ戻る：就任初日の美空は残らず、話し終えた河本');
+  if (pick === 0) await expectAt('c11a-001', '-,' + K, '分岐「平野が聞く」：河本');
+  else await expectAt('c11w-001', O + ',' + K, '分岐「大山を待つ」：大山と河本');
+  await expectAt('c11e-001', '-,' + K, '合流：襟を直す河本（大山は残らない）');
+
+  // 5-12 から 5-13 へ
+  await expectAt('c12-002', M + ',' + K, '5-12：ベンチの奥の監督と河本');
+  await expectAt('c12-016', M + ',-', '河本がベンチを出たあと');
+  await expectAt('c13-001', '-,-', '5-13 へ進むと、監督も河本も残らない');
+  await snap(page, 'portraits-later-' + viewport.width + '-' + pick);
   await ctx.close();
 }
 
@@ -790,6 +871,10 @@ async function main() {
     await legibility(browser);
     await portraitsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await portraitsInPlay(browser, DESKTOP, '1280×720');
+    for (const pick of [0, 1]) {
+      await portraitsLater(browser, SMALL_LANDSCAPE, '667×375', pick);
+      await portraitsLater(browser, DESKTOP, '1280×720', pick);
+    }
     await backgroundsInPlay(browser, SMALL_LANDSCAPE, '667×375', 0);
     await backgroundsInPlay(browser, DESKTOP, '1280×720', 1);
     for (const pick of [0, 1]) {
