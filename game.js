@@ -18,7 +18,7 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は assets/backgrounds/ の28枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の31枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
@@ -50,6 +50,10 @@ window.KIT_GAME = {
       'oyama-home-exterior-night': 'assets/backgrounds/oyama-home-exterior-night.webp',
       'hospital-waiting-room': 'assets/backgrounds/hospital-waiting-room.webp',
       'hosho-gate-bus-morning': 'assets/backgrounds/hosho-gate-bus-morning.webp',
+      // 第4便
+      'school-station-road-evening': 'assets/backgrounds/school-station-road-evening.webp',
+      'hirano-room': 'assets/backgrounds/hirano-room.webp',
+      'hospital-corridor': 'assets/backgrounds/hospital-corridor.webp',
       // 該当する背景がない区間に使う無地（キットの背景なしと同じ色）。別の場所の絵が残らないようにする
       unassigned: 'assets/backgrounds/unassigned.png',
     },
@@ -2248,7 +2252,7 @@ window.KIT_GAME = {
     { at: 'c02i-001', bg: 'hosho-field-afternoon' }, // 分岐：内野
     { at: 'c02o-001', bg: 'hosho-field-afternoon' }, // 分岐：外野
     { at: 'c02e-001', bg: 'hosho-field-afternoon' }, // 合流：給水台・球拾い
-    { at: 'c02e-018', bg: 'unassigned' }, // 駅までの道（該当なし）
+    { at: 'c02e-018', bg: 'school-station-road-evening' }, // 駅までの道を歩く（〜c02e-019）。c03-001 で翌日のグラウンドへ
     { at: 'c03-001', bg: 'hosho-field-afternoon' }, // 5-3：翌日の練習
     { at: 'c03-012', bg: 'hosho-field-bench' }, // ベンチでスコアブックを任される
     { at: 'c04-001', bg: 'hosho-field-bench' }, // 5-4：ベンチで記録を埋めている
@@ -2316,10 +2320,10 @@ window.KIT_GAME = {
     { at: 'c19-032', bg: 'regional-stadium-dugout' }, // ベンチ
     { at: 'c20-001', bg: 'regional-stadium-dugout-sunset' }, // 5-20：敗戦直後のベンチ（夕日）
     { at: 'cblank-001', bg: 'hosho-clubroom' }, // 幕間：学校へ戻った部室
-    { at: 'cblank-011', bg: 'unassigned' }, // 夏休み、自宅でメッセージ（該当なし）
+    { at: 'cblank-011', bg: 'hirano-room' }, // 夏休み、平野の部屋で大山からのメッセージを受ける（〜cblank-013）。机が隠れないよう立ち絵は出さない。c21-001 でグラウンドへ
     { at: 'c21-001', bg: 'hosho-field-afternoon' }, // 5-21：グラウンドの外野フェンス際
     { at: 'c21-009', bg: 'hospital-exam-room' }, // 病院で再診
-    { at: 'c21-017', bg: 'unassigned' }, // 診察室を出た廊下（該当なし）
+    { at: 'c21-017', bg: 'hospital-corridor' }, // 診察室を出た病院の廊下。c21-018 でグラウンドへ
     { at: 'c21-018', bg: 'hosho-field-afternoon' }, // 誰もいないグラウンドでキャッチボール
     { at: 'c22-001', bg: 'hosho-clubroom' }, // 5-22：部室
     { at: 'c23-001', bg: 'hosho-clubroom' }, // 5-23：部室
