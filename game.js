@@ -18,7 +18,7 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は assets/backgrounds/ の21枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の28枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
@@ -42,6 +42,14 @@ window.KIT_GAME = {
       'lodging-dining-hall': 'assets/backgrounds/lodging-dining-hall.webp',
       'lodging-dining-hall-night': 'assets/backgrounds/lodging-dining-hall-night.webp',
       'ryusei-clubroom-night': 'assets/backgrounds/ryusei-clubroom-night.webp',
+      // 第3便
+      'hosho-classroom': 'assets/backgrounds/hosho-classroom.webp',
+      'hosho-vending-area': 'assets/backgrounds/hosho-vending-area.webp',
+      'hosho-school-exterior': 'assets/backgrounds/hosho-school-exterior.webp',
+      'hosho-school-corridor': 'assets/backgrounds/hosho-school-corridor.webp',
+      'oyama-home-exterior-night': 'assets/backgrounds/oyama-home-exterior-night.webp',
+      'hospital-waiting-room': 'assets/backgrounds/hospital-waiting-room.webp',
+      'hosho-gate-bus-morning': 'assets/backgrounds/hosho-gate-bus-morning.webp',
       // 該当する背景がない区間に使う無地（キットの背景なしと同じ色）。別の場所の絵が残らないようにする
       unassigned: 'assets/backgrounds/unassigned.png',
     },
@@ -2235,7 +2243,7 @@ window.KIT_GAME = {
     // 背景。場所が変わる行で切り替える。キットは通ったルートではなく本文の並び順で背景を戻すので、
     // 分岐の入口・合流点を含め、すべての場面の最初の行で背景を明示する（別ルートの背景が残らないようにする）。
     { at: 'c01-001', bg: 'hosho-field-fence-morning' }, // 5-1：朝、フェンスの外からグラウンドを見る
-    { at: 'c02-001', bg: 'unassigned' }, // 5-2：教室（該当なし）
+    { at: 'c02-001', bg: 'hosho-classroom' }, // 5-2：教室。c02-006（練習着に着替えて門から入る）でグラウンドへ戻る
     { at: 'c02-006', bg: 'hosho-field-afternoon' }, // 放課後、練習着で門からグラウンドへ入る
     { at: 'c02i-001', bg: 'hosho-field-afternoon' }, // 分岐：内野
     { at: 'c02o-001', bg: 'hosho-field-afternoon' }, // 分岐：外野
@@ -2261,12 +2269,12 @@ window.KIT_GAME = {
     { at: 'c09-001', bg: 'hosho-field-bench' }, // 5-9：練習帰りのベンチ
     { at: 'c09d-001', bg: 'hosho-field-bench' }, // 分岐：飲み物
     { at: 'c09t-001', bg: 'hosho-field-bench' }, // 分岐：用具
-    { at: 'c09e-001', bg: 'unassigned' }, // 合流：翌日、自販機の前（該当なし）
+    { at: 'c09e-001', bg: 'hosho-vending-area' }, // 合流：翌日、自販機の前で佐々木と話す。c09e-006（部室へ戻る）で部室へ
     { at: 'c09e-006', bg: 'hosho-clubroom' }, // 部室に戻る
     { at: 'c10-001', bg: 'hosho-field-bench' }, // 5-10：練習後のベンチ
     { at: 'c11s-001', bg: 'hosho-field-bench' }, // 5-11：ベンチ
     { at: 'c11m-001', bg: 'hosho-field-afternoon' }, // 回想：就任初日、グラウンドに整列
-    { at: 'c11m-021', bg: 'unassigned' }, // 回想：外周を走る（該当なし）
+    { at: 'c11m-021', bg: 'hosho-school-exterior' }, // 回想：外周を走り、校舎の角を曲がる。c11m-029（1周して戻る）でグラウンドへ
     { at: 'c11m-029', bg: 'hosho-field-afternoon' }, // 回想：1周して監督の前に戻る
     { at: 'c11p-001', bg: 'hosho-field-bench' }, // 現在：ベンチ
     { at: 'c11a-001', bg: 'hosho-field-bench' }, // 分岐：平野が聞く
@@ -2279,7 +2287,7 @@ window.KIT_GAME = {
     { at: 'csummer-014', bg: 'hosho-clubroom' }, // 帰り支度の部室
     { at: 'c14-001', bg: 'regional-stadium-dugout' }, // 5-14：準々決勝のベンチ
     { at: 'c15-001', bg: 'regional-stadium-dugout' }, // 5-15：ベンチ
-    { at: 'c15-008', bg: 'unassigned' }, // 回想：廊下で名簿を確かめる（該当なし）
+    { at: 'c15-008', bg: 'hosho-school-corridor' }, // 回想：名簿を持って監督を追い、廊下で佐々木の登録を確かめる。c15-014（回想の終わり）で試合中のベンチへ
     { at: 'c15-014', bg: 'regional-stadium-dugout' }, // ベンチに戻る
     { at: 'c16-001', bg: 'regional-stadium-dugout' }, // 5-16：ベンチ
     { at: 'c16-004', bg: 'regional-stadium-field' }, // 佐々木が打席から見る景色
@@ -2294,12 +2302,12 @@ window.KIT_GAME = {
     { at: 'c17-002', bg: 'regional-stadium-dugout' }, // 思い返す北陵戦のベンチ
     { at: 'c17-007', bg: 'kamijo-living-room-night' }, // 準決勝の前夜、神条家の居間
     { at: 'c18-pre-a', bg: 'hosho-field-afternoon' }, // 5-18：全体練習のあと、ポール間を走る
-    { at: 'c18-pre-f', bg: 'unassigned' }, // その晩、大山家の前（屋外・該当なし）
+    { at: 'c18-pre-f', bg: 'oyama-home-exterior-night' }, // その晩、大山家の前でダッシュし、夕飯に呼ばれる。c18-pre-k（玄関）で家の中へ
     { at: 'c18-pre-k', bg: 'oyama-home-entry' }, // 玄関で靴を脱ぎ捨てる
     { at: 'c18-001', bg: 'regional-stadium-dugout' }, // 翌日、準決勝のベンチで記録
     { at: 'c18-003', bg: 'regional-stadium-field' }, // ライトの捕球と負傷
     { at: 'c18-010', bg: 'regional-stadium-dugout' }, // ベンチから見る
-    { at: 'c18-017', bg: 'unassigned' }, // 病院の待合室（該当なし）
+    { at: 'c18-017', bg: 'hospital-waiting-room' }, // 病院の待合室。c18-018（診察室）で診察室へ
     { at: 'c18-018', bg: 'hospital-exam-room' }, // 診察室
     { at: 'c19-001', bg: 'regional-stadium-dugout' }, // 5-19：決勝のベンチ
     { at: 'c19-021', bg: 'regional-stadium-field' }, // 武藤の本塁打
@@ -2347,7 +2355,7 @@ window.KIT_GAME = {
     { at: 'c29j-004', bg: 'regional-stadium-dugout' }, // 敗戦の記録
     { at: 'c29k-001', bg: 'regional-stadium-dugout' }, // E1：整列後のベンチ
     { at: 'c29k-004', bg: 'hosho-clubroom' }, // E1：翌日の部室
-    { at: 'cbus-001', bg: 'unassigned' }, // 幕間：校門前のバスの外（該当なし）
+    { at: 'cbus-001', bg: 'hosho-gate-bus-morning' }, // 幕間：校門前で用具を積み、乗車する前。cbus-002（車内）でバスの中へ
     { at: 'cbus-002', bg: 'bus-interior' }, // バスの車内
     { at: 'c30-001', bg: 'koshien-dugout' }, // 5-30：甲子園のベンチ
     { at: 'c31a-001', bg: 'lodging-dining-hallway' }, // 5-31：食堂を出た廊下で、長椅子の記者に呼び止められる

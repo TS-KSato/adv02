@@ -590,13 +590,15 @@ const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afterno
   'koshien-field', 'koshien-dugout', 'koshien-concourse', 'kamijo-living-room-night', 'oyama-home-entry', 'hospital-exam-room',
   'station-plaza-autumn', 'bus-interior', 'bus-interior-sunset',
   // 第2便（宿舎と龍成の部室）
-  'lodging-dining-hallway', 'lodging-dining-hall', 'lodging-dining-hall-night', 'ryusei-clubroom-night'];
-check('納品の背景は21枚（第1便17枚＋第2便4枚）', DELIVERED_BACKGROUNDS.length === 21 && new Set(DELIVERED_BACKGROUNDS).size === 21);
-check('背景の登録は、納品の21枚と、該当なしの区間に使う無地 unassigned だけ',
+  'lodging-dining-hallway', 'lodging-dining-hall', 'lodging-dining-hall-night', 'ryusei-clubroom-night',
+  // 第3便（教室・自販機・校舎外周・廊下・大山家の前・病院の待合室・校門前のバス）
+  'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning'];
+check('納品の背景は28枚（第1便17枚＋第2便4枚＋第3便7枚）', DELIVERED_BACKGROUNDS.length === 28 && new Set(DELIVERED_BACKGROUNDS).size === 28);
+check('背景の登録は、納品の28枚と、該当なしの区間に使う無地 unassigned だけ',
   JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, 'unassigned'].sort()), Object.keys(bgs).join(','));
 check('納品の背景は「キー.webp」、無地は unassigned.png', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp') && bgs.unassigned === 'assets/backgrounds/unassigned.png');
 const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
-check('assets/backgrounds には登録した22ファイル（納品21＋無地）だけがある（CSV・PNG原本を置かない）',
+check('assets/backgrounds には登録した29ファイル（納品28＋無地）だけがある（CSV・PNG原本を置かない）',
   JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
 const badBg = [];
 for (const k of DELIVERED_BACKGROUNDS) {
@@ -632,7 +634,14 @@ check('登録した背景は、すべてどこかの行で使っている', Obje
 const bgAt = (id) => V.stateAt(G, id).bg;
 const bgSpans = [
   ['c01-001', 'hosho-field-fence-morning'], ['c01-023', 'hosho-field-fence-morning'],
-  ['c02-001', 'unassigned'], ['c02-005', 'unassigned'], ['c02-006', 'hosho-field-afternoon'],
+  ['c01-023', 'hosho-field-fence-morning'], ['c02-001', 'hosho-classroom'], ['c02-005', 'hosho-classroom'], ['c02-006', 'hosho-field-afternoon'],
+  ['c09t-009', 'hosho-field-bench'], ['c09e-001', 'hosho-vending-area'], ['c09e-005', 'hosho-vending-area'], ['c09e-006', 'hosho-clubroom'],
+  ['c11m-020', 'hosho-field-afternoon'], ['c11m-021', 'hosho-school-exterior'], ['c11m-028', 'hosho-school-exterior'], ['c11m-029', 'hosho-field-afternoon'], ['c11p-001', 'hosho-field-bench'],
+  ['c15-007', 'regional-stadium-dugout'], ['c15-008', 'hosho-school-corridor'], ['c15-013', 'hosho-school-corridor'], ['c15-014', 'regional-stadium-dugout'],
+  ['c18-pre-e', 'hosho-field-afternoon'], ['c18-pre-f', 'oyama-home-exterior-night'], ['c18-pre-j', 'oyama-home-exterior-night'], ['c18-pre-k', 'oyama-home-entry'],
+  ['c18-016', 'regional-stadium-dugout'], ['c18-017', 'hospital-waiting-room'],
+  ['c29k-004', 'hosho-clubroom'], ['cbus-001', 'hosho-gate-bus-morning'], ['cbus-002', 'bus-interior'],
+  ['c02e-018', 'unassigned'], ['cblank-011', 'unassigned'], ['c21-017', 'unassigned'], ['c26e-001', 'unassigned'],
   ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'],
   ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
   ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
