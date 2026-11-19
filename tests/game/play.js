@@ -711,6 +711,54 @@ async function batch3InPlay(browser, viewport, label, pick) {
   await ctx.close();
 }
 
+// 第4便の背景：駅までの道、平野の部屋、病院の廊下。区間の前後の切り替えと、つづきからでの復元。
+// 平野の部屋は、再開しても左右の立ち絵が出ず、机が隠れないことも確かめる。
+async function batch4InPlay(browser, viewport, label) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('第4便の背景（' + label + '）');
+  await clickText(page, 'はじめから');
+  const resumeAt = async (lineId) => {
+    await page.evaluate(([key, at]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  const noPortraits = async () => (await portraitNow(page)).length === 0;
+  const spans = [
+    // [前の行, 前の背景, 入口, 途中, 終わりの行, 終わりの背景, 新しい背景, 名前]
+    ['c02e-017', 'hosho-field-afternoon', 'c02e-018', 'c02e-019', 'c03-001', 'hosho-field-afternoon', 'school-station-road-evening', '5-2 駅までの道'],
+    ['cblank-010', 'hosho-clubroom', 'cblank-011', 'cblank-012', 'c21-001', 'hosho-field-afternoon', 'hirano-room', '幕間「空いた一行」平野の部屋'],
+    ['c21-016', 'hospital-exam-room', 'c21-017', 'c21-017', 'c21-018', 'hosho-field-afternoon', 'hospital-corridor', '5-21 病院の廊下'],
+  ];
+  for (const [before, beforeBg, entry, mid, back, backBg, bg, name] of spans) {
+    let at = await resumeAt(before);
+    check(name + '：直前（' + before + '）は ' + beforeBg, at && (await bgIs(page, beforeBg)).ok);
+    await advance(page);
+    let r = await bgIs(page, bg);
+    check(name + '：' + entry + ' で ' + bg + ' に切り替わる', (await show(page)).lineId === entry && r.ok, JSON.stringify(r.got));
+    await advanceTo(page, mid);
+    await resumeHere(page);
+    r = await bgIs(page, bg);
+    check(name + '：' + mid + ' でリロードし、つづきからで同じ背景', (await show(page)).lineId === mid && r.ok, JSON.stringify(r.got));
+    if (bg === 'hirano-room') {
+      check(name + '：つづきからのあとも左右の立ち絵が出ない（机が隠れない）', await noPortraits(), JSON.stringify(await portraitNow(page)));
+      await snap(page, 'hirano-room-' + viewport.width);
+    }
+    await advanceTo(page, back);
+    r = await bgIs(page, backBg);
+    check(name + '：' + back + ' で既存の ' + backBg + ' に戻る', (await show(page)).lineId === back && r.ok, JSON.stringify(r.got));
+  }
+  for (const id of ['cblank-011', 'cblank-013']) {
+    await resumeAt(id);
+    check('平野の部屋（' + id + '）でつづきから：大山のメッセージの行も含め、左右とも立ち絵なし', await noPortraits() && (await bgIs(page, 'hirano-room')).ok, JSON.stringify(await portraitNow(page)));
+  }
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -889,7 +937,7 @@ async function mountCheck(origin) {
     const type = res.headers.get('content-type') || '';
     if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
   }
-  check('/adv02/ の下で、登録した背景29枚（納品28＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
+  check('/adv02/ の下で、登録した背景32枚（納品31＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 async function main() {
@@ -931,6 +979,8 @@ async function main() {
       await batch3InPlay(browser, SMALL_LANDSCAPE, '667×375', pick);
       await batch3InPlay(browser, DESKTOP, '1280×720', pick);
     }
+    await batch4InPlay(browser, SMALL_LANDSCAPE, '667×375');
+    await batch4InPlay(browser, DESKTOP, '1280×720');
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
@@ -939,7 +989,7 @@ async function main() {
     const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
       ...['hosho-field-fence-morning', 'unassigned', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
         'bus-interior-sunset', 'koshien-dugout', 'koshien-field', 'lodging-dining-hallway', 'lodging-dining-hall',
-        'lodging-dining-hall-night', 'ryusei-clubroom-night', 'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning'].map((k) => BASE + G.assets.backgrounds[k]),
+        'lodging-dining-hall-night', 'ryusei-clubroom-night', 'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning', 'school-station-road-evening', 'hirano-room', 'hospital-corridor'].map((k) => BASE + G.assets.backgrounds[k]),
       BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];
     check('必要な素材がすべて 200 で読み込まれた', needed.every((u) => OK_URLS.has(u)), needed.filter((u) => !OK_URLS.has(u)).join(' '));
   } finally {

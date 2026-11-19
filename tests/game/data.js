@@ -592,13 +592,15 @@ const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afterno
   // 第2便（宿舎と龍成の部室）
   'lodging-dining-hallway', 'lodging-dining-hall', 'lodging-dining-hall-night', 'ryusei-clubroom-night',
   // 第3便（教室・自販機・校舎外周・廊下・大山家の前・病院の待合室・校門前のバス）
-  'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning'];
-check('納品の背景は28枚（第1便17枚＋第2便4枚＋第3便7枚）', DELIVERED_BACKGROUNDS.length === 28 && new Set(DELIVERED_BACKGROUNDS).size === 28);
-check('背景の登録は、納品の28枚と、該当なしの区間に使う無地 unassigned だけ',
+  'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning',
+  // 第4便（駅までの道・平野の部屋・病院の廊下）
+  'school-station-road-evening', 'hirano-room', 'hospital-corridor'];
+check('納品の背景は31枚（第1便17枚＋第2便4枚＋第3便7枚＋第4便3枚）', DELIVERED_BACKGROUNDS.length === 31 && new Set(DELIVERED_BACKGROUNDS).size === 31);
+check('背景の登録は、納品の31枚と、該当なしの区間に使う無地 unassigned だけ',
   JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, 'unassigned'].sort()), Object.keys(bgs).join(','));
 check('納品の背景は「キー.webp」、無地は unassigned.png', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp') && bgs.unassigned === 'assets/backgrounds/unassigned.png');
 const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
-check('assets/backgrounds には登録した29ファイル（納品28＋無地）だけがある（CSV・PNG原本を置かない）',
+check('assets/backgrounds には登録した32ファイル（納品31＋無地）だけがある（CSV・PNG原本を置かない）',
   JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
 const badBg = [];
 for (const k of DELIVERED_BACKGROUNDS) {
@@ -641,7 +643,10 @@ const bgSpans = [
   ['c18-pre-e', 'hosho-field-afternoon'], ['c18-pre-f', 'oyama-home-exterior-night'], ['c18-pre-j', 'oyama-home-exterior-night'], ['c18-pre-k', 'oyama-home-entry'],
   ['c18-016', 'regional-stadium-dugout'], ['c18-017', 'hospital-waiting-room'],
   ['c29k-004', 'hosho-clubroom'], ['cbus-001', 'hosho-gate-bus-morning'], ['cbus-002', 'bus-interior'],
-  ['c02e-018', 'unassigned'], ['cblank-011', 'unassigned'], ['c21-017', 'unassigned'], ['c26e-001', 'unassigned'],
+  ['c02e-017', 'hosho-field-afternoon'], ['c02e-018', 'school-station-road-evening'], ['c02e-019', 'school-station-road-evening'], ['c03-001', 'hosho-field-afternoon'],
+  ['cblank-010', 'hosho-clubroom'], ['cblank-011', 'hirano-room'], ['cblank-013', 'hirano-room'], ['c21-001', 'hosho-field-afternoon'],
+  ['c21-016', 'hospital-exam-room'], ['c21-017', 'hospital-corridor'], ['c21-018', 'hosho-field-afternoon'],
+  ['c26e-001', 'unassigned'], ['c26e-010', 'unassigned'],
   ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'],
   ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
   ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
@@ -656,6 +661,12 @@ const bgSpans = [
 check('主な切り替え：冒頭・5-2・5-18・5-20の夕日・5-28の龍成の部室・5-31の宿舎と球場・5-32の夜の食堂と準決勝・E2の西日のバス・E3の観客席・E4から最後のアウト',
   bgSpans.every(([id, want]) => bgAt(id) === want), bgSpans.filter(([id, want]) => bgAt(id) !== want).map(([id]) => id + '=' + bgAt(id)).join(' '));
 check('5-2：放課後にグラウンドへ入る行（c02-006）で切り替わる', bgAt('c02-005') !== 'hosho-field-afternoon' && bgAt('c02-006') === 'hosho-field-afternoon');
+const roomLines = allIds.filter((id) => bgAt(id) === 'hirano-room');
+check('平野の部屋（cblank-011〜cblank-013）では、机が隠れないよう左右とも立ち絵を出さない（メッセージの大山も出さない）',
+  JSON.stringify(roomLines) === JSON.stringify(['cblank-011', 'cblank-012', 'cblank-013']) &&
+  roomLines.every((id) => { const p = V.stateAt(G, id).portraits; return !p.left && !p.right; }), roomLines.join(','));
+check('残る暗い仮背景は、場所の記載がない5-26の練習試合（c26e-001〜c26e-010）だけ',
+  JSON.stringify(allIds.filter((id) => bgAt(id) === 'unassigned')) === JSON.stringify(G.scenes['rookies-teirei'].lines.map((l) => l.id)));
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
 section('立ち絵の演出（5-2〜5-12）');
 const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
