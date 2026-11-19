@@ -464,10 +464,10 @@ async function backgroundsInPlay(browser, viewport, label, pick) {
   check('c01-001：冒頭は朝のフェンスの外（hosho-field-fence-morning）が画面いっぱいに出る', r.ok, JSON.stringify(r.got));
   await advanceTo(page, 'c01-023');
   await advance(page);
-  r = await bgIs(page, 'unassigned');
-  check('c02-001：教室の区間は、グラウンドの絵を残さず無地になる', (await show(page)).lineId === 'c02-001' && r.ok, JSON.stringify(r.got));
+  r = await bgIs(page, 'hosho-classroom');
+  check('c02-001：5-2冒頭は教室（グラウンドの絵は残らない）', (await show(page)).lineId === 'c02-001' && r.ok, JSON.stringify(r.got));
   await advanceTo(page, 'c02-005');
-  check('c02-005：放課後、グラブを出すところまでは無地のまま', (await bgIs(page, 'unassigned')).ok);
+  check('c02-005：放課後、グラブを出すところまでは教室のまま', (await bgIs(page, 'hosho-classroom')).ok);
   await advance(page);
   r = await bgIs(page, 'hosho-field-afternoon');
   check('c02-006：練習着でグラウンドへ入る行で、放課後のグラウンドに切り替わる', (await show(page)).lineId === 'c02-006' && r.ok, JSON.stringify(r.got));
@@ -663,6 +663,54 @@ async function portraitsLater(browser, viewport, label, pick) {
   await ctx.close();
 }
 
+// 第3便の背景：7つの区間の入口でつづきから、区間の途中でリロードして同じ背景、区間の終わりで既存の背景へ戻る。
+async function batch3InPlay(browser, viewport, label, pick) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('第3便の背景（' + label + '・分岐は' + (pick === 0 ? '一つ目' : '二つ目') + '）');
+  await clickText(page, 'はじめから');
+  const resumeAt = async (lineId) => {
+    await page.evaluate(([key, at]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  const spans = [
+    // [入口, 途中, 終わりの行, 終わりの背景, 新しい背景, 名前]
+    ['c02-001', 'c02-003', 'c02-006', 'hosho-field-afternoon', 'hosho-classroom', '5-2 教室 → 練習着でグラウンドへ'],
+    ['c09e-001', 'c09e-003', 'c09e-006', 'hosho-clubroom', 'hosho-vending-area', '5-9 自販機の前 → 部室'],
+    ['c11m-021', 'c11m-025', 'c11m-029', 'hosho-field-afternoon', 'hosho-school-exterior', '5-11 回想：外周と校舎の角 → 1周してグラウンド'],
+    ['c15-008', 'c15-010', 'c15-014', 'regional-stadium-dugout', 'hosho-school-corridor', '5-15 回想：廊下 → 試合中のベンチ'],
+    ['c18-pre-f', 'c18-pre-h', 'c18-pre-k', 'oyama-home-entry', 'oyama-home-exterior-night', '5-18 大山家の前 → 玄関'],
+    ['c18-017', 'c18-017', 'c18-018', 'hospital-exam-room', 'hospital-waiting-room', '5-18 病院の待合室 → 診察室'],
+    ['cbus-001', 'cbus-001', 'cbus-002', 'bus-interior', 'hosho-gate-bus-morning', '幕間 校門前のバス → 車内'],
+  ];
+  for (const [entry, mid, back, backBg, bg, name] of spans) {
+    let at = await resumeAt(entry);
+    let r = await bgIs(page, bg);
+    check(name + '：入口（' + entry + '）でつづきから ' + bg, at && r.ok, JSON.stringify(r.got));
+    await advanceToPicking(page, mid, pick);
+    await resumeHere(page);
+    r = await bgIs(page, bg);
+    check(name + '：途中（' + mid + '）でリロードし、つづきからで同じ背景', (await show(page)).lineId === mid && r.ok, JSON.stringify(r.got));
+    await advanceToPicking(page, back, pick);
+    r = await bgIs(page, backBg);
+    check(name + '：' + back + ' で既存の ' + backBg + ' に戻り、第3便の絵が残らない', (await show(page)).lineId === back && r.ok, JSON.stringify(r.got));
+  }
+  // 回想から現在への復帰（5-11・5-15）
+  await resumeAt('c11m-029');
+  await advanceToPicking(page, 'c11p-001', pick);
+  check('5-11 回想が終わって現在へ戻る（c11p-001）：ベンチ', (await bgIs(page, 'hosho-field-bench')).ok);
+  await resumeAt('c15-013');
+  await advanceToPicking(page, 'c15-014', pick);
+  check('5-15 回想が終わって試合へ戻る（c15-014）：地方球場のベンチ', (await bgIs(page, 'regional-stadium-dugout')).ok);
+  await snap(page, 'batch3-' + viewport.width + '-' + pick);
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -841,7 +889,7 @@ async function mountCheck(origin) {
     const type = res.headers.get('content-type') || '';
     if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
   }
-  check('/adv02/ の下で、登録した背景22枚（納品21＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
+  check('/adv02/ の下で、登録した背景29枚（納品28＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 async function main() {
@@ -880,6 +928,8 @@ async function main() {
     for (const pick of [0, 1]) {
       await lodgingInPlay(browser, SMALL_LANDSCAPE, '667×375', pick);
       await lodgingInPlay(browser, DESKTOP, '1280×720', pick);
+      await batch3InPlay(browser, SMALL_LANDSCAPE, '667×375', pick);
+      await batch3InPlay(browser, DESKTOP, '1280×720', pick);
     }
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
@@ -889,7 +939,7 @@ async function main() {
     const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
       ...['hosho-field-fence-morning', 'unassigned', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
         'bus-interior-sunset', 'koshien-dugout', 'koshien-field', 'lodging-dining-hallway', 'lodging-dining-hall',
-        'lodging-dining-hall-night', 'ryusei-clubroom-night'].map((k) => BASE + G.assets.backgrounds[k]),
+        'lodging-dining-hall-night', 'ryusei-clubroom-night', 'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning'].map((k) => BASE + G.assets.backgrounds[k]),
       BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];
     check('必要な素材がすべて 200 で読み込まれた', needed.every((u) => OK_URLS.has(u)), needed.filter((u) => !OK_URLS.has(u)).join(' '));
   } finally {
