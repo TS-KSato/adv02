@@ -1,7 +1,7 @@
 // 『きみのための甲子園』の作品データの試験（ブラウザ不要）。
 // 確かめること：固定版の検証に通る、作品IDと版、冒頭一場面の23行が docs/opening-script.md と一致する、
 // 話者・素材・演出がすべて定義済みで実在する、初練習の両経路が合流する、参照がすべて相対パスである。
-// 立ち絵：素材一覧と実ファイルが1対1、35枚が透過WebP・859×1,280px、登録と初回配置（大山・美空）が決めたとおり。
+// 立ち絵：素材一覧と実ファイルが1対1、35枚が透過WebP・859×1,280px、5-2〜5-12 の配置が決めたとおりで、場面をまたいで残らない。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -648,24 +648,69 @@ check('主な切り替え：冒頭・5-2・5-18・5-20の夕日・5-28の龍成�
   bgSpans.every(([id, want]) => bgAt(id) === want), bgSpans.filter(([id, want]) => bgAt(id) !== want).map(([id]) => id + '=' + bgAt(id)).join(' '));
 check('5-2：放課後にグラウンドへ入る行（c02-006）で切り替わる', bgAt('c02-005') !== 'hosho-field-afternoon' && bgAt('c02-006') === 'hosho-field-afternoon');
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
+section('立ち絵の演出（5-2〜5-12）');
 const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
-check('立ち絵の演出は、冒頭の大山と5-4の美空の登場・退場の4つだけ', JSON.stringify(portraitCues) === JSON.stringify([
+const has = (cue) => portraitCues.some((c) => JSON.stringify(c) === JSON.stringify(cue));
+check('冒頭の大山と5-4の美空の既存演出（4つ）を維持している', [
   { at: 'c01-014', portrait: { slot: 'right', char: 'oyama', expr: 'school-winter-normal' } },
   { at: 'c01-021', portrait: { slot: 'right', clear: true } },
   { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } },
   { at: 'c05-001', portrait: { slot: 'right', clear: true } },
-]), JSON.stringify(portraitCues));
+].every(has));
 check('視点人物の平野は立ち絵で出さない', portraitCues.every((c) => c.portrait.char !== 'hirano'));
+check('立ち絵の演出は本文の並び順に並ぶ（キットは配列の後ろの指定を優先する）',
+  portraitCues.every((c, i) => i === 0 || lineOrder.get(c.at) >= lineOrder.get(portraitCues[i - 1].at)));
+const charOf = (p) => p && p.char + '/' + p.expr;
+// 場面の中の立ち絵は、その場面の演出だけで決まる。stateAt が並び順で戻す立ち絵が、どの行でも一致すれば、別ルート・回想・前の場面の人物は残らない
+const leakedPortraits = [];
+for (const key of scenes) {
+  const st = { left: null, right: null };
+  for (const l of G.scenes[key].lines) {
+    for (const c of portraitCues.filter((c) => c.at === l.id)) st[c.portrait.slot] = c.portrait.clear ? null : charOf(c.portrait);
+    const got = V.stateAt(G, l.id).portraits;
+    if (charOf(got.left) !== (st.left || null) || charOf(got.right) !== (st.right || null)) leakedPortraits.push(l.id);
+  }
+}
+check('全' + allIds.length + '行で、復元される立ち絵がその場面の中の指定と一致する（分岐・合流・回想・場面転換で人物が残らない）',
+  leakedPortraits.length === 0, leakedPortraits.slice(0, 5).join(','));
 const shownAt = (id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map((x) => x.char + '/' + x.expr).join(',') || '-'; };
+const usedPortraits = new Set(allIds.flatMap((id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map(charOf); }));
+check('使う立ち絵は練習・片づけ・私服・就任初日の衣装だけ（家庭用デフォルメ・負傷・パンツスーツ通常などは使わない）',
+  [...usedPortraits].sort().join(',') === ['hiyori/jersey-normal', 'kawamoto/casual-normal', 'misora/game-uniform-normal', 'misora/pantsuit-first-day',
+    'nakata/practice-normal', 'oyama/practice-normal', 'oyama/school-winter-normal', 'sasaki/practice-normal'].sort().join(','), [...usedPortraits].join(','));
+const sceneLines = (...keys) => keys.flatMap((k) => G.scenes[k].lines.map((l) => l.id));
+const firstDayLines = allIds.filter((id) => shownAt(id).includes('misora/pantsuit-first-day'));
+check('就任初日のスーツは5-11の回想（testimony-memory）の中だけ', firstDayLines.length > 0 && firstDayLines.every((id) => sceneOfLine.get(id) === 'testimony-memory'));
+const kawamotoPortraitLines = allIds.filter((id) => shownAt(id).includes('kawamoto/'));
+check('河本（私服）は現在の場面（5-10〜5-12）だけで、回想には出さない', kawamotoPortraitLines.length > 0 &&
+  kawamotoPortraitLines.every((id) => ['kawamoto-visit', 'testimony-start', 'testimony-present', 'testimony-ask', 'testimony-wait', 'testimony-end', 'kawamoto-results'].includes(sceneOfLine.get(id))));
+check('名前のない先輩・1年生だけの場面（5-2・5-3、5-5の先輩に聞く分岐）では立ち絵を出さない',
+  sceneLines('practice-start', 'practice-infield', 'practice-outfield', 'practice-end', 'scorer-first', 'marriage-senpai').every((id) => shownAt(id) === '-'));
+const lastPortraitScene = 'kawamoto-results';
+check('立ち絵は冒頭と5-4〜5-12にだけ出て、5-13以降には残らない',
+  allIds.filter((id) => shownAt(id) !== '-').every((id) => /^c01-/.test(id) || scenes.indexOf(sceneOfLine.get(id)) >= scenes.indexOf('coach-arrival') && scenes.indexOf(sceneOfLine.get(id)) <= scenes.indexOf(lastPortraitScene)));
 const portraitSpans = [
   ['c01-013', '-'], ['c01-014', 'oyama/school-winter-normal'], ['c01-020', 'oyama/school-winter-normal'], ['c01-021', '-'], ['c01-023', '-'],
-  ['c04-004', '-'], ['c04-005', 'misora/game-uniform-normal'], ['c04-037', 'misora/game-uniform-normal'], ['c05-001', '-'], ['c36-021', '-'],
+  ['c04-004', '-'], ['c04-005', 'misora/game-uniform-normal'], ['c04-034', 'misora/game-uniform-normal'],
+  ['c04-035', 'nakata/practice-normal,misora/game-uniform-normal'], ['c04-037', 'oyama/practice-normal,misora/game-uniform-normal'], ['c05-001', '-'],
+  ['c05-003', '-'], ['c05-004', 'oyama/practice-normal'], ['c05-027', 'oyama/practice-normal'], ['c05o-001', 'oyama/practice-normal'], ['c05s-001', '-'],
+  ['c05e-011', 'oyama/practice-normal'], ['c05e-012', '-'], ['c05b-001', 'oyama/practice-normal'],
+  ['c06-008', '-'], ['c06-009', 'misora/game-uniform-normal'], ['c06b-001', '-'], ['c06e-004', 'misora/game-uniform-normal'], ['c06e-004a', '-'], ['c06e-010', '-'],
+  ['c07-001', '-'], ['c07-008', '-'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
+  ['c07-033', 'nakata/practice-normal,misora/game-uniform-normal'], ['c08-001', 'misora/game-uniform-normal'], ['c08-022', 'misora/game-uniform-normal'], ['c08-041', '-'],
+  ['c08b-001', 'hiyori/jersey-normal'], ['c09-001', '-'], ['c09-002', 'hiyori/jersey-normal'],
+  ['c09d-002', 'sasaki/practice-normal,hiyori/jersey-normal'], ['c09d-010', '-'], ['c09t-001', 'hiyori/jersey-normal'], ['c09t-004', 'sasaki/practice-normal,hiyori/jersey-normal'],
+  ['c09e-001', 'sasaki/practice-normal'], ['c09e-006', 'hiyori/jersey-normal'], ['c09e-007', 'misora/game-uniform-normal,hiyori/jersey-normal'], ['c09e-014', '-'],
+  ['c10-001', '-'], ['c10-002', 'kawamoto/casual-normal'], ['c10-008', 'misora/game-uniform-normal,kawamoto/casual-normal'], ['c10-020', 'misora/game-uniform-normal'],
+  ['c10-021', '-'], ['c10-030', '-'], ['c10-031', 'kawamoto/casual-normal'],
+  ['c11s-001', 'oyama/practice-normal,kawamoto/casual-normal'], ['c11m-001', '-'], ['c11m-001c', '-'], ['c11m-001d', 'misora/pantsuit-first-day'],
+  ['c11m-021', '-'], ['c11m-029', 'misora/pantsuit-first-day'], ['c11p-001', 'kawamoto/casual-normal'], ['c11a-001', 'kawamoto/casual-normal'],
+  ['c11w-001', 'oyama/practice-normal,kawamoto/casual-normal'], ['c11w-006', 'kawamoto/casual-normal'], ['c11e-001', 'kawamoto/casual-normal'], ['c11e-002', '-'],
+  ['c12-001', 'misora/game-uniform-normal'], ['c12-002', 'misora/game-uniform-normal,kawamoto/casual-normal'], ['c12-016', 'misora/game-uniform-normal'],
+  ['c12-020', 'misora/game-uniform-normal'], ['c13-001', '-'], ['c36-021', '-'],
 ];
-check('行ごとの立ち絵：大山は c01-014〜c01-020、美空は c04-005〜c04-037 にだけ出る',
-  portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.map(([id]) => id + '=' + shownAt(id)).join(' '));
-const withPortrait = allIds.filter((id) => shownAt(id) !== '-');
-check('立ち絵が出る行は、その2区間（7行＋31行）の外にない', withPortrait.length === 7 + 31 &&
-  withPortrait.every((id) => /^c01-01[4-9]$|^c01-020$|^c04-/.test(id)), withPortrait.length + ' 行');
+check('行ごとの立ち絵（左,右）：登場・退場・分岐・回想の主な行',
+  portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.filter(([id, want]) => shownAt(id) !== want).map(([id]) => id + '=' + shownAt(id)).join(' '));
 
 section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');
