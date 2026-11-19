@@ -496,7 +496,7 @@ async function backgroundsInPlay(browser, viewport, label, pick) {
   };
   const late = [
     ['c20-001', {}, 'regional-stadium-dugout-sunset', '5-20：敗戦直後のベンチは夕日'],
-    ['c31a-001', { ryuseiPrep: true }, 'unassigned', '5-31：宿舎の区間は保留のため無地（前の場面の行きのバス・甲子園が残らない）'],
+    ['c31a-001', { ryuseiPrep: true }, 'lodging-dining-hallway', '5-31：宿舎の食堂前の廊下（前の場面の甲子園のベンチが残らない）'],
     ['c31k-001', { ryuseiPrep: true }, 'bus-interior-sunset', 'E2：帰りのバスは西日'],
     ['c32a-001', { ryuseiPrep: true, konanPrep: true }, 'koshien-dugout', '5-32：並び順で直前にあるE2のバスが残らず、甲子園のベンチ'],
     ['c32m-002', { ryuseiPrep: true, konanPrep: true }, 'koshien-field', 'E3：観客席から決勝を見る'],
@@ -510,6 +510,75 @@ async function backgroundsInPlay(browser, viewport, label, pick) {
   await advance(page);
   check('最後のアウトの次の行でも甲子園のベンチのまま', (await bgIs(page, 'koshien-dugout')).ok);
   await snap(page, 'backgrounds-' + viewport.width + '-' + pick);
+  await ctx.close();
+}
+
+// 第2便の背景：5-28の龍成の部室、5-31の宿舎（最初の二択の両側）と球場へ移ったあと、5-32の夜の食堂と準決勝。
+// 追加した背景の区間で保存し、リロード後の「つづきから」で同じ背景が戻ることも確かめる。
+async function lodgingInPlay(browser, viewport, label, pick) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  const side = pick === 0 ? '取材を分担して映像を見直す' : '一人で取材を受ける';
+  section('第2便の背景（' + label + '・5-31は「' + side + '」）');
+  await clickText(page, 'はじめから');
+  // 実際に保存された自動セーブの位置だけを書き換え、リロードして「つづきから」で戻す
+  const resumeAt = async (lineId, flags) => {
+    await page.evaluate(([key, at, fl]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at, flags: { ...raw.auto.flags, ...fl } };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId, flags]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  let at = await resumeAt('c28-001', {});
+  let r = await bgIs(page, 'ryusei-clubroom-night');
+  check('5-28 の最初の行（c28-001）でつづきから：夜の龍成の部室', at && r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, 'c28-017', pick);
+  check('5-28 の最後の行（c28-017）まで龍成の部室のまま', (await bgIs(page, 'ryusei-clubroom-night')).ok);
+  await advance(page);
+  check('5-29 へ進むと（c29a-001）地方球場の通路に戻る', (await show(page)).lineId === 'c29a-001' && (await bgIs(page, 'regional-stadium-concourse')).ok);
+
+  at = await resumeAt('c31a-001', { ryuseiPrep: true });
+  r = await bgIs(page, 'lodging-dining-hallway');
+  check('5-31 冒頭（c31a-001）でつづきから：食堂前の廊下', at && r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, 'c31a-008', pick);
+  check('最初の選択肢の直前（c31a-008）まで廊下のまま', (await bgIs(page, 'lodging-dining-hallway')).ok);
+  const branchLine = pick === 0 ? 'c31b-001' : 'c31c-001';
+  const branchBg = pick === 0 ? 'lodging-dining-hall' : 'lodging-dining-hallway';
+  await advanceToPicking(page, branchLine, pick);
+  r = await bgIs(page, branchBg);
+  check(branchLine + '：「' + side + '」の側は ' + branchBg, r.ok, JSON.stringify(r.got));
+  await resumeHere(page);
+  r = await bgIs(page, branchBg);
+  check(branchLine + ' でリロードし、つづきからで同じ背景（' + branchBg + '）に戻る', (await show(page)).lineId === branchLine && r.ok, JSON.stringify(r.got));
+  if (pick === 0) {
+    // 分担した側は、宿舎から試合前の3塁コーチへの伝達（c31g-001）へ進む
+    await advanceToPicking(page, 'c31g-001', 0);
+    r = await bgIs(page, 'koshien-dugout');
+    check('宿舎のあと、試合前の伝達（c31g-001）で甲子園のベンチに移り、食堂の絵が残らない', r.ok, JSON.stringify(r.got));
+  } else {
+    // 一人で受けた側は、試合当日のスタンド下の通路（c31d-001）へ進む
+    await advanceToPicking(page, 'c31d-001', 0);
+    r = await bgIs(page, 'koshien-concourse');
+    check('宿舎のあと、試合当日（c31d-001）で甲子園の通路に移り、廊下の絵が残らない', r.ok, JSON.stringify(r.got));
+    await advanceToPicking(page, 'c31e-001', 0);
+    check('グラウンドへ出る（c31e-001）と甲子園のベンチ', (await bgIs(page, 'koshien-dugout')).ok);
+  }
+
+  at = await resumeAt('c32b-007', { ryuseiPrep: true, konanPrep: true });
+  r = await bgIs(page, 'lodging-dining-hall-night');
+  check('5-32「その晩、宿の食堂で」（c32b-007）でつづきから：夜の食堂', at && r.ok, JSON.stringify(r.got));
+  const nightLine = pick === 0 ? 'c32c-001' : 'c32d-001';
+  await advanceToPicking(page, nightLine, pick);
+  r = await bgIs(page, 'lodging-dining-hall-night');
+  check(nightLine + '：選んだ側でも夜の食堂', r.ok, JSON.stringify(r.got));
+  await resumeHere(page);
+  check(nightLine + ' でリロードし、つづきからで夜の食堂に戻る', (await show(page)).lineId === nightLine && (await bgIs(page, 'lodging-dining-hall-night')).ok);
+  await advanceToPicking(page, 'c32e-001', pick);
+  r = await bgIs(page, 'koshien-dugout');
+  check('準決勝（c32e-001）へ進むと甲子園のベンチに戻り、夜の食堂が残らない', r.ok, JSON.stringify(r.got));
+  await snap(page, 'lodging-' + viewport.width + '-' + pick);
   await ctx.close();
 }
 
@@ -691,7 +760,7 @@ async function mountCheck(origin) {
     const type = res.headers.get('content-type') || '';
     if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
   }
-  check('/adv02/ の下で、登録した背景18枚がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
+  check('/adv02/ の下で、登録した背景22枚（納品21＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 async function main() {
@@ -723,6 +792,10 @@ async function main() {
     await portraitsInPlay(browser, DESKTOP, '1280×720');
     await backgroundsInPlay(browser, SMALL_LANDSCAPE, '667×375', 0);
     await backgroundsInPlay(browser, DESKTOP, '1280×720', 1);
+    for (const pick of [0, 1]) {
+      await lodgingInPlay(browser, SMALL_LANDSCAPE, '667×375', pick);
+      await lodgingInPlay(browser, DESKTOP, '1280×720', pick);
+    }
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
@@ -730,7 +803,8 @@ async function main() {
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
     const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
       ...['hosho-field-fence-morning', 'unassigned', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
-        'bus-interior-sunset', 'koshien-dugout', 'koshien-field'].map((k) => BASE + G.assets.backgrounds[k]),
+        'bus-interior-sunset', 'koshien-dugout', 'koshien-field', 'lodging-dining-hallway', 'lodging-dining-hall',
+        'lodging-dining-hall-night', 'ryusei-clubroom-night'].map((k) => BASE + G.assets.backgrounds[k]),
       BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];
     check('必要な素材がすべて 200 で読み込まれた', needed.every((u) => OK_URLS.has(u)), needed.filter((u) => !OK_URLS.has(u)).join(' '));
   } finally {
