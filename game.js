@@ -18,7 +18,7 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は assets/backgrounds/ の31枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の31枚。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
@@ -54,8 +54,6 @@ window.KIT_GAME = {
       'school-station-road-evening': 'assets/backgrounds/school-station-road-evening.webp',
       'hirano-room': 'assets/backgrounds/hirano-room.webp',
       'hospital-corridor': 'assets/backgrounds/hospital-corridor.webp',
-      // 該当する背景がない区間に使う無地（キットの背景なしと同じ色）。別の場所の絵が残らないようにする
-      unassigned: 'assets/backgrounds/unassigned.png',
     },
     portraits: {
       hirano: {
@@ -2338,7 +2336,7 @@ window.KIT_GAME = {
     { at: 'c26-001', bg: 'hosho-field-fence-morning' }, // 5-26：入口の新入生
     { at: 'c26a-001', bg: 'hosho-field-afternoon' }, // 分岐：ブルペン（朝。光は目立たないと判断）
     { at: 'c26b-001', bg: 'hosho-field-afternoon' }, // 分岐：内野のノック
-    { at: 'c26e-001', bg: 'unassigned' }, // 合流：5月の帝嶺との練習試合（場所の記載なし）
+    { at: 'c26e-001', bg: 'hosho-field-bench' }, // 合流：5月の帝嶺との練習試合。鳳翔のグラウンドで開催（ベンチで記録し、試合後に片づける）
     { at: 'c27-001', bg: 'hosho-field-bench' }, // 5-27：練習の終わり、ベンチの前
     { at: 'c27-018', bg: 'kamijo-living-room-night' }, // その晩、神条家の居間
     { at: 'c28-001', bg: 'ryusei-clubroom-night' }, // 5-28：夜の龍成の部室で記録と映像を見直す（場面全体）

@@ -759,6 +759,34 @@ async function batch4InPlay(browser, viewport, label) {
   await ctx.close();
 }
 
+// 5-26の帝嶺との練習試合（鳳翔のグラウンド）：両分岐の終わりから合流へ、つづきからでの復元、5-27へ。
+async function rookiesHomeGround(browser, viewport, label, pick) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  const branchEnd = pick === 0 ? 'c26a-010' : 'c26b-009';
+  section('5-26 帝嶺との練習試合（' + label + '・分岐は' + (pick === 0 ? '田原の捕球' : '小宮の守備') + '）');
+  await clickText(page, 'はじめから');
+  await page.evaluate(([key, at]) => {
+    const raw = JSON.parse(localStorage.getItem(key));
+    raw.auto = { ...raw.auto, at };
+    localStorage.setItem(key, JSON.stringify(raw));
+  }, [SAVE_KEY, 'c26-009']);
+  await resumeHere(page);
+  await advanceToPicking(page, branchEnd, pick);
+  check('分岐の終わり（' + branchEnd + '）は放課後のグラウンド', (await bgIs(page, 'hosho-field-afternoon')).ok);
+  await advance(page);
+  let r = await bgIs(page, 'hosho-field-bench');
+  check('合流（c26e-001）で鳳翔のベンチに切り替わる', (await show(page)).lineId === 'c26e-001' && r.ok, JSON.stringify(r.got));
+  check('合流の練習試合では立ち絵を出さない（既存の演出のまま）', (await portraitNow(page)).length === 0);
+  await advanceToPicking(page, 'c26e-006', pick);
+  await resumeHere(page);
+  r = await bgIs(page, 'hosho-field-bench');
+  check('c26e-006 でリロードし、つづきからで鳳翔のベンチに戻る', (await show(page)).lineId === 'c26e-006' && r.ok, JSON.stringify(r.got));
+  await advanceToPicking(page, 'c27-001', pick);
+  check('5-27（c27-001）も鳳翔のベンチ', (await bgIs(page, 'hosho-field-bench')).ok);
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -937,7 +965,7 @@ async function mountCheck(origin) {
     const type = res.headers.get('content-type') || '';
     if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
   }
-  check('/adv02/ の下で、登録した背景32枚（納品31＋無地）がすべて 200（WebP は image/webp、無地は image/png）', missingBg.length === 0, missingBg.join(' | '));
+  check('/adv02/ の下で、登録した背景31枚がすべて 200（image/webp）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 async function main() {
@@ -981,13 +1009,15 @@ async function main() {
     }
     await batch4InPlay(browser, SMALL_LANDSCAPE, '667×375');
     await batch4InPlay(browser, DESKTOP, '1280×720');
+    await rookiesHomeGround(browser, SMALL_LANDSCAPE, '667×375', 0);
+    await rookiesHomeGround(browser, DESKTOP, '1280×720', 1);
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
     const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
-      ...['hosho-field-fence-morning', 'unassigned', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
+      ...['hosho-field-fence-morning', 'hosho-field-afternoon', 'hosho-field-bench', 'regional-stadium-dugout-sunset',
         'bus-interior-sunset', 'koshien-dugout', 'koshien-field', 'lodging-dining-hallway', 'lodging-dining-hall',
         'lodging-dining-hall-night', 'ryusei-clubroom-night', 'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning', 'school-station-road-evening', 'hirano-room', 'hospital-corridor'].map((k) => BASE + G.assets.backgrounds[k]),
       BASE + 'assets/portraits/oyama-school-winter-normal.webp', BASE + 'assets/portraits/misora-game-uniform-normal.webp'];

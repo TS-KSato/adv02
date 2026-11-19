@@ -596,11 +596,11 @@ const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afterno
   // 第4便（駅までの道・平野の部屋・病院の廊下）
   'school-station-road-evening', 'hirano-room', 'hospital-corridor'];
 check('納品の背景は31枚（第1便17枚＋第2便4枚＋第3便7枚＋第4便3枚）', DELIVERED_BACKGROUNDS.length === 31 && new Set(DELIVERED_BACKGROUNDS).size === 31);
-check('背景の登録は、納品の31枚と、該当なしの区間に使う無地 unassigned だけ',
-  JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, 'unassigned'].sort()), Object.keys(bgs).join(','));
-check('納品の背景は「キー.webp」、無地は unassigned.png', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp') && bgs.unassigned === 'assets/backgrounds/unassigned.png');
+check('背景の登録は、納品の31枚だけ（無地の仮背景 unassigned は使い終えて削除）',
+  JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS].sort()), Object.keys(bgs).join(','));
+check('納品の背景は「キー.webp」', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp'));
 const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
-check('assets/backgrounds には登録した32ファイル（納品31＋無地）だけがある（CSV・PNG原本を置かない）',
+check('assets/backgrounds には登録した31ファイルだけがある（無地の unassigned.png・CSV・PNG原本を置かない）',
   JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
 const badBg = [];
 for (const k of DELIVERED_BACKGROUNDS) {
@@ -611,7 +611,6 @@ for (const k of DELIVERED_BACKGROUNDS) {
   if (!ok) badBg.push(k);
 }
 check('納品の背景はすべて不透明な WebP で、1920×1080px', badBg.length === 0, badBg.join(','));
-check('無地の背景は PNG', fs.readFileSync(path.join(ROOT, bgs.unassigned)).subarray(0, 8).toString('hex') === '89504e470d0a1a0a');
 check('作品データに Magnific の管理IDを書かない', !/magnific/i.test(read('game.js')));
 
 const bgCues = G.cues.filter((c) => c.bg !== undefined);
@@ -646,7 +645,7 @@ const bgSpans = [
   ['c02e-017', 'hosho-field-afternoon'], ['c02e-018', 'school-station-road-evening'], ['c02e-019', 'school-station-road-evening'], ['c03-001', 'hosho-field-afternoon'],
   ['cblank-010', 'hosho-clubroom'], ['cblank-011', 'hirano-room'], ['cblank-013', 'hirano-room'], ['c21-001', 'hosho-field-afternoon'],
   ['c21-016', 'hospital-exam-room'], ['c21-017', 'hospital-corridor'], ['c21-018', 'hosho-field-afternoon'],
-  ['c26e-001', 'unassigned'], ['c26e-010', 'unassigned'],
+  ['c26a-010', 'hosho-field-afternoon'], ['c26b-009', 'hosho-field-afternoon'], ['c26e-001', 'hosho-field-bench'], ['c26e-010', 'hosho-field-bench'], ['c27-001', 'hosho-field-bench'],
   ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'],
   ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
   ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
@@ -665,8 +664,10 @@ const roomLines = allIds.filter((id) => bgAt(id) === 'hirano-room');
 check('平野の部屋（cblank-011〜cblank-013）では、机が隠れないよう左右とも立ち絵を出さない（メッセージの大山も出さない）',
   JSON.stringify(roomLines) === JSON.stringify(['cblank-011', 'cblank-012', 'cblank-013']) &&
   roomLines.every((id) => { const p = V.stateAt(G, id).portraits; return !p.left && !p.right; }), roomLines.join(','));
-check('残る暗い仮背景は、場所の記載がない5-26の練習試合（c26e-001〜c26e-010）だけ',
-  JSON.stringify(allIds.filter((id) => bgAt(id) === 'unassigned')) === JSON.stringify(G.scenes['rookies-teirei'].lines.map((l) => l.id)));
+check('背景の未割り当ては0：全1,410行に納品の背景があり、無地の仮背景を使う行がない',
+  allIds.every((id) => DELIVERED_BACKGROUNDS.includes(bgAt(id))) && !/unassigned/.test(read('game.js')), allIds.filter((id) => !DELIVERED_BACKGROUNDS.includes(bgAt(id))).join(','));
+check('5-26の帝嶺との練習試合（c26e-001〜c26e-010）は鳳翔のグラウンドで開催：ベンチ（hosho-field-bench）',
+  G.scenes['rookies-teirei'].lines.every((l) => bgAt(l.id) === 'hosho-field-bench'));
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
 section('立ち絵の演出（5-2〜5-12）');
 const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
