@@ -588,14 +588,16 @@ check('背景のパスはすべて作品基準の相対パスで、実ファイ�
 const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afternoon', 'hosho-field-bench', 'hosho-clubroom',
   'regional-stadium-field', 'regional-stadium-dugout', 'regional-stadium-dugout-sunset', 'regional-stadium-concourse',
   'koshien-field', 'koshien-dugout', 'koshien-concourse', 'kamijo-living-room-night', 'oyama-home-entry', 'hospital-exam-room',
-  'station-plaza-autumn', 'bus-interior', 'bus-interior-sunset'];
-check('背景の登録は、納品の17枚と、該当なしの区間に使う無地だけ',
+  'station-plaza-autumn', 'bus-interior', 'bus-interior-sunset',
+  // 第2便（宿舎と龍成の部室）
+  'lodging-dining-hallway', 'lodging-dining-hall', 'lodging-dining-hall-night', 'ryusei-clubroom-night'];
+check('納品の背景は21枚（第1便17枚＋第2便4枚）', DELIVERED_BACKGROUNDS.length === 21 && new Set(DELIVERED_BACKGROUNDS).size === 21);
+check('背景の登録は、納品の21枚と、該当なしの区間に使う無地 unassigned だけ',
   JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, 'unassigned'].sort()), Object.keys(bgs).join(','));
 check('納品の背景は「キー.webp」、無地は unassigned.png', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp') && bgs.unassigned === 'assets/backgrounds/unassigned.png');
 const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
-check('assets/backgrounds には登録した18ファイルだけがある（仮背景・旧版の宿舎・CSV・PNG原本を置かない）',
+check('assets/backgrounds には登録した22ファイル（納品21＋無地）だけがある（CSV・PNG原本を置かない）',
   JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
-check('宿舎（食堂の札が残った旧版）は登録も配置もしない', !bgs['lodging-dining-hallway'] && !bgFiles.includes('lodging-dining-hallway.webp'));
 const badBg = [];
 for (const k of DELIVERED_BACKGROUNDS) {
   const b = fs.readFileSync(path.join(ROOT, bgs[k]));
@@ -635,11 +637,14 @@ const bgSpans = [
   ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
   ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
   ['c19-032', 'regional-stadium-dugout'], ['c20-001', 'regional-stadium-dugout-sunset'], ['c20-018', 'regional-stadium-dugout-sunset'],
-  ['c31a-001', 'unassigned'], ['c31d-001', 'koshien-concourse'], ['c31k-001', 'bus-interior-sunset'], ['c31k-008', 'bus-interior-sunset'],
+  ['c28-001', 'ryusei-clubroom-night'], ['c28-017', 'ryusei-clubroom-night'], ['c29a-001', 'regional-stadium-concourse'],
+  ['c31a-001', 'lodging-dining-hallway'], ['c31a-008', 'lodging-dining-hallway'], ['c31b-001', 'lodging-dining-hall'], ['c31b-004', 'lodging-dining-hall'],
+  ['c31c-001', 'lodging-dining-hallway'], ['c32b-006', 'koshien-dugout'], ['c32b-007', 'lodging-dining-hall-night'], ['c32b-008', 'lodging-dining-hall-night'],
+  ['c32c-001', 'lodging-dining-hall-night'], ['c32c-003', 'lodging-dining-hall-night'], ['c32d-001', 'lodging-dining-hall-night'], ['c32e-001', 'koshien-dugout'], ['c31d-001', 'koshien-concourse'], ['c31k-001', 'bus-interior-sunset'], ['c31k-008', 'bus-interior-sunset'],
   ['c32a-001', 'koshien-dugout'], ['c32m-001', 'koshien-concourse'], ['c32m-002', 'koshien-field'], ['c32m-006', 'koshien-field'],
   ['c33l-001', 'koshien-concourse'], ['clastout-001', 'koshien-dugout'], ['c36-021', 'koshien-dugout'],
 ];
-check('主な切り替え：冒頭・5-2・5-18・5-20の夕日・5-31・E2の西日のバス・E3の観客席・E4から最後のアウト',
+check('主な切り替え：冒頭・5-2・5-18・5-20の夕日・5-28の龍成の部室・5-31の宿舎と球場・5-32の夜の食堂と準決勝・E2の西日のバス・E3の観客席・E4から最後のアウト',
   bgSpans.every(([id, want]) => bgAt(id) === want), bgSpans.filter(([id, want]) => bgAt(id) !== want).map(([id]) => id + '=' + bgAt(id)).join(' '));
 check('5-2：放課後にグラウンドへ入る行（c02-006）で切り替わる', bgAt('c02-005') !== 'hosho-field-afternoon' && bgAt('c02-006') === 'hosho-field-afternoon');
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');

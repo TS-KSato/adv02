@@ -18,7 +18,7 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は assets/backgrounds/ の17枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の21枚と無地。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
@@ -38,6 +38,10 @@ window.KIT_GAME = {
       'station-plaza-autumn': 'assets/backgrounds/station-plaza-autumn.webp',
       'bus-interior': 'assets/backgrounds/bus-interior.webp',
       'bus-interior-sunset': 'assets/backgrounds/bus-interior-sunset.webp',
+      'lodging-dining-hallway': 'assets/backgrounds/lodging-dining-hallway.webp',
+      'lodging-dining-hall': 'assets/backgrounds/lodging-dining-hall.webp',
+      'lodging-dining-hall-night': 'assets/backgrounds/lodging-dining-hall-night.webp',
+      'ryusei-clubroom-night': 'assets/backgrounds/ryusei-clubroom-night.webp',
       // 該当する背景がない区間に使う無地（キットの背景なしと同じ色）。別の場所の絵が残らないようにする
       unassigned: 'assets/backgrounds/unassigned.png',
     },
@@ -2325,7 +2329,7 @@ window.KIT_GAME = {
     { at: 'c26e-001', bg: 'unassigned' }, // 合流：5月の帝嶺との練習試合（場所の記載なし）
     { at: 'c27-001', bg: 'hosho-field-bench' }, // 5-27：練習の終わり、ベンチの前
     { at: 'c27-018', bg: 'kamijo-living-room-night' }, // その晩、神条家の居間
-    { at: 'c28-001', bg: 'unassigned' }, // 5-28：龍成の部室（該当なし）
+    { at: 'c28-001', bg: 'ryusei-clubroom-night' }, // 5-28：夜の龍成の部室で記録と映像を見直す（場面全体）
     { at: 'c29a-001', bg: 'regional-stadium-concourse' }, // 5-29：スタンド下の通路の長机
     { at: 'c29b-001', bg: 'regional-stadium-concourse' }, // 分岐：映像を見る
     { at: 'c29c-001', bg: 'regional-stadium-dugout' }, // 分岐：打順表をベンチへ
@@ -2346,9 +2350,9 @@ window.KIT_GAME = {
     { at: 'cbus-001', bg: 'unassigned' }, // 幕間：校門前のバスの外（該当なし）
     { at: 'cbus-002', bg: 'bus-interior' }, // バスの車内
     { at: 'c30-001', bg: 'koshien-dugout' }, // 5-30：甲子園のベンチ
-    { at: 'c31a-001', bg: 'unassigned' }, // 5-31：宿舎・食堂前の廊下（保留：旧版の背景）
-    { at: 'c31b-001', bg: 'unassigned' }, // 分岐：食堂の端（保留）
-    { at: 'c31c-001', bg: 'unassigned' }, // 分岐：廊下と食堂（保留）
+    { at: 'c31a-001', bg: 'lodging-dining-hallway' }, // 5-31：食堂を出た廊下で、長椅子の記者に呼び止められる
+    { at: 'c31b-001', bg: 'lodging-dining-hall' }, // 分岐：取材を分担し、食堂の端で映像を見直す
+    { at: 'c31c-001', bg: 'lodging-dining-hallway' }, // 分岐：廊下に残って取材を受ける（食堂に戻るのは行末の結果なので、主な出来事の廊下）
     { at: 'c31d-001', bg: 'koshien-concourse' }, // 試合当日、スタンド下の通路
     { at: 'c31e-001', bg: 'koshien-dugout' }, // 分岐：グラウンドへ出る
     { at: 'c31f-001', bg: 'koshien-dugout' }, // 分岐：面会を案内してからグラウンドへ
@@ -2359,9 +2363,9 @@ window.KIT_GAME = {
     { at: 'c31k-001', bg: 'bus-interior-sunset' }, // E2：帰りのバス（西日）
     { at: 'c32a-001', bg: 'koshien-dugout' }, // 5-32：3回戦のベンチ
     { at: 'c32b-001', bg: 'koshien-dugout' }, // 準々決勝
-    { at: 'c32b-007', bg: 'unassigned' }, // その晩、宿の食堂（保留）
-    { at: 'c32c-001', bg: 'unassigned' }, // 分岐：映像を見直す（保留）
-    { at: 'c32d-001', bg: 'unassigned' }, // 分岐：打順表を整理（保留）
+    { at: 'c32b-007', bg: 'lodging-dining-hall-night' }, // その晩、宿の食堂で映像を見る
+    { at: 'c32c-001', bg: 'lodging-dining-hall-night' }, // 分岐：映像を見直す（夜の食堂）
+    { at: 'c32d-001', bg: 'lodging-dining-hall-night' }, // 分岐：青岳の打順表を整理（夜の食堂）
     { at: 'c32e-001', bg: 'koshien-dugout' }, // 合流：準決勝
     { at: 'c32f-001', bg: 'koshien-dugout' }, // 当日確認の選択
     { at: 'c32g-001', bg: 'koshien-dugout' }, // 分岐：田原に聞く
