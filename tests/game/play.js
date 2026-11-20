@@ -787,6 +787,103 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
   await ctx.close();
 }
 
+// 中田の表情差分：通常画面→差分→通常画面を実際に送り、差分の途中で保存・リロードして専用レイアウトが戻ること、区間の後で解除されることを確かめる。
+const layoutNow = (page) => page.evaluate(() => {
+  const d = document.querySelector('.kit-dialogue').getBoundingClientRect();
+  const sc = document.querySelector('.kit-scene').getBoundingClientRect();
+  return ['left', 'right'].map((slot) => {
+    const img = document.querySelector('.kit-portrait-' + slot + ' img');
+    if (!img) return null;
+    const r = img.getBoundingClientRect();
+    const cs = getComputedStyle(img);
+    return { slot, file: img.getAttribute('src').split('/').pop(), loaded: img.complete && img.naturalWidth === 859,
+      top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height, fit: cs.objectFit,
+      dialogueTop: d.top, scene: { left: sc.left, right: sc.right, top: sc.top, bottom: sc.bottom }, vw: innerWidth, vh: innerHeight };
+  }).filter(Boolean);
+});
+const at = (l, nx, ny) => ({ x: l.left + nx / 859 * l.width, y: l.top + ny / 1280 * l.height }); // 元画像の座標 → 画面の座標（全身表示のとき）
+async function expressionsInPlay(browser, viewport, label) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('中田の表情差分（' + label + '）');
+  await clickText(page, 'はじめから');
+  const resumeAt = async (lineId) => {
+    await page.evaluate(([key, a]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto = { ...raw.auto, at: a };
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, lineId]);
+    await resumeHere(page);
+    return (await show(page)).lineId === lineId;
+  };
+  const files = async () => (await layoutNow(page)).map((l) => l.slot + ':' + l.file).join(',');
+  const one = async (file) => (await layoutNow(page)).find((l) => l.file === file);
+
+  // 激怒：c08-020（美空との会話）→ c08-021〜c08-023（中田の寄り）→ c08-024（美空に戻る）
+  check('5-8 c08-020 は美空との通常の会話画面', await resumeAt('c08-020') && await files() === 'right:misora-game-uniform-normal.webp', await files());
+  await advance(page); await waitPortraitLoaded(page);
+  let l = await one('nakata-practice-rage.webp');
+  check('c08-021 で中田の激怒に切り替わり、美空は一時的に出ない', (await files()) === 'right:nakata-practice-rage.webp' && l.loaded, await files());
+  const fist = l && at(l, 450, 750);
+  check('激怒：湯気と顔が画面内にあり、硬球を握る拳（元画像の上から750px）までが本文欄の上に収まる', l && l.top >= -1 && fist.y <= l.dialogueTop + 2, JSON.stringify(l));
+  check('激怒：通常の全身立ち絵より大きい寄りで、画面の中央に置く', l && l.height > l.vh * (l.vh <= 500 ? 0.9 : 1.0) && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
+  await advance(page);
+  await resumeHere(page);
+  l = await one('nakata-practice-rage.webp');
+  check('c08-022 でリロードし、つづきからで激怒の画像と寄りの配置が戻る', (await show(page)).lineId === 'c08-022' && l && l.loaded && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2 && at(l, 450, 750).y <= l.dialogueTop + 2, JSON.stringify(l));
+  check('c08-022 の本文は硬球の確定文', (await show(page)).prose === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
+  await advance(page); await advance(page); await waitPortraitLoaded(page);
+  l = await one('misora-game-uniform-normal.webp');
+  check('c08-024 で美空との通常の会話画面に戻り、寄りの配置は解除される', (await show(page)).lineId === 'c08-024' && (await files()) === 'right:misora-game-uniform-normal.webp' && l.right >= l.vw - 1, await files());
+
+  // 驚き：c08-040（美空）→ c08-041〜c08-043（左に中田の驚き）→ c08b-001（部室と日和）
+  await resumeAt('c08-040');
+  check('5-8 c08-040 は美空だけ', await files() === 'right:misora-game-uniform-normal.webp', await files());
+  await advance(page); await waitPortraitLoaded(page);
+  l = await one('nakata-practice-shock.webp');
+  check('c08-041 で左に中田の驚き、右の美空はそのまま', (await files()) === 'left:nakata-practice-shock.webp,right:misora-game-uniform-normal.webp' && l.loaded, await files());
+  const ball = l && at(l, 745, 1120), feet = l && at(l, 400, 1256), jaw = l && at(l, 800, 560);
+  const inScene = (p) => p.x >= l.scene.left && p.x <= l.scene.right && p.y >= l.scene.top && p.y <= l.scene.bottom;
+  check('驚き：足元が本文欄の上にあり、頭は画面内（足元を基準に縮小）', l && feet.y <= l.dialogueTop + 2 && l.top >= -1, JSON.stringify(l));
+  check('驚き：伸ばした手の下の球と、伸びた顎が、本文欄にも場面名の札にも隠れない', l && ball.y < l.dialogueTop && !inScene(ball) && jaw.y < l.dialogueTop && !inScene(jaw), JSON.stringify({ ball, jaw, scene: l && l.scene }));
+  check('驚き：画面の左側に置く（左右反転しない）', l && l.left < l.vw / 2 && l.right < l.vw * 0.6, JSON.stringify(l));
+  await advance(page);
+  await resumeHere(page);
+  l = await one('nakata-practice-shock.webp');
+  check('c08-042 でリロードし、つづきからで驚きの画像と足元基準の配置が戻る', (await show(page)).lineId === 'c08-042' && l && l.loaded && at(l, 400, 1256).y <= l.dialogueTop + 2, JSON.stringify(l));
+  await advance(page); await advance(page); await waitPortraitLoaded(page);
+  check('c08b-001 で中田は消え、部室と日和の画面へ移る', (await show(page)).lineId === 'c08b-001' && (await files()) === 'right:hiyori-jersey-normal.webp' && (await bgIs(page, 'hosho-clubroom')).ok, await files());
+
+  // 照れ笑い（5-4）：c04-021 → c04-022（着席の顔〜胸）→ c04-023（中田を消す）
+  await resumeAt('c04-019');
+  await advanceTo(page, 'c04-022'); await waitPortraitLoaded(page);
+  l = await one('nakata-practice-bashful.webp');
+  check('5-4 c04-022 で照れ笑いの中田が左に出る（右に美空）', (await files()) === 'left:nakata-practice-bashful.webp,right:misora-game-uniform-normal.webp' && l.loaded, await files());
+  check('5-4 の照れ笑いは顔〜胸の切り抜き（立った脚とグラブを見せない）', l && l.fit === 'cover' && Math.abs(l.width / l.height - 859 / 520) < 0.02 && l.top >= -1, JSON.stringify(l));
+  check('5-4 の照れ笑い：顔（元画像の上から顎の220pxまで）が本文欄の上にある', l && l.top + 220 / 520 * l.height <= l.dialogueTop + 2, JSON.stringify(l));
+  await resumeHere(page);
+  l = await one('nakata-practice-bashful.webp');
+  check('c04-022 でリロードし、つづきからで顔〜胸の切り抜きが戻る', l && l.fit === 'cover' && Math.abs(l.width / l.height - 859 / 520) < 0.02, JSON.stringify(l));
+  await advance(page);
+  check('c04-023 で中田を消し、美空だけに戻る', (await show(page)).lineId === 'c04-023' && (await files()) === 'right:misora-game-uniform-normal.webp', await files());
+
+  // 照れ笑い（5-7）：c07-016（美空が褒める・立ち絵なし）→ c07-017〜c07-018（立ち姿の全身）→ c07-019（消す）→ c07-020（通常顔）
+  check('5-7 c07-016（美空が褒める行）ではまだ照れ顔を出さない', await resumeAt('c07-016') && await files() === '', await files());
+  await advance(page); await waitPortraitLoaded(page);
+  l = await one('nakata-practice-bashful.webp');
+  check('c07-017 で照れ笑いの中田が全身の立ち姿で出る（切り抜かない）', (await files()) === 'left:nakata-practice-bashful.webp' && l.fit !== 'cover' && Math.abs(l.width / l.height - 859 / 1280) < 0.02, JSON.stringify(l));
+  await advance(page);
+  await resumeHere(page);
+  l = await one('nakata-practice-bashful.webp');
+  check('c07-018 でリロードし、つづきからで全身の照れ笑いが戻る', (await show(page)).lineId === 'c07-018' && l && l.fit !== 'cover', JSON.stringify(l));
+  await advance(page);
+  check('c07-019 で中田を消す', (await show(page)).lineId === 'c07-019' && (await files()) === '', await files());
+  await advance(page); await waitPortraitLoaded(page);
+  check('c07-020 で既存の通常顔に切り替わる', (await files()) === 'left:nakata-practice-normal.webp', await files());
+  await snap(page, 'expressions-' + viewport.width);
+  await ctx.close();
+}
+
 // 手動セーブと、途中の行でのリロード・つづきから。読込は、進めた後の別の行から戻す。
 async function resumeAndManualSave(browser) {
   const ctx = await browser.newContext({ viewport: LANDSCAPE });
@@ -1011,6 +1108,8 @@ async function main() {
     await batch4InPlay(browser, DESKTOP, '1280×720');
     await rookiesHomeGround(browser, SMALL_LANDSCAPE, '667×375', 0);
     await rookiesHomeGround(browser, DESKTOP, '1280×720', 1);
+    await expressionsInPlay(browser, SMALL_LANDSCAPE, '667×375');
+    await expressionsInPlay(browser, DESKTOP, '1280×720');
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
