@@ -638,8 +638,8 @@ async function portraitsLater(browser, viewport, label, pick) {
   await expectAt('c10-012', M + ',' + K, '監督に8勝を報告する河本');
   await resumeHere(page);
   check('c10-012 でリロードし、つづきからで監督と河本が戻る', await portraitSet(page) === M + ',' + K, await portraitSet(page));
-  await expectAt('c10-020', M + ',-', '河本の口が開いたまま止まる行は、河本を出さない');
-  await expectAt('c10-021', '-,-', '言い争いの区間は出さない');
+  await expectAt('c10-020', M + ',kawamoto/casual-shock', '河本の口が開いたまま止まる行で驚き差分');
+  await expectAt('c10-021', '-,kawamoto/casual-shock', '美空を外し、驚いた河本は残す');
   await expectAt('c10-031', '-,' + K, '大山に向き直る河本');
 
   // 5-11：回想の開始と終了、現在への復帰
@@ -802,6 +802,57 @@ const layoutNow = (page) => page.evaluate(() => {
   }).filter(Boolean);
 });
 const at = (l, nx, ny) => ({ x: l.left + nx / 859 * l.width, y: l.top + ny / 1280 * l.height }); // 元画像の座標 → 画面の座標（全身表示のとき）
+
+async function expressionsBatch01(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  const resumeAt = async at => {
+    await page.evaluate(([key, at]) => {
+      const raw = JSON.parse(localStorage.getItem(key));
+      raw.auto.at = at;
+      localStorage.setItem(key, JSON.stringify(raw));
+    }, [SAVE_KEY, at]);
+    await resumeHere(page);
+  };
+  section('表情第1便・一枚絵 (' + viewport.width + ')');
+  const spans = [
+    ['c06e-004a','c06e-005','c06e-006','misora-game-uniform-pale.webp'],
+    ['c06e-006','c06e-007','c06e-008','misora-game-uniform-angry.webp'],
+    ['c07-005','c07-006','c07-006a','misora-game-uniform-flustered-chibi.webp'],
+    ['c07-016','c07-016','c07-017','misora-game-uniform-flustered-chibi.webp'],
+    ['c10-020','c10-022','c10-023','kawamoto-casual-shock.webp'],
+    ['c10-022','c10-027','c10-028','oyama-practice-angry.webp'],
+    ['c10-029','c10-030','c10-031','kawamoto-casual-angry.webp'],
+    ['c11w-006','c11w-007','c11e-001','oyama-practice-frustrated.webp'],
+  ];
+  for (const [first,last,after,file] of spans) {
+    await resumeAt(first);
+    let l = (await layoutNow(page)).find(x => x.file === file);
+    check(first + ': 再開で差分が読み込まれる', l && l.loaded && l.top >= -1, JSON.stringify(l));
+    check(first + ': 本文と操作が画面内に収まる', fits(await layout(page)));
+    await snap(page, 'batch01-' + first + '-' + viewport.width);
+    await advanceTo(page,last);
+    await resumeHere(page);
+    check(last + ': 区間末尾でも差分と配置を復元', (await layoutNow(page)).some(x => x.file === file && x.loaded));
+    await advance(page);
+    check(after + ': 次の行で差分を解除', (await show(page)).lineId === after && !(await layoutNow(page)).some(x => x.file === file));
+  }
+  await resumeAt('cnews-009');
+  check('新聞CG: 直前には出ない', await page.locator('.kit-cg').isHidden());
+  await advance(page);
+  await page.waitForFunction(() => {const i=document.querySelector('.kit-cg');return !i.hidden && i.complete && i.naturalWidth === 1920;});
+  check('cnews-010: 一枚絵に切り替わり、立ち絵は出ない', (await show(page)).lineId === 'cnews-010' && (await portraitNow(page)).length === 0);
+  check('CG到達で鑑賞用に解放される', await page.evaluate(() => !!KIT.s.gallery['cnews-oyama-tears-newspaper']));
+  await snap(page, 'batch01-cg-' + viewport.width);
+  await advanceTo(page,'cnews-011c');
+  await resumeHere(page);
+  check('cnews-011c: つづきからでCGを復元', await page.locator('.kit-cg').isVisible());
+  await advance(page);
+  check('cnews-012: 通常の部室に戻る', (await show(page)).lineId === 'cnews-012' && await page.locator('.kit-cg').isHidden() && (await bgIs(page,'hosho-clubroom')).ok);
+  await ctx.close();
+}
+
 async function expressionsInPlay(browser, viewport, label) {
   const ctx = await browser.newContext({ viewport });
   const page = await openGame(ctx, { speedZero: true });
@@ -868,7 +919,7 @@ async function expressionsInPlay(browser, viewport, label) {
   check('c04-023 で中田を消し、美空だけに戻る', (await show(page)).lineId === 'c04-023' && (await files()) === 'right:misora-game-uniform-normal.webp', await files());
 
   // 照れ笑い（5-7）：c07-016（美空が褒める・立ち絵なし）→ c07-017〜c07-018（立ち姿の全身）→ c07-019（消す）→ c07-020（通常顔）
-  check('5-7 c07-016（美空が褒める行）ではまだ照れ顔を出さない', await resumeAt('c07-016') && await files() === '', await files());
+  check('5-7 c07-016（美空が褒める行）ではまだ照れ顔を出さない', await resumeAt('c07-016') && await files() === 'right:misora-game-uniform-flustered-chibi.webp', await files());
   await advance(page); await waitPortraitLoaded(page);
   l = await one('nakata-practice-bashful.webp');
   check('c07-017 で照れ笑いの中田が全身の立ち姿で出る（切り抜かない）', (await files()) === 'left:nakata-practice-bashful.webp' && l.fit !== 'cover' && Math.abs(l.width / l.height - 859 / 1280) < 0.02, JSON.stringify(l));
@@ -1110,6 +1161,8 @@ async function main() {
     await rookiesHomeGround(browser, DESKTOP, '1280×720', 1);
     await expressionsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await expressionsInPlay(browser, DESKTOP, '1280×720');
+    await expressionsBatch01(browser, SMALL_LANDSCAPE);
+    await expressionsBatch01(browser, DESKTOP);
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 

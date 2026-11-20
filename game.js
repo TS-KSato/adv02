@@ -1,6 +1,6 @@
 // 『きみのための甲子園』の作品データ。冒頭から優勝エンド「本当の約束」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
-// 仮素材：背景は仮の PNG。人物の立ち絵・BGM・環境音・効果音は未登録（話者名と本文で読める）。
+// 背景31枚、立ち絵45枚、一枚絵1枚。音素材は未登録。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
@@ -18,7 +18,7 @@ window.KIT_GAME = {
     aotakePrep: { type: 'boolean', default: false }, aotakeRecovery: { type: 'boolean', default: false },
     teireiPrep: { type: 'boolean', default: false }, teireiRecovery: { type: 'boolean', default: false } },
 
-  // 素材。背景は assets/backgrounds/ の31枚。立ち絵は assets/portraits/ の35枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
+  // 素材。背景は assets/backgrounds/ の31枚。立ち絵は assets/portraits/ の45枚（一覧は portraits-list.csv）。キーは人物（話者と同じ）→衣装と差分
   assets: {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
@@ -62,6 +62,8 @@ window.KIT_GAME = {
         'game-uniform-normal': 'assets/portraits/hirano-game-uniform-normal.webp',
       },
       oyama: {
+        'practice-angry': 'assets/portraits/oyama-practice-angry.webp',
+        'practice-frustrated': 'assets/portraits/oyama-practice-frustrated.webp',
         'school-winter-normal': 'assets/portraits/oyama-school-winter-normal.webp',
         'practice-normal': 'assets/portraits/oyama-practice-normal.webp',
         'game-uniform-normal': 'assets/portraits/oyama-game-uniform-normal.webp',
@@ -108,12 +110,17 @@ window.KIT_GAME = {
         'formal-suit-normal': 'assets/portraits/tsuyoshi-formal-suit-normal.webp',
       },
       kawamoto: {
+        'casual-shock': 'assets/portraits/kawamoto-casual-shock.webp',
+        'casual-angry': 'assets/portraits/kawamoto-casual-angry.webp',
         'casual-normal': 'assets/portraits/kawamoto-casual-normal.webp',
       },
       gen: {
         'casual-normal': 'assets/portraits/gen-casual-normal.webp',
       },
       misora: {
+        'game-uniform-pale': 'assets/portraits/misora-game-uniform-pale.webp',
+        'game-uniform-angry': 'assets/portraits/misora-game-uniform-angry.webp',
+        'game-uniform-flustered-chibi': 'assets/portraits/misora-game-uniform-flustered-chibi.webp',
         'windbreaker-normal': 'assets/portraits/misora-windbreaker-normal.webp',
         'game-uniform-normal': 'assets/portraits/misora-game-uniform-normal.webp',
         'bench-coat-normal': 'assets/portraits/misora-bench-coat-normal.webp',
@@ -124,7 +131,7 @@ window.KIT_GAME = {
         'loungewear-summer-chibi': 'assets/portraits/misora-loungewear-summer-chibi.webp',
       },
     },
-    cgs: {},
+    cgs: { 'cnews-oyama-tears-newspaper': { src: 'assets/cg/cnews-oyama-tears-newspaper.webp', title: '新聞と記録' } },
     bgm: {},
     ambience: {},
     se: {},
@@ -2462,10 +2469,16 @@ window.KIT_GAME = {
     { at: 'c06b-001', portrait: { slot: 'right', clear: true } }, // 分岐：棚の資料を見る（監督は画面に出さない）
     { at: 'c06e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（指導の出所）：左を明示して消す
     { at: 'c06e-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 合流：給水中、同じ所に立つ監督
-    { at: 'c06e-004a', portrait: { slot: 'right', clear: true } }, // 顔から色が引く〜「馬鹿野郎」：通常顔では食い違うので出さない
+    { at: 'c06e-004a', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-pale' } },
+    { at: 'c06e-006', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-angry' } },
+    { at: 'c06e-008', portrait: { slot: 'right', clear: true } },
     { at: 'c07-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（外周50周）：左を明示して消す
     { at: 'c07-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（外周50周）：右を明示して消す
+    { at: 'c07-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
+    { at: 'c07-006a', portrait: { slot: 'right', clear: true } },
+    { at: 'c07-016', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
     { at: 'c07-017', portrait: { slot: 'left', char: 'nakata', expr: 'practice-bashful' } }, // 5-7：美空に褒められ、背筋を伸ばして名乗る中田（照れ笑い・立ち姿）
+    { at: 'c07-017', portrait: { slot: 'right', clear: true } },
     { at: 'c07-019', portrait: { slot: 'left', clear: true } }, // 給水台の先輩たちへ視線が移る
     { at: 'c07-020', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 5-7：振り返った中田の眉間にしわ
     { at: 'c07-023', portrait: { slot: 'left', clear: true } }, // 外周の門へ向かう
@@ -2503,8 +2516,12 @@ window.KIT_GAME = {
     { at: 'c10-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（河本の来校）：右を明示して消す
     { at: 'c10-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 5-10：グラウンドの入口に立つ河本
     { at: 'c10-008', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 机の端で紙を揃える監督
-    { at: 'c10-020', portrait: { slot: 'right', clear: true } }, // 河本の口が開いたまま止まる：大きな驚きなので出さない
-    { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入り、言い争いになる：激怒の区間は出さない
+    { at: 'c10-020', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-shock' } },
+    { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入る。美空を外し、次の台詞から大山の怒りを出す
+    { at: 'c10-022', portrait: { slot: 'left', char: 'oyama', expr: 'practice-angry' } },
+    { at: 'c10-023', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } },
+    { at: 'c10-028', portrait: { slot: 'left', clear: true } },
+    { at: 'c10-029', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-angry' } },
     { at: 'c10-031', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 河本が大山に向き直り、就任初日のことを言う
     { at: 'c11s-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 5-11：大山と河本
     { at: 'c11s-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // （同じ）
@@ -2519,7 +2536,7 @@ window.KIT_GAME = {
     { at: 'c11a-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 分岐：平野が河本に聞く
     { at: 'c11w-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 分岐：大山が河本に言い返す
     { at: 'c11w-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // （同じ）
-    { at: 'c11w-006', portrait: { slot: 'left', clear: true } }, // 大山が黙って目をそらす：通常顔では食い違うので出さない
+    { at: 'c11w-006', portrait: { slot: 'left', char: 'oyama', expr: 'practice-frustrated' } },
     { at: 'c11e-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（河本の証言）：左を明示して消す
     { at: 'c11e-001', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 合流：襟を直す河本
     { at: 'c11e-002', portrait: { slot: 'right', clear: true } }, // ベンチの奥へ戻る
@@ -2529,6 +2546,8 @@ window.KIT_GAME = {
     { at: 'c12-016', portrait: { slot: 'right', clear: true } }, // 河本がベンチを出たあと
     { at: 'c13-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（新庄との接触）：左を明示して消す
     { at: 'c13-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（新庄との接触）：右を明示して消す
+    // 章間「新聞と記録」：一枚絵は区間内だけ表示する。
+    { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
