@@ -77,6 +77,10 @@ window.KIT_GAME = {
       nakata: {
         'practice-normal': 'assets/portraits/nakata-practice-normal.webp',
         'game-uniform-normal': 'assets/portraits/nakata-game-uniform-normal.webp',
+        // 表情差分（第1便）。表示の大きさ・位置は game.css で素材ごとに調整する
+        'practice-rage': 'assets/portraits/nakata-practice-rage.webp',
+        'practice-bashful': 'assets/portraits/nakata-practice-bashful.webp',
+        'practice-shock': 'assets/portraits/nakata-practice-shock.webp',
       },
       sasaki: {
         'practice-normal': 'assets/portraits/sasaki-practice-normal.webp',
@@ -589,7 +593,7 @@ window.KIT_GAME = {
         { id: 'c08-019', text: "監督は「2塁」とだけ書いた紙を指で押さえた。" },
         { id: 'c08-020', speaker: 'misora', text: "こっちの続きは書いて。" },
         { id: 'c08-021', text: "いつからお父さんに聞いてるんですか、と言いかけた。給水台で鬼の形相をした中田先輩と目が合って、やめた。" },
-        { id: 'c08-022', text: "だって、中田先輩が握りしめたボトルは、真ん中が鉛筆くらい細くなっていた。" },
+        { id: 'c08-022', text: "だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。" },
         { id: 'c08-023', text: "次は50周じゃ済まない気がした。" },
         { id: 'c08-024', text: "質問の続きを急いで書いて、紙を渡した。書いたところを監督に見せるつもりで持ち上げたら、もう端をつまんで取られていた。" },
         { id: 'c08-025', speaker: 'hirano', text: "じゃ、失礼します。" },
@@ -2433,6 +2437,8 @@ window.KIT_GAME = {
     { at: 'c04-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（美空の登場）：左を明示して消す
     { at: 'c04-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（美空の登場）：右を明示して消す
     { at: 'c04-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-4：美空が入口から歩いてくる。帽子のある試合用ユニフォーム（既存）
+    { at: 'c04-022', portrait: { slot: 'left', char: 'nakata', expr: 'practice-bashful' } }, // 5-4：着席した中田の口元が緩む。照れ笑いを顔〜胸だけで出す（game.css）
+    { at: 'c04-023', portrait: { slot: 'left', clear: true } }, // 平野がスコアブックに目を戻す
     { at: 'c04-035', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 5-4：グラブを膝に乗せたまま平野を見ている中田
     { at: 'c04-036', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // バットを肩に乗せて立つ大山へ視線が移る
     { at: 'c05-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（優勝と結婚）：左を明示して消す
@@ -2459,17 +2465,21 @@ window.KIT_GAME = {
     { at: 'c06e-004a', portrait: { slot: 'right', clear: true } }, // 顔から色が引く〜「馬鹿野郎」：通常顔では食い違うので出さない
     { at: 'c07-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（外周50周）：左を明示して消す
     { at: 'c07-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（外周50周）：右を明示して消す
+    { at: 'c07-017', portrait: { slot: 'left', char: 'nakata', expr: 'practice-bashful' } }, // 5-7：美空に褒められ、背筋を伸ばして名乗る中田（照れ笑い・立ち姿）
+    { at: 'c07-019', portrait: { slot: 'left', clear: true } }, // 給水台の先輩たちへ視線が移る
     { at: 'c07-020', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 5-7：振り返った中田の眉間にしわ
     { at: 'c07-023', portrait: { slot: 'left', clear: true } }, // 外周の門へ向かう
     { at: 'c07-026', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 振り向くと監督がベンチの前で手招き
     { at: 'c07-031', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 引き返す途中で中田の横を通る
     { at: 'c08-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（便利な部員、特別な相手）：左を明示して消す
     { at: 'c08-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-8：ベンチの端で紙を引き寄せる監督
+    { at: 'c08-021', portrait: { slot: 'right', char: 'nakata', expr: 'practice-rage' } }, // 給水台で鬼の形相の中田と目が合う。美空を一時的に隠し、中田の寄りを出す（game.css）
+    { at: 'c08-024', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 質問の続きを書く：監督との通常の会話画面へ戻す
     { at: 'c08-027', portrait: { slot: 'right', clear: true } }, // 翌日、紙が戻る
     { at: 'c08-030', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 監督に読んだか聞く
     { at: 'c08-033', portrait: { slot: 'right', clear: true } }, // まとめの地の文
     { at: 'c08-034', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 写しを渡すと、監督の目が名前で止まる
-    { at: 'c08-041', portrait: { slot: 'right', clear: true } }, // 隣の中田が固まる（驚きの差分がないので中田も出さない）
+    { at: 'c08-041', portrait: { slot: 'left', char: 'nakata', expr: 'practice-shock' } }, // 隣の中田が固まり、手の下を球が転がる（驚き）。右の美空の声へ向く。足元を基準に配置（game.css）
     { at: 'c08b-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（机の端）：左を明示して消す
     { at: 'c08b-001', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 幕間：部室の机の端を空けてくれる日和
     { at: 'c09-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（日和との日常）：左を明示して消す

@@ -20,3 +20,40 @@
   .kit-portrait { align-items: flex-start; }
   .kit-portrait-img { height: 165%; max-width: none; }
 }
+
+/* 中田の表情差分（docs/portrait-staging.md）。キットは変えず、立ち絵の画像名と枠でこの3枚だけ表示を変える。
+   本文欄は最小で画面の高さの30%、その下に操作ボタンの列（約56px）があるので、本文欄の上端は「100% - 30vh - 56px」の高さになる。 */
+
+/* 激怒：平野から見た中田の寄り。美空の代わりに右の枠へ出し、画面の中央に置く。
+   画像の上端（湯気）から硬球を握る拳の下（元画像の高さ1,280pxのうち約750px）までが、本文欄の上に収まる大きさにする。 */
+.kit-portrait-right:has(.kit-portrait-img[src$="nakata-practice-rage.webp"]) { justify-content: center; }
+.kit-portrait-img[src$="nakata-practice-rage.webp"] {
+  align-self: flex-start; margin-top: 0; max-width: none;
+  height: calc((100% - 30vh - 56px) * 1280 / 750);
+}
+
+/* 照れ笑い（5-4）：着席した中田。右に美空がいる5-4の左の枠だけ、顔〜胸（元画像の上から520px）を切り抜き、
+   立った脚と手に下げたグラブを見せない。PC では切り抜きの下端を本文欄の上端にそろえ、本文欄の上に収める。
+   高さの小さい画面では顔が小さくならないよう、下端を画面の下端にそろえ、胸から下は本文欄の後ろにする。
+   5-7（右に誰もいない）は通常の立ち絵と同じ全身のまま。 */
+.kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
+  align-self: flex-start; max-width: none; margin-top: 0; margin-left: 2vw;
+  height: calc(100% - 30vh - 56px); width: auto; aspect-ratio: 859 / 520;
+  object-fit: cover; object-position: 50% 0;
+}
+@media (max-height: 500px) {
+  .kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
+    align-self: flex-end; height: 80%; margin-left: -6vw;
+  }
+}
+
+/* 驚き：前かがみの全身。頭の位置は持ち上げず、足元（画像の下端）を本文欄の上の場面名の札（約28px）の上にそろえて
+   人物全体を縮小し、伸ばした手と球が本文欄や札に隠れないようにする。左の枠に置き、右の美空の声へ向いたままにする（反転しない）。 */
+.kit-portrait-img[src$="nakata-practice-shock.webp"] {
+  align-self: flex-start; margin-top: 0; max-width: none;
+  height: calc(100% - 30vh - 56px - 28px);
+}
+/* 驚き（高さの小さい画面）：場面名の札の右へずらし、足元を本文欄の上端にそろえて、使える高さを広げる（顎と球を大きく見せる）。 */
+@media (max-height: 500px) {
+  .kit-portrait-img[src$="nakata-practice-shock.webp"] { height: calc(100% - 30vh - 56px); margin-left: 170px; }
+}

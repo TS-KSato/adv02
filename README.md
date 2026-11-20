@@ -9,7 +9,7 @@
 ## 注意
 
 - 背景は `assets/backgrounds/` の31枚（不透明WebP・1920×1080px）を、場所が変わる行で切り替えています。宿舎（5-31・5-32）、龍成の部室（5-28）、第3便の教室・自販機・校舎外周・廊下・大山家の前・病院の待合室・校門前のバス、第4便の駅までの道・平野の部屋・病院の廊下も含みます。平野の部屋（幕間「空いた一行」）では、机が隠れないよう立ち絵を出しません。5-26の帝嶺との練習試合は鳳翔のグラウンドで開催する設定で、ベンチの背景を使います。背景の未割り当てはありません。
-- 人物の立ち絵は `assets/portraits/` に35枚（透過WebP・859×1,280px、一覧は `portraits-list.csv`）を登録済みです。画面に出すのは今のところ、冒頭の大山と5-4〜5-12の場面です（配置と見送った箇所は [docs/portrait-staging.md](docs/portrait-staging.md)）。5-13以降は未配置です。横向きのスマホなど高さ500px以下の画面では上半身寄り、PCでは全身で表示します（`game.css`）。
+- 人物の立ち絵は `assets/portraits/` に38枚（通常35枚と中田の表情差分3枚。透過WebP・859×1,280px、一覧は `portraits-list.csv`）を登録済みです。画面に出すのは今のところ、冒頭の大山と5-4〜5-12の場面です（配置と見送った箇所は [docs/portrait-staging.md](docs/portrait-staging.md)）。5-13以降は未配置です。横向きのスマホなど高さ500px以下の画面では上半身寄り、PCでは全身で表示します（`game.css`）。
 - BGM・環境音・効果音は**未登録**です。
 - 横向き専用です。縦向きでは案内を出して進行を止めます。
 - 試験はデスクトップ版 Chromium で行っています。スマホ実機（iPhone・Android の Safari・Chrome）では確かめていません。
@@ -21,7 +21,7 @@ index.html                 入口（/adv02/ の下で動く。相対パスのみ
 game.js                    作品データ（window.KIT_GAME）
 game.css                   新作専用の見た目（場面名・ページ数の札）
 assets/backgrounds/        背景（31枚）
-assets/portraits/          立ち絵（35枚）と素材一覧 portraits-list.csv
+assets/portraits/          立ち絵（38枚）と素材一覧 portraits-list.csv
 kit/releases/0.1.0/        作品が実行時に読む、固定版のキット（4 ファイル）
 kit/engine/                上流の複製（回帰試験が参照）
 kit/samples/               キットの回帰試験用の作品（新作の下敷きではない）

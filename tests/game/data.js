@@ -561,13 +561,14 @@ const portraitCsv = read('assets/portraits/portraits-list.csv').replace(/^﻿/, 
 check('素材一覧の見出しは ファイル名・人物・衣装・差分・使用予定場面', portraitCsv[0] === 'ファイル名,人物,衣装,差分,使用予定場面', portraitCsv[0]);
 const listedPortraits = portraitCsv.slice(1).map((row) => row.split(',')[0]);
 const portraitFiles = fs.readdirSync(path.join(ROOT, 'assets', 'portraits')).filter((f) => f !== 'portraits-list.csv').sort();
-check('素材一覧は35件で、重複がない', listedPortraits.length === 35 && new Set(listedPortraits).size === 35, String(listedPortraits.length));
+check('素材一覧は38件（通常35＋中田の表情差分3）で、重複がない', listedPortraits.length === 38 && new Set(listedPortraits).size === 38, String(listedPortraits.length));
+check('素材一覧に Magnific の管理IDを書かない', !/magnific/i.test(read('assets/portraits/portraits-list.csv')));
 check('素材一覧と assets/portraits の実ファイルが1対1で一致する（一覧以外のファイルがない）',
   JSON.stringify([...listedPortraits].sort()) === JSON.stringify(portraitFiles),
   portraitFiles.filter((f) => !listedPortraits.includes(f)).concat(listedPortraits.filter((f) => !portraitFiles.includes(f))).join(','));
 const registered = Object.entries(G.assets.portraits).flatMap(([char, exprs]) => Object.entries(exprs).map(([expr, file]) => ({ char, expr, file })));
-check('35枚すべてが assets.portraits に一度ずつ登録されている',
-  registered.length === 35 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
+check('38枚すべてが assets.portraits に一度ずつ登録されている',
+  registered.length === 38 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
 check('登録のキーは「人物-衣装と差分.webp」のファイル名から作り、人物のキーは話者と同じ',
   registered.every((r) => r.file === 'assets/portraits/' + r.char + '-' + r.expr + '.webp' && Object.prototype.hasOwnProperty.call(G.speakers, r.char)),
   registered.filter((r) => r.file !== 'assets/portraits/' + r.char + '-' + r.expr + '.webp' || !G.speakers[r.char]).map((r) => r.file).join(','));
@@ -698,7 +699,8 @@ const shownAt = (id) => { const p = V.stateAt(G, id).portraits; return [p.left, 
 const usedPortraits = new Set(allIds.flatMap((id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map(charOf); }));
 check('使う立ち絵は練習・片づけ・私服・就任初日の衣装だけ（家庭用デフォルメ・負傷・パンツスーツ通常などは使わない）',
   [...usedPortraits].sort().join(',') === ['hiyori/jersey-normal', 'kawamoto/casual-normal', 'misora/game-uniform-normal', 'misora/pantsuit-first-day',
-    'nakata/practice-normal', 'oyama/practice-normal', 'oyama/school-winter-normal', 'sasaki/practice-normal'].sort().join(','), [...usedPortraits].join(','));
+    'nakata/practice-normal', 'nakata/practice-rage', 'nakata/practice-bashful', 'nakata/practice-shock',
+    'oyama/practice-normal', 'oyama/school-winter-normal', 'sasaki/practice-normal'].sort().join(','), [...usedPortraits].join(','));
 const sceneLines = (...keys) => keys.flatMap((k) => G.scenes[k].lines.map((l) => l.id));
 const firstDayLines = allIds.filter((id) => shownAt(id).includes('misora/pantsuit-first-day'));
 check('就任初日のスーツは5-11の回想（testimony-memory）の中だけ', firstDayLines.length > 0 && firstDayLines.every((id) => sceneOfLine.get(id) === 'testimony-memory'));
@@ -718,7 +720,10 @@ const portraitSpans = [
   ['c05e-011', 'oyama/practice-normal'], ['c05e-012', '-'], ['c05b-001', 'oyama/practice-normal'],
   ['c06-008', '-'], ['c06-009', 'misora/game-uniform-normal'], ['c06b-001', '-'], ['c06e-004', 'misora/game-uniform-normal'], ['c06e-004a', '-'], ['c06e-010', '-'],
   ['c07-001', '-'], ['c07-008', '-'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
-  ['c07-033', 'nakata/practice-normal,misora/game-uniform-normal'], ['c08-001', 'misora/game-uniform-normal'], ['c08-022', 'misora/game-uniform-normal'], ['c08-041', '-'],
+  ['c07-033', 'nakata/practice-normal,misora/game-uniform-normal'], ['c08-001', 'misora/game-uniform-normal'], ['c08-020', 'misora/game-uniform-normal'], ['c08-021', 'nakata/practice-rage'], ['c08-023', 'nakata/practice-rage'], ['c08-024', 'misora/game-uniform-normal'],
+  ['c08-040', 'misora/game-uniform-normal'], ['c08-041', 'nakata/practice-shock,misora/game-uniform-normal'], ['c08-043', 'nakata/practice-shock,misora/game-uniform-normal'],
+  ['c04-019', 'misora/game-uniform-normal'], ['c04-022', 'nakata/practice-bashful,misora/game-uniform-normal'], ['c04-023', 'misora/game-uniform-normal'],
+  ['c07-016', '-'], ['c07-017', 'nakata/practice-bashful'], ['c07-018', 'nakata/practice-bashful'], ['c07-019', '-'],
   ['c08b-001', 'hiyori/jersey-normal'], ['c09-001', '-'], ['c09-002', 'hiyori/jersey-normal'],
   ['c09d-002', 'sasaki/practice-normal,hiyori/jersey-normal'], ['c09d-010', '-'], ['c09t-001', 'hiyori/jersey-normal'], ['c09t-004', 'sasaki/practice-normal,hiyori/jersey-normal'],
   ['c09e-001', 'sasaki/practice-normal'], ['c09e-006', 'hiyori/jersey-normal'], ['c09e-007', 'misora/game-uniform-normal,hiyori/jersey-normal'], ['c09e-014', '-'],
@@ -732,6 +737,19 @@ const portraitSpans = [
 ];
 check('行ごとの立ち絵（左,右）：登場・退場・分岐・回想の主な行',
   portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.filter(([id, want]) => shownAt(id) !== want).map(([id]) => id + '=' + shownAt(id)).join(' '));
+
+section('中田の表情差分と本文');
+const expressionLines = (expr) => allIds.filter((id) => shownAt(id).split(',').includes('nakata/' + expr));
+check('激怒は c08-021〜c08-023 だけ', JSON.stringify(expressionLines('practice-rage')) === JSON.stringify(['c08-021', 'c08-022', 'c08-023']), expressionLines('practice-rage').join(','));
+check('照れ笑いは c04-022 と c07-017〜c07-018 だけ（美空が褒める c07-016 より前には出さない）', JSON.stringify(expressionLines('practice-bashful')) === JSON.stringify(['c04-022', 'c07-017', 'c07-018']), expressionLines('practice-bashful').join(','));
+check('驚きは c08-041〜c08-043 だけで、左の枠に出る', JSON.stringify(expressionLines('practice-shock')) === JSON.stringify(['c08-041', 'c08-042', 'c08-043']) &&
+  ['c08-041', 'c08-042', 'c08-043'].every((id) => V.stateAt(G, id).portraits.left.expr === 'practice-shock'));
+check('激怒の区間は美空を出さず、c08-024 で美空に戻る', ['c08-021', 'c08-022', 'c08-023'].every((id) => !shownAt(id).includes('misora')) && shownAt('c08-024') === 'misora/game-uniform-normal');
+const lineText = (id) => allLines.find((l) => l.id === id).text;
+check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
+check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをかごに入れる音がした。'));
+check('game.css の表情差分の専用表示は、この3枚の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
+  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /nakata-practice-(rage|bashful|shock)\.webp/.test(s)));
 
 section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');
