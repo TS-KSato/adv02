@@ -57,3 +57,19 @@
 @media (max-height: 500px) {
   .kit-portrait-img[src$="nakata-practice-shock.webp"] { height: calc(100% - 30vh - 56px); margin-left: 170px; }
 }
+
+/* 動揺は全身の反応を見せる。通常の上半身拡大をこの画像だけ解除する。 */
+.kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] {
+  align-self: flex-start;
+  height: calc(100% - 30vh - 56px);
+  max-width: none;
+  margin-right: 4vw;
+}
+@media (max-height: 500px) {
+  /* 前へ突き出した顔・口・手を本文欄の上に残す。左右反転しない。 */
+  .kit-portrait-img[src$="oyama-practice-angry.webp"],
+  .kit-portrait-img[src$="kawamoto-casual-shock.webp"] {
+    height: 100%;
+    max-width: none;
+  }
+}
