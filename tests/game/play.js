@@ -1203,6 +1203,62 @@ async function mountCheck(origin) {
   check('/adv02/ の下で、登録した背景31枚がすべて 200（image/webp）', missingBg.length === 0, missingBg.join(' | '));
 }
 
+// 人物の一貫性の調整：青岳戦・決勝の3経路（事前準備／当日の確認／どちらもしない）を実際に選んで進め、
+// 足した行が選んだ経路でだけ出ること、本文が画面に収まること、得点と勝敗、足した行の途中から「つづきから」で戻ることを確かめる。
+async function consistencyRoutes(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  section('人物の一貫性：青岳戦・決勝の3経路（' + viewport.width + '×' + viewport.height + '）');
+  const games = [
+    { name: '青岳戦', from: G.scenes['aotake-quarterfinal'].lines[0].id, end: 'aotake-no-tomorrow', win: 'teirei-final',
+      lossOnly: ['c32h-002', 'c32h-003', 'c32h-004', 'c32h-005', 'c32h-006'], winOnly: ['c32i-002a', 'c32i-002b', 'c32i-004'],
+      resume: { loss: 'c32h-004', win: 'c32i-002b' }, score: { loss: ['c32l-002', '2対3'], win: ['c32k-004', '3対2'] } },
+    { name: '決勝', from: G.scenes['teirei-final'].lines[0].id, end: 'teirei-champion-shinjo', win: 'last-out',
+      lossOnly: ['c33k-001m', 'c33k-001n', 'c33k-001o', 'c33k-001q'], winOnly: ['c33i-003a'],
+      resume: { loss: 'c33k-001n', win: 'c33i-003a' }, score: { loss: ['c33k-004', '4対5'], win: ['c33h-001a', '4対3'] } },
+  ];
+  for (const g of games) {
+    for (const [label, picks] of [['事前準備', [0]], ['当日の確認', [1, 0]], ['どちらもしない', [1, 1]]]) {
+      await page.evaluate(([key, at]) => {
+        const raw = JSON.parse(localStorage.getItem(key));
+        raw.auto.at = at;
+        for (const k of Object.keys(raw.auto.flags)) raw.auto.flags[k] = false;
+        localStorage.setItem(key, JSON.stringify(raw));
+      }, [SAVE_KEY, g.from]);
+      await resumeHere(page);
+      const seen = [];
+      const issues = [];
+      const queue = [...picks];
+      let resumed = false;
+      for (let i = 0; i < 300; i++) {
+        const st = await show(page);
+        if (st.scene === g.end || st.scene === g.win) break;
+        if (st.choices) { await page.locator('.kit-choice').nth(queue.shift()).click(); continue; }
+        seen.push(st.lineId);
+        if (!fits(await layout(page))) issues.push(st.lineId);
+        const loss = label === 'どちらもしない';
+        if (!resumed && st.lineId === g.resume[loss ? 'loss' : 'win']) {
+          await resumeHere(page);
+          const back = await show(page);
+          check(g.name + '・' + label + '：' + st.lineId + ' の途中でリロードし、つづきからで同じ行に戻る', back.lineId === st.lineId && back.prose === st.prose);
+          resumed = true;
+        }
+        await advance(page);
+      }
+      const loss = label === 'どちらもしない';
+      const final = (await show(page)).scene;
+      const [scoreId, score] = g.score[loss ? 'loss' : 'win'];
+      check(g.name + '・' + label + '：' + (loss ? '敗れて' : '勝って') + final + ' へ進み、得点は ' + score,
+        final === (loss ? g.end : g.win) && seen.includes(scoreId) && G.scenes[[...Object.keys(G.scenes)].find(k => G.scenes[k].lines.some(l => l.id === scoreId))].lines.find(l => l.id === scoreId).text.includes(score), final);
+      check(g.name + '・' + label + '：足した行は' + (loss ? '敗退側' : '勝利側') + 'だけに出る',
+        (loss ? g.lossOnly : g.winOnly).every(id => seen.includes(id)) && (loss ? g.winOnly : g.lossOnly).every(id => !seen.includes(id)) && resumed);
+      check(g.name + '・' + label + '：本文と操作が画面内に収まる', issues.length === 0, issues.slice(0, 4).join(' '));
+    }
+  }
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1254,6 +1310,8 @@ async function main() {
     await cgBatch02InPlay(browser, DESKTOP, '1280×720', 0);
     await expressionsBatch01(browser, SMALL_LANDSCAPE);
     await expressionsBatch01(browser, DESKTOP);
+    await consistencyRoutes(browser, SMALL_LANDSCAPE);
+    await consistencyRoutes(browser, DESKTOP);
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 

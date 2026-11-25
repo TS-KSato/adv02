@@ -481,6 +481,44 @@ check('8回終了後に田原と照合しても、伝達を経て優勝する',
 check('新庄の踏み出しを確認しなければ、敗れてE4へ進む',
   tournamentPath('teirei-final', [1, 1]) === 'teirei-final → teirei-unprepared → teirei-game → teirei-recovery-choice → teirei-unrecovered → teirei-ninth → teirei-loss → teirei-champion-shinjo');
 
+section('人物の一貫性の調整');
+const lineById = new Map(Object.values(G.scenes).flatMap(sc => sc.lines.map(l => [l.id, l])));
+const sceneOfId = new Map(Object.entries(G.scenes).flatMap(([k, sc]) => sc.lines.map(l => [l.id, k])));
+check('c05e-003：大山は先輩に命令口調で左打席を頼む（前後の「打てたらな」は残す）',
+  lineById.get('c05e-003')?.speaker === 'oyama' && lineById.get('c05e-003').text === 'なら左に立て。試したい球がある。' &&
+  lineById.get('c05e-005')?.text === '打てたらな。');
+check('c19-025：中田は監督に指示せず、自分を見ていてほしいと言う',
+  lineById.get('c19-025')?.speaker === 'nakata' && lineById.get('c19-025').text === '監督、まだ終わってません！　俺が取り返します。見ててください！');
+check('c24-002：剛の外見に厳との類似を書かない', lineById.get('c24-002')?.text.includes('上着の肩が張っていた。') && !lineById.get('c24-002').text.includes('厳'));
+const inScene = (ids, key) => ids.every(id => sceneOfId.get(id) === key);
+check('青岳戦：敗退側の直球を直す判断は、7回裏のベンチ（確認しない分岐だけ）で聞こえる',
+  inScene(['c32h-002', 'c32h-003', 'c32h-004', 'c32h-005', 'c32h-006'], 'aotake-unrecovered') &&
+  G.scenes['aotake-unrecovered'].lines[0].id === 'c32h-001' && G.scenes['aotake-unrecovered'].next === 'aotake-eighth');
+check('青岳戦：勝利側の伝達で、大山も気づいており、記録を受けて配球を変える',
+  inScene(['c32i-002a', 'c32i-002b', 'c32i-004'], 'aotake-battery-brief') &&
+  lineById.get('c32i-002a').speaker === 'oyama' && lineById.get('c32i-004').text.includes('待つより'));
+check('帝嶺戦：敗退側のマウンドでの判断は、ベンチに届かない場面として書き、新庄がさらに合わせる',
+  inScene(['c33k-001m', 'c33k-001n', 'c33k-001o', 'c33k-001q'], 'teirei-loss') &&
+  lineById.get('c33k-001m').text.includes('ベンチまで声は届かない') && lineById.get('c33k-001q').speaker === 'shinjo' &&
+  G.scenes['teirei-loss'].lines[0].id === 'c33k-001');
+check('帝嶺戦：勝利側の伝達で、田原は自分の読みと春の打席をつないで入りを変える',
+  inScene(['c33i-003a'], 'teirei-battery-brief') && lineById.get('c33i-003a').speaker === 'tahara');
+check('得点と勝敗の行は変えない', ['c32k-005', 'c32l-002', 'c32l-004', 'c33h-001', 'c33k-004'].every(id => lineById.has(id)) &&
+  lineById.get('c32l-002').text.includes('2対3') && lineById.get('c33k-004').text.startsWith('4対5') && lineById.get('c33h-001').text.includes('3対3'));
+// 手動セーブは3枠なので、変えた行・足した行の手前を2つの記録に分けて確かめる
+const ccFalse = Object.fromEntries(Object.keys(G.flags).map(k => [k, false]));
+const ccResume = (auto, slots) => {
+  const rec = { v: 1, game: G.id, dataVersion: G.dataVersion, flagSchema: saves.flagSchema(G),
+    auto: { at: auto[0], flags: { ...ccFalse, ...auto[1] }, dataVersion: G.dataVersion },
+    slots: slots.map(at => ({ at, flags: ccFalse, dataVersion: G.dataVersion })), seen: [] };
+  const r = saves.assess(G, rec, JSON.stringify(rec));
+  return r.mode === 'current' && r.record.auto.at === auto[0] && Object.entries(auto[1]).every(([k, v]) => r.record.auto.flags[k] === v) &&
+    r.record.slots.map(x => x?.at).join() === slots.join();
+};
+check('調整前の保存（同じ版 2026.11-4）の位置と選択を、そのまま再開できる',
+  ccResume(['c32i-004', { aotakeRecovery: true }], ['c05e-003', 'c19-025', 'c24-002']) &&
+  ccResume(['c33k-001c', {}], ['c32h-001', 'c33i-004', 'c33k-002']));
+
 section('最後のアウト');
 const lastOut = G.scenes['last-out'];
 const lastOutDoc = read('docs/last-out-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
