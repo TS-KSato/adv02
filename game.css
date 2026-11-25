@@ -73,3 +73,19 @@
     max-width: none;
   }
 }
+
+/* 一枚絵第2便（docs/cg-staging.md）。重要部分（平野のグラブと球、河本の浮いた足、大山の白無垢、田原の食卓、小宮のつないだ手）が
+   画面の下寄りにあるので、この5枚の表示中だけ、本文欄を内容に合わせた高さにし、画像全体をその上の領域へ収める。
+   画像の下に本文欄と操作ボタンの分の余白（最も長い行で測った値）を取り、左右と下の余白は暗い色で埋める（立ち絵や背景を透かさない）。
+   新庄の一枚絵と新聞の一枚絵は、重要部分が上半分にあるので全面表示のまま。 */
+.kit-root:has(.kit-cg:is([src$="hirano-field-visit-vision.webp"], [src$="c10-kawamoto-daydream-embrace.webp"], [src$="cbus-oyama-daydream-bride.webp"], [src$="c26a-tahara-daydream-home.webp"], [src$="c26b-komiya-daydream-hand.webp"])) .kit-dialogue {
+  min-height: 0;
+}
+.kit-cg:is([src$="hirano-field-visit-vision.webp"], [src$="c10-kawamoto-daydream-embrace.webp"], [src$="cbus-oyama-daydream-bride.webp"], [src$="c26a-tahara-daydream-home.webp"], [src$="c26b-komiya-daydream-hand.webp"]) {
+  object-fit: contain; object-position: 50% 50%;
+  box-sizing: border-box; padding-bottom: 143px; background: #0d0d12;
+}
+@media (max-height: 500px) {
+  /* 田原の台詞（c26a-008）は小さい画面で2行になり、本文欄が高くなる */
+  .kit-cg[src$="c26a-tahara-daydream-home.webp"] { padding-bottom: 173px; }
+}

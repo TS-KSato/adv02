@@ -749,7 +749,8 @@ const lineText = (id) => allLines.find((l) => l.id === id).text;
 check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
 check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをかごに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
-  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock)|misora-game-uniform-flustered-chibi|oyama-practice-angry|kawamoto-casual-shock)\.webp/.test(s)));
+  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock)|misora-game-uniform-flustered-chibi|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
+check('game.css の一枚絵の調整は、第2便の5枚だけを対象にする（新聞と新庄の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|c13-shinjo-daydream-dinner/.test(read('game.css')));
 
 section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');
@@ -783,8 +784,36 @@ for (const [expr, expected] of Object.entries(addedSpans)) {
  check(expr + ' は指定区間だけに出る', JSON.stringify(allIds.filter(id => shownAt(id).split(',').includes(expr))) === JSON.stringify(expected));
 }
 const cgKey = 'cnews-oyama-tears-newspaper';
-check('一枚絵は新聞を破る場面の1枚だけ', Object.keys(G.assets.cgs).join(',') === cgKey && fs.existsSync(path.join(ROOT, G.assets.cgs[cgKey].src)));
-check('新聞CGは cnews-010〜cnews-011c だけに出て、cnews-012で消える', JSON.stringify(allIds.filter(id => V.stateAt(G,id).cg)) === JSON.stringify(['cnews-010','cnews-011','cnews-011a','cnews-011b','cnews-011c']));
+const CG_BATCH02 = {
+  'hirano-field-visit-vision': { lines: ['c01-009', 'c01-010', 'c01-011'], release: 'c01-012', bg: 'hosho-field-fence-morning' },
+  'c10-kawamoto-daydream-embrace': { lines: ['c10-015', 'c10-016', 'c10-017'], release: 'c10-018', bg: 'hosho-field-bench' },
+  'c13-shinjo-daydream-dinner': { lines: ['c13-021', 'c13-022'], release: 'c13-023', bg: 'hosho-field-bench' },
+  'cbus-oyama-daydream-bride': { lines: ['cbus-003a'], release: 'cbus-004', bg: 'bus-interior' },
+  'c26a-tahara-daydream-home': { lines: ['c26a-008'], release: 'c26a-009', bg: 'hosho-field-afternoon' },
+  'c26b-komiya-daydream-hand': { lines: ['c26b-008'], release: 'c26b-008a', bg: 'hosho-field-afternoon' },
+};
+const cgIds = Object.keys(G.assets.cgs);
+check('一枚絵は7枚（新聞＋第2便6枚）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
+check('一枚絵の ID はファイル名と同じで、assets/cg/ に実ファイルがある', cgIds.every((id) => G.assets.cgs[id].src === 'assets/cg/' + id + '.webp' && fs.existsSync(path.join(ROOT, G.assets.cgs[id].src))));
+check('assets/cg には登録した7枚だけがある（CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
+const badCg = cgIds.filter((id) => { const b = fs.readFileSync(path.join(ROOT, G.assets.cgs[id].src));
+  return !(b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' && (b.readUInt16LE(26) & 0x3fff) === 1920 && (b.readUInt16LE(28) & 0x3fff) === 1080); });
+check('一枚絵はすべて不透明な WebP で、1920×1080px', badCg.length === 0, badCg.join(','));
+check('CG 鑑賞の題名は場面名で、「妄想」「イメージ」などの説明を出さない', cgIds.every((id) => G.assets.cgs[id].title && !/妄想|イメージ|空想|想像/.test(G.assets.cgs[id].title)));
+check('武藤の一枚絵は登録しない', !cgIds.some((id) => /muto/.test(id)));
+const cgLines = (id) => allIds.filter((l) => V.stateAt(G, l).cg === id);
+check('新聞CGは cnews-010〜cnews-011c だけに出て、cnews-012で消える', JSON.stringify(cgLines(cgKey)) === JSON.stringify(['cnews-010','cnews-011','cnews-011a','cnews-011b','cnews-011c']) && !V.stateAt(G, 'cnews-012').cg);
+for (const [id, s] of Object.entries(CG_BATCH02)) {
+  check(id + '：' + s.lines[0] + (s.lines.length > 1 ? '〜' + s.lines[s.lines.length - 1] : 'のみ') + 'に出て、' + s.release + 'で解除し、背景は ' + s.bg,
+    JSON.stringify(cgLines(id)) === JSON.stringify(s.lines) && !V.stateAt(G, s.release).cg && V.stateAt(G, s.release).bg === s.bg && s.lines.every((l) => V.stateAt(G, l).bg === s.bg),
+    cgLines(id).join(','));
+}
+check('5-10：一枚絵の後の c10-018 で、一枚絵の前と同じ監督（左）と河本（右）に戻る', shownAt('c10-014') === 'misora/game-uniform-normal,kawamoto/casual-normal' && shownAt('c10-018') === 'misora/game-uniform-normal,kawamoto/casual-normal');
+check('田原の一枚絵は田原の分岐（tahara-catching）だけ、小宮の一枚絵は小宮の分岐（komiya-fielding）だけに出て、合流後に残らない',
+  cgLines('c26a-tahara-daydream-home').every((l) => sceneOfLine.get(l) === 'tahara-catching') && cgLines('c26b-komiya-daydream-hand').every((l) => sceneOfLine.get(l) === 'komiya-fielding') &&
+  G.scenes['rookies-teirei'].lines.every((l) => !V.stateAt(G, l.id).cg));
+check('index.html はキットの起動の後に、分岐の一枚絵の解放を補う game-cg-branches.js を読む', refsAll().indexOf('./game-cg-branches.js') > -1 && read('index.html').indexOf('KitEngine.start') < read('index.html').indexOf('./game-cg-branches.js'));
+function refsAll() { return [...read('index.html').matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]); }
 check('一枚絵の区間は通常の立ち絵を重ねない', allIds.filter(id => V.stateAt(G,id).cg).every(id => shownAt(id) === '-'));
 
 

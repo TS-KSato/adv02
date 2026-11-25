@@ -131,7 +131,17 @@ window.KIT_GAME = {
         'loungewear-summer-chibi': 'assets/portraits/misora-loungewear-summer-chibi.webp',
       },
     },
-    cgs: { 'cnews-oyama-tears-newspaper': { src: 'assets/cg/cnews-oyama-tears-newspaper.webp', title: '新聞と記録' } },
+    // 一枚絵。ID はファイル名と同じにし、画像を差し替えても変えない。題名は CG 鑑賞に出る場面名
+    cgs: {
+      'cnews-oyama-tears-newspaper': { src: 'assets/cg/cnews-oyama-tears-newspaper.webp', title: '新聞と記録' },
+      // 第2便
+      'hirano-field-visit-vision': { src: 'assets/cg/hirano-field-visit-vision.webp', title: '春のグラウンド' },
+      'c10-kawamoto-daydream-embrace': { src: 'assets/cg/c10-kawamoto-daydream-embrace.webp', title: '河本の来校' },
+      'c13-shinjo-daydream-dinner': { src: 'assets/cg/c13-shinjo-daydream-dinner.webp', title: '新庄との接触' },
+      'cbus-oyama-daydream-bride': { src: 'assets/cg/cbus-oyama-daydream-bride.webp', title: '行きのバス' },
+      'c26a-tahara-daydream-home': { src: 'assets/cg/c26a-tahara-daydream-home.webp', title: '田原と小宮' },
+      'c26b-komiya-daydream-hand': { src: 'assets/cg/c26b-komiya-daydream-hand.webp', title: '田原と小宮' },
+    },
     bgm: {},
     ambience: {},
     se: {},
@@ -2516,6 +2526,10 @@ window.KIT_GAME = {
     { at: 'c10-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（河本の来校）：右を明示して消す
     { at: 'c10-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 5-10：グラウンドの入口に立つ河本
     { at: 'c10-008', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 机の端で紙を揃える監督
+    { at: 'c10-015', portrait: { slot: 'left', clear: true } }, // 河本の一枚絵（c10-015〜c10-017）の間は立ち絵を重ねない
+    { at: 'c10-015', portrait: { slot: 'right', clear: true } },
+    { at: 'c10-018', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 一枚絵の後、一枚絵の前と同じ監督と河本に戻す
+    { at: 'c10-018', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } },
     { at: 'c10-020', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-shock' } },
     { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入る。美空を外し、次の台詞から大山の怒りを出す
     { at: 'c10-022', portrait: { slot: 'left', char: 'oyama', expr: 'practice-angry' } },
@@ -2548,6 +2562,13 @@ window.KIT_GAME = {
     { at: 'c13-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（新庄との接触）：右を明示して消す
     // 章間「新聞と記録」：一枚絵は区間内だけ表示する。
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
+    // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
+    { at: 'c01-009', cg: { id: 'hirano-field-visit-vision', until: 'c01-011' } }, // 5-1：朝練を見る平野の主観（c01-012 で解除）
+    { at: 'c10-015', cg: { id: 'c10-kawamoto-daydream-embrace', until: 'c10-017' } }, // 5-10：河本（c10-018 で解除）
+    { at: 'c13-021', cg: { id: 'c13-shinjo-daydream-dinner', until: 'c13-022' } }, // 5-13：新庄（c13-023 で解除）
+    { at: 'cbus-003a', cg: { id: 'cbus-oyama-daydream-bride' } }, // 行きのバス：大山（この1行だけ。cbus-004 で解除）
+    { at: 'c26a-008', cg: { id: 'c26a-tahara-daydream-home' } }, // 5-26 田原の分岐：田原（この1行だけ。c26a-009 で解除）
+    { at: 'c26b-008', cg: { id: 'c26b-komiya-daydream-hand' } }, // 5-26 小宮の分岐：小宮（この1行だけ。c26b-008a で解除）
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
