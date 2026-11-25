@@ -74,18 +74,24 @@
   }
 }
 
-/* 一枚絵第2便（docs/cg-staging.md）。重要部分（平野のグラブと球、河本の浮いた足、大山の白無垢、田原の食卓、小宮のつないだ手）が
-   画面の下寄りにあるので、この5枚の表示中だけ、本文欄を内容に合わせた高さにし、画像全体をその上の領域へ収める。
-   画像の下に本文欄と操作ボタンの分の余白（最も長い行で測った値）を取り、左右と下の余白は暗い色で埋める（立ち絵や背景を透かさない）。
-   新庄の一枚絵と新聞の一枚絵は、重要部分が上半分にあるので全面表示のまま。 */
-.kit-root:has(.kit-cg:is([src$="hirano-field-visit-vision.webp"], [src$="c10-kawamoto-daydream-embrace.webp"], [src$="cbus-oyama-daydream-bride.webp"], [src$="c26a-tahara-daydream-home.webp"], [src$="c26b-komiya-daydream-hand.webp"])) .kit-dialogue {
+/* 一枚絵（docs/cg-staging.md）。登録した7枚はキットの既定どおり表示領域全体に敷く（object-fit: cover。画像は縮小しない）。
+   本文欄の調整は、一枚絵が実際に表示されている間だけ（.kit-cg が hidden でなく、その画像を表示しているとき）に限る。
+   表示中は本文欄を文章の高さまで詰め、下地を少し透かして、画像の下側を隠す範囲を減らす。 */
+.kit-root:has(.kit-cg:not([hidden])[src]) .kit-dialogue {
   min-height: 0;
+  background: rgba(12, 12, 18, 0.7);
 }
-.kit-cg:is([src$="hirano-field-visit-vision.webp"], [src$="c10-kawamoto-daydream-embrace.webp"], [src$="cbus-oyama-daydream-bride.webp"], [src$="c26a-tahara-daydream-home.webp"], [src$="c26b-komiya-daydream-hand.webp"]) {
-  object-fit: contain; object-position: 50% 50%;
-  box-sizing: border-box; padding-bottom: 143px; background: #0d0d12;
-}
-@media (max-height: 500px) {
-  /* 田原の台詞（c26a-008）は小さい画面で2行になり、本文欄が高くなる */
-  .kit-cg[src$="c26a-tahara-daydream-home.webp"] { padding-bottom: 173px; }
-}
+.kit-root:has(.kit-cg:not([hidden])[src]) .kit-prose { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
+
+/* 重要部分が下寄りにある4枚は、本文欄を重要部分の反対側へ寄せる（場面名の札も本文欄にそろえる）。
+   平野の朝練見学：右下のグラブと球 → 本文欄は左。横長の画面では下側を見せる（上の空を切る）。 */
+.kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"] { object-position: 50% 100%; }
+.kit-root:has(.kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"]) .kit-dialogue { width: 66%; }
+/* 河本：左下の美空の浮いた足 → 本文欄は右。 */
+.kit-root:has(.kit-cg:not([hidden])[src$="c10-kawamoto-daydream-embrace.webp"]) .kit-dialogue { width: 62%; align-self: flex-end; }
+.kit-root:has(.kit-cg:not([hidden])[src$="c10-kawamoto-daydream-embrace.webp"]) .kit-scene { align-self: flex-end; }
+/* 田原：中央の食卓と、皿を運ぶ美空 → 本文欄は左（田原の後ろ姿の上）。 */
+.kit-root:has(.kit-cg:not([hidden])[src$="c26a-tahara-daydream-home.webp"]) .kit-dialogue { width: 44%; }
+/* 小宮：中央のつないだ手と、振り返る美空 → 本文欄は右（並木道の上）。 */
+.kit-root:has(.kit-cg:not([hidden])[src$="c26b-komiya-daydream-hand.webp"]) .kit-dialogue { width: 32%; min-width: 210px; align-self: flex-end; }
+.kit-root:has(.kit-cg:not([hidden])[src$="c26b-komiya-daydream-hand.webp"]) .kit-scene { align-self: flex-end; }

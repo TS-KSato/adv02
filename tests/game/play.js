@@ -18,6 +18,7 @@ const SHOT_DIR = process.env.GAME_SHOTS || '';
 const LANDSCAPE = { width: 844, height: 390 };
 const DESKTOP = { width: 1280, height: 720 };
 const SMALL_LANDSCAPE = { width: 667, height: 375 };
+const WIDE_LANDSCAPE = { width: 956, height: 440 }; // 横長のスマホ（画像より横長なので上下が切れる）
 const PORTRAIT = { width: 390, height: 844 };
 
 const G = (() => {
@@ -938,19 +939,31 @@ async function expressionsInPlay(browser, viewport, label) {
 // 一枚絵第2便：表示開始・維持・解除と通常画面への復帰、区間中のつづきから、重要部分の位置、CG 鑑賞への解放、5-26 の両分岐。
 const cgNow = (page) => page.evaluate(() => {
   const cg = document.querySelector('.kit-cg');
-  const d = document.querySelector('.kit-dialogue').getBoundingClientRect();
+  const dEl = document.querySelector('.kit-dialogue');
+  const d = dEl.getBoundingClientRect();
   if (cg.hidden || !cg.getAttribute('src')) return null;
   const r = cg.getBoundingClientRect();
   const cs = getComputedStyle(cg);
-  const pad = parseFloat(cs.paddingBottom) || 0;
-  // object-fit の内容（画像が描かれる領域）を求める
-  const boxW = r.width, boxH = r.height - pad;
-  let w = boxW, h = boxW * 1080 / 1920;
-  if (cs.objectFit === 'contain' && h > boxH) { h = boxH; w = boxH * 1920 / 1080; }
-  if (cs.objectFit === 'cover') { h = Math.max(boxH, boxW * 1080 / 1920); w = h * 1920 / 1080; }
-  const left = r.left + (boxW - w) / 2, top = r.top + (boxH - h) / 2;
-  return { file: cg.getAttribute('src').split('/').pop(), loaded: cg.complete && cg.naturalWidth === 1920, fit: cs.objectFit, full: r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight,
-    img: { left, top, w, h }, dialogueTop: d.top, vw: innerWidth, vh: innerHeight };
+  const pad = ['Top', 'Right', 'Bottom', 'Left'].reduce((n, k) => n + (parseFloat(cs['padding' + k]) || 0), 0);
+  // object-fit: cover の内容（画像が描かれる領域）。object-position の割合で切る位置を決める
+  const scale = Math.max(r.width / 1920, r.height / 1080);
+  const w = 1920 * scale, h = 1080 * scale;
+  const [px, py] = cs.objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+  const left = r.left + (r.width - w) * px, top = r.top + (r.height - h) * py;
+  const rects = [d, ...[...document.querySelectorAll('.kit-bar .kit-btn, .kit-bar .kit-sound, .kit-page, .kit-scene')].map((e) => e.getBoundingClientRect())]
+    .map((b) => ({ l: b.left, t: b.top, r: b.right, b: b.bottom }));
+  return { file: cg.getAttribute('src').split('/').pop(), loaded: cg.complete && cg.naturalWidth === 1920, fit: cs.objectFit, pad,
+    full: r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight && cs.objectFit === 'cover' && pad === 0 &&
+      left <= 0.5 && top <= 0.5 && left + w >= innerWidth - 0.5 && top + h >= innerHeight - 0.5,
+    img: { left, top, w, h }, rects, dialogueTop: d.top, dialogueMinHeight: getComputedStyle(dEl).minHeight, vw: innerWidth, vh: innerHeight };
+});
+// 本文欄・場面名・ページ数・操作ボタンのどれにも重ならず、画面内にある
+const cgVisible = (c, pt) => pt && pt.x > 0 && pt.x < c.vw && pt.y > 0 && pt.y < c.vh &&
+  c.rects.every((b) => !(pt.x >= b.l - 4 && pt.x <= b.r + 4 && pt.y >= b.t - 4 && pt.y <= b.b + 4));
+// 通常画面の本文欄（CG 専用の調整が残っていない）
+const plainDialogue = (page) => page.evaluate(() => {
+  const d = getComputedStyle(document.querySelector('.kit-dialogue'));
+  return { minHeight: d.minHeight, bg: d.backgroundColor, width: document.querySelector('.kit-dialogue').getBoundingClientRect().width, vh: innerHeight };
 });
 const cgPoint = (c, fx, fy) => ({ x: c.img.left + fx * c.img.w, y: c.img.top + fy * c.img.h });
 async function cgBatch02InPlay(browser, viewport, label, pick) {
@@ -976,7 +989,7 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
     ['c01-008', 'c01-009', 'c01-010', 'c01-011', 'c01-012', 'hirano-field-visit-vision.webp', '', [[0.93, 0.8, 'グラブと球']], '平野の朝練見学'],
     ['c10-014', 'c10-015', 'c10-016', 'c10-017', 'c10-018', 'c10-kawamoto-daydream-embrace.webp', 'left:misora-game-uniform-normal.webp,right:kawamoto-casual-normal.webp', [[0.31, 0.85, '美空の浮いた足'], [0.58, 0.4, '抱き止める姿']], '河本'],
     ['c13-020', 'c13-021', 'c13-022', 'c13-022', 'c13-023', 'c13-shinjo-daydream-dinner.webp', '', [[0.52, 0.43, '乾杯するグラス'], [0.28, 0.27, '美空の顔'], [0.63, 0.27, '新庄の顔']], '新庄'],
-    ['cbus-003', 'cbus-003a', 'cbus-003a', 'cbus-003a', 'cbus-004', 'cbus-oyama-daydream-bride.webp', '', [[0.48, 0.33, '美空の顔'], [0.5, 0.83, '白無垢']], '大山'],
+    ['cbus-003', 'cbus-003a', 'cbus-003a', 'cbus-003a', 'cbus-004', 'cbus-oyama-daydream-bride.webp', '', [[0.48, 0.33, '美空の顔'], [0.33, 0.2, '綿帽子']], '大山'],
   ];
   if (pick === 0) spans.push(['c26a-007', 'c26a-008', 'c26a-008', 'c26a-008', 'c26a-009', 'c26a-tahara-daydream-home.webp', '', [[0.62, 0.84, '食卓の料理'], [0.67, 0.53, '皿を運ぶ美空']], '田原']);
   else spans.push(['c26b-007', 'c26b-008', 'c26b-008', 'c26b-008', 'c26b-008a', 'c26b-komiya-daydream-hand.webp', '', [[0.5, 0.8, 'つないだ手'], [0.48, 0.24, '振り返る美空']], '小宮']);
@@ -985,11 +998,11 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
     check(name + '：直前（' + before + '）は一枚絵なし', (await cgNow(page)) === null);
     await advance(page); await waitCg();
     let c = await cgNow(page);
-    check(name + '：' + start + ' で一枚絵が表示され、画面全体を覆う（立ち絵が透けない）', (await show(page)).lineId === start && c && c.file === file && c.loaded && c.full, JSON.stringify(c));
+    check(name + '：' + start + ' で一枚絵が表示され、縮小・余白なしで画面全体を覆う（cover）', (await show(page)).lineId === start && c && c.file === file && c.loaded && c.full, JSON.stringify(c));
     check(name + '：一枚絵の表示中は立ち絵を出さない', (await portraitNow(page)).length === 0);
     for (const [fx, fy, what] of points) {
       const pt = c && cgPoint(c, fx, fy);
-      check(name + '：' + what + ' が画面内で、本文欄より上にある', pt && pt.y < c.dialogueTop && pt.x > 0 && pt.x < c.vw && pt.y > 0, JSON.stringify(pt) + ' 本文欄 ' + (c && c.dialogueTop));
+      check(name + '：' + what + ' が画面内で、本文欄・操作ボタンに隠れない', c && cgVisible(c, pt), JSON.stringify(pt) + ' ' + JSON.stringify(c && c.rects[0]));
     }
     check(name + '：' + start + ' に到達して CG 鑑賞へ解放される', !!(await gallery())[file.replace('.webp', '')]);
     await advanceToPicking(page, mid, pick);
@@ -1002,6 +1015,8 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
     await waitPortraitLoaded(page);
     const files = (await layoutNow(page)).map((l) => l.slot + ':' + l.file).join(',');
     check(name + '：' + release + ' で一枚絵を解除し、その行の背景と立ち絵に戻る', (await show(page)).lineId === release && (await cgNow(page)) === null && files === after, files);
+    const pd = await plainDialogue(page);
+    check(name + '：解除後の本文欄に一枚絵用の調整が残らない（高さ30%・通常の下地・全幅）', Math.abs(parseFloat(pd.minHeight) - pd.vh * 0.3) < 1 && pd.bg === 'rgba(12, 12, 18, 0.82)' && pd.width > viewport.width - 40, JSON.stringify(pd));
   }
   // 5-26 の分岐：選んだ側だけを解放し、合流後も残さない
   const other = pick === 0 ? 'c26b-komiya-daydream-hand' : 'c26a-tahara-daydream-home';
@@ -1019,6 +1034,13 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
   check('CG 鑑賞：7枚のうち、選ばなかった分岐の一枚絵（' + other + '）だけが鍵のまま', cards.length === 7 && cards.filter(Boolean).length === 6 && cards[ids.indexOf(other)] === false, JSON.stringify(cards));
   await snap(page, 'cg-batch02-' + viewport.width + '-' + pick);
+  // 新聞の一枚絵（表情第1便）も、縮小・余白なしで画面全体を覆う
+  await resumeAt('cnews-011'); await waitCg();
+  const news = await cgNow(page);
+  check('新聞：cnews-011 で一枚絵が画面全体を覆う（cover）', news && news.file === 'cnews-oyama-tears-newspaper.webp' && news.full && news.loaded, JSON.stringify(news));
+  check('新聞：破った新聞と大山の顔が、本文欄・操作ボタンに隠れない', [[0.18, 0.12], [0.43, 0.12], [0.62, 0.14]].every(([x, y]) => cgVisible(news, cgPoint(news, x, y))));
+  await advanceToPicking(page, 'cnews-012', pick);
+  check('新聞：cnews-012 で解除し、本文欄の調整も残らない', (await cgNow(page)) === null && Math.abs(parseFloat((await plainDialogue(page)).minHeight) - viewport.height * 0.3) < 1);
   await ctx.close();
 }
 
@@ -1308,6 +1330,8 @@ async function main() {
     await cgBatch02InPlay(browser, DESKTOP, '1280×720', 1);
     await cgBatch02InPlay(browser, SMALL_LANDSCAPE, '667×375', 1);
     await cgBatch02InPlay(browser, DESKTOP, '1280×720', 0);
+    await cgBatch02InPlay(browser, WIDE_LANDSCAPE, '956×440', 0);
+    await cgBatch02InPlay(browser, WIDE_LANDSCAPE, '956×440', 1);
     await expressionsBatch01(browser, SMALL_LANDSCAPE);
     await expressionsBatch01(browser, DESKTOP);
     await consistencyRoutes(browser, SMALL_LANDSCAPE);
