@@ -10,6 +10,52 @@
 .kit-scene { align-self: flex-start; margin: 0 0 6px; font-size: 13px; }
 .kit-page { font-size: 12px; }
 
+/* 本文枠の固定（docs/ui-frame.md）。同じ画面サイズでは、背景・一枚絵・話者の有無・文章量・選択肢の有無で
+   本文枠・場面名・ページ表示・操作ボタンの位置と大きさを変えない。
+   枠の高さは「上下の余白＋話者名の行＋本文4行」。作品の全文が、確認した画面サイズで4行以内に収まる（試験で全行を測る）。
+   操作ボタンの列は高さ36px＋上の間隔8px、画面の下の余白12px（キットの既定）で、合わせて56px。 */
+:root {
+  --frame-fs: 17px;
+  --frame-lh: 1.8;
+  --frame-pad: 12px;
+  --frame-speaker: 26px;
+  --frame-h: calc(var(--frame-pad) * 2 + var(--frame-speaker) + 4 * var(--frame-fs) * var(--frame-lh) + 4px);
+  --scene-h: 22px;
+}
+@media (max-height: 500px) {
+  /* 高さの小さい画面（横向きのスマホ）は、行間だけ詰める。文字の大きさは変えない */
+  :root { --frame-lh: 1.6; }
+}
+.kit-dialogue {
+  flex: none; box-sizing: border-box;
+  height: var(--frame-h); min-height: 0;
+  padding: var(--frame-pad) 16px; overflow: hidden;
+  /* 本文枠はボタン要素なので、既定では中身が上下中央に寄る。短い文章も上から読み始めるよう、上詰めにする */
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;
+}
+/* 話者名の行は、話者がいない地の文でも高さを取っておき、本文の読み始めの位置をそろえる */
+.kit-speaker, .kit-speaker[hidden] {
+  display: block; flex: none; height: var(--frame-speaker); margin: 0; line-height: 20px; box-sizing: border-box;
+}
+.kit-speaker[hidden] { visibility: hidden; }
+.kit-prose { flex: none; font-size: var(--frame-fs); line-height: var(--frame-lh); }
+/* 「タップで進む」は話者名の行の右端に置き、本文の最終行に重ねない */
+.kit-next { top: var(--frame-pad); bottom: auto; line-height: 20px; }
+/* 場面名とページ表示・操作ボタンの列は高さを固定する */
+.kit-scene { height: var(--scene-h); line-height: 18px; box-sizing: border-box; flex: none; white-space: nowrap; }
+.kit-bar { flex: none; flex-wrap: nowrap; height: 36px; margin-top: 8px; }
+.kit-bar-buttons { flex-wrap: nowrap; }
+
+/* 選択肢は本文枠を押し上げず、場面名の札の上に、独立した領域として重ねる（本文枠の上端から 場面名の札＋間隔 を空ける）。
+   最後の本文は本文枠に残ったまま読める。 */
+.kit-choices {
+  position: absolute; left: 16px; right: 16px; margin: 0;
+  bottom: calc(56px + var(--frame-h) + 6px + var(--scene-h) + 10px);
+  gap: 8px;
+}
+.kit-choice { background: rgba(12, 12, 18, 0.9); padding: 10px 12px; line-height: 1.5; }
+
+
 /* 下の操作ボタンは、立ち絵（白いユニフォームなど）の上でも文字が読めるように、場面名と同じ暗い下地を敷く。 */
 .kit-bar .kit-btn, .kit-bar .kit-sound { background: rgba(12, 12, 18, 0.85); }
 
@@ -22,28 +68,28 @@
 }
 
 /* 中田の表情差分（docs/portrait-staging.md）。キットは変えず、立ち絵の画像名と枠でこの3枚だけ表示を変える。
-   本文欄は最小で画面の高さの30%、その下に操作ボタンの列（約56px）があるので、本文欄の上端は「100% - 30vh - 56px」の高さになる。 */
+   本文枠は高さ var(--frame-h) で固定し、その下に操作ボタンの列（下の余白を含めて56px）があるので、本文枠の上端は「100% - var(--frame-h) - 56px」の高さになる。 */
 
 /* 激怒：平野から見た中田の寄り。美空の代わりに右の枠へ出し、画面の中央に置く。
    画像の上端（湯気）から硬球を握る拳の下（元画像の高さ1,280pxのうち約750px）までが、本文欄の上に収まる大きさにする。 */
 .kit-portrait-right:has(.kit-portrait-img[src$="nakata-practice-rage.webp"]) { justify-content: center; }
 .kit-portrait-img[src$="nakata-practice-rage.webp"] {
   align-self: flex-start; margin-top: 0; max-width: none;
-  height: calc((100% - 30vh - 56px) * 1280 / 750);
+  height: calc((100% - var(--frame-h) - 56px) * 1280 / 750);
 }
 
 /* 照れ笑い（5-4）：着席した中田。右に美空がいる5-4の左の枠だけ、顔〜胸（元画像の上から520px）を切り抜き、
    立った脚と手に下げたグラブを見せない。PC では切り抜きの下端を本文欄の上端にそろえ、本文欄の上に収める。
-   高さの小さい画面では顔が小さくならないよう、下端を画面の下端にそろえ、胸から下は本文欄の後ろにする。
+   高さの小さい画面では顔が小さくならないよう、上端を画面の上端にそろえて大きめに出し、胸から下は本文枠の後ろにする。
    5-7（右に誰もいない）は通常の立ち絵と同じ全身のまま。 */
 .kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
   align-self: flex-start; max-width: none; margin-top: 0; margin-left: 2vw;
-  height: calc(100% - 30vh - 56px); width: auto; aspect-ratio: 859 / 520;
+  height: calc(100% - var(--frame-h) - 56px); width: auto; aspect-ratio: 859 / 520;
   object-fit: cover; object-position: 50% 0;
 }
 @media (max-height: 500px) {
   .kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
-    align-self: flex-end; height: 80%; margin-left: -6vw;
+    align-self: flex-start; margin-top: 0; height: 80%; margin-left: -6vw;
   }
 }
 
@@ -51,17 +97,17 @@
    人物全体を縮小し、伸ばした手と球が本文欄や札に隠れないようにする。左の枠に置き、右の美空の声へ向いたままにする（反転しない）。 */
 .kit-portrait-img[src$="nakata-practice-shock.webp"] {
   align-self: flex-start; margin-top: 0; max-width: none;
-  height: calc(100% - 30vh - 56px - 28px);
+  height: calc(100% - var(--frame-h) - 56px - 28px);
 }
 /* 驚き（高さの小さい画面）：場面名の札の右へずらし、足元を本文欄の上端にそろえて、使える高さを広げる（顎と球を大きく見せる）。 */
 @media (max-height: 500px) {
-  .kit-portrait-img[src$="nakata-practice-shock.webp"] { height: calc(100% - 30vh - 56px); margin-left: 170px; }
+  .kit-portrait-img[src$="nakata-practice-shock.webp"] { height: calc(100% - var(--frame-h) - 56px); margin-left: 170px; }
 }
 
 /* 動揺は全身の反応を見せる。通常の上半身拡大をこの画像だけ解除する。 */
 .kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] {
   align-self: flex-start;
-  height: calc(100% - 30vh - 56px);
+  height: calc(100% - var(--frame-h) - 56px);
   max-width: none;
   margin-right: 4vw;
 }
@@ -74,24 +120,7 @@
   }
 }
 
-/* 一枚絵（docs/cg-staging.md）。登録した7枚はキットの既定どおり表示領域全体に敷く（object-fit: cover。画像は縮小しない）。
-   本文欄の調整は、一枚絵が実際に表示されている間だけ（.kit-cg が hidden でなく、その画像を表示しているとき）に限る。
-   表示中は本文欄を文章の高さまで詰め、下地を少し透かして、画像の下側を隠す範囲を減らす。 */
-.kit-root:has(.kit-cg:not([hidden])[src]) .kit-dialogue {
-  min-height: 0;
-  background: rgba(12, 12, 18, 0.7);
-}
-.kit-root:has(.kit-cg:not([hidden])[src]) .kit-prose { text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); }
-
-/* 重要部分が下寄りにある4枚は、本文欄を重要部分の反対側へ寄せる（場面名の札も本文欄にそろえる）。
-   平野の朝練見学：右下のグラブと球 → 本文欄は左。横長の画面では下側を見せる（上の空を切る）。 */
+/* 一枚絵（docs/cg-staging.md）。7枚ともキットの既定どおり表示領域全体に敷く（object-fit: cover。縮小・余白なし）。
+   本文枠は一枚絵の表示中も通常と同じ（位置・大きさ・下地を変えない）。
+   平野の朝練見学だけは、横長の画面で下側（グラブと球）を見せる（上の空を切る）。 */
 .kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"] { object-position: 50% 100%; }
-.kit-root:has(.kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"]) .kit-dialogue { width: 66%; }
-/* 河本：左下の美空の浮いた足 → 本文欄は右。 */
-.kit-root:has(.kit-cg:not([hidden])[src$="c10-kawamoto-daydream-embrace.webp"]) .kit-dialogue { width: 62%; align-self: flex-end; }
-.kit-root:has(.kit-cg:not([hidden])[src$="c10-kawamoto-daydream-embrace.webp"]) .kit-scene { align-self: flex-end; }
-/* 田原：中央の食卓と、皿を運ぶ美空 → 本文欄は左（田原の後ろ姿の上）。 */
-.kit-root:has(.kit-cg:not([hidden])[src$="c26a-tahara-daydream-home.webp"]) .kit-dialogue { width: 44%; }
-/* 小宮：中央のつないだ手と、振り返る美空 → 本文欄は右（並木道の上）。 */
-.kit-root:has(.kit-cg:not([hidden])[src$="c26b-komiya-daydream-hand.webp"]) .kit-dialogue { width: 32%; min-width: 210px; align-self: flex-end; }
-.kit-root:has(.kit-cg:not([hidden])[src$="c26b-komiya-daydream-hand.webp"]) .kit-scene { align-self: flex-end; }

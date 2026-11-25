@@ -38,7 +38,10 @@ const OK_URLS = new Set(); // 200 で読み込めた URL
 let BASE = ''; // http://127.0.0.1:<port>/adv02/
 
 // ----- 画面の読み取り（DOM と KIT の状態。操作はしない） -----
-const show = (page) => page.evaluate(() => {
+// 画像の切り替え（game-stage.js）は、次の画像を読み込んでから表示を変える。画面を読む前に、切り替えの完了を待つ
+const CG_HIDDEN = new Set(); // 本文枠に重なる一枚絵の重要部分（報告用）
+const settled = (page) => page.waitForFunction(() => !window.KIT_STAGE || !window.KIT_STAGE.pending, null, { timeout: 10000 }).catch(() => {});
+const show = (page) => settled(page).then(() => page.evaluate(() => {
   const sp = document.querySelector('.kit-speaker');
   return {
     screen: KIT.s.screen,
@@ -53,10 +56,10 @@ const show = (page) => page.evaluate(() => {
     auto: KIT.s.auto_on,
     rotated: KIT.s.rotated,
   };
-});
+}));
 
 // 見切れ：本文・話者・ボタンが画面の内側に収まり、横スクロールが出ていないか
-const layout = (page) => page.evaluate(() => {
+const layout = (page) => settled(page).then(() => page.evaluate(() => {
   const inside = (b) => b.left >= -0.5 && b.top >= -0.5 && b.right <= innerWidth + 0.5 && b.bottom <= innerHeight + 0.5;
   const d = document.querySelector('.kit-dialogue');
   const p = document.querySelector('.kit-prose');
@@ -70,7 +73,7 @@ const layout = (page) => page.evaluate(() => {
     speakerInside: sp.hidden || inside(sp.getBoundingClientRect()),
     dialogueFits: d.scrollHeight <= d.clientHeight + 1 && d.scrollWidth <= d.clientWidth + 1,
   };
-});
+}));
 const fits = (f) => f.noHScroll && f.dialogueInside && f.proseInside && f.speakerInside && f.dialogueFits;
 
 // ----- 操作（実際のクリック・キー） -----
@@ -363,10 +366,10 @@ async function skipUnreadAndRead(browser) {
 
 // 立ち絵：登場の行で出て、退場の行で消える。途中でリロードしても、つづきからでその行の立ち絵が戻る。
 // 横向きの小さな画面（667×375）では上半身寄り、PC（1280×720）では全身で、頭の上が切れない。
-const portraitNow = (page) => page.evaluate(() => [...document.querySelectorAll('.kit-portrait img')].map((img) => {
+const portraitNow = (page) => settled(page).then(() => page.evaluate(() => [...document.querySelectorAll('.kit-portrait img')].map((img) => {
   const r = img.getBoundingClientRect();
   return { file: img.getAttribute('src'), loaded: img.complete && img.naturalWidth === 859 && img.naturalHeight === 1280, top: r.top, height: r.height, bottom: r.bottom };
-}));
+})));
 const waitPortraitLoaded = (page) => page.waitForFunction(() => [...document.querySelectorAll('.kit-portrait img')].every((i) => i.complete), null, { timeout: 8000 });
 // 選択肢があれば一つ目を選び、なければクリックで進めて、目的の行まで行く
 async function advanceTo(page, lineId) {
@@ -383,6 +386,7 @@ async function resumeHere(page) {
   await page.waitForFunction(() => window.KIT && window.KIT.s);
   await clickText(page, 'つづきから');
   await page.waitForFunction(() => KIT.s.screen === 'play', null, { timeout: 5000 });
+  await settled(page);
   await page.evaluate(() => { KIT.s.speed = 0; });
   await waitPortraitLoaded(page);
 }
@@ -428,12 +432,12 @@ async function portraitsInPlay(browser, viewport, label) {
 
 // 背景：冒頭の朝のフェンス、5-2で放課後のグラウンドへ入る行、最初の二択の両側と合流、場面転換直後の保存・つづきから。
 // 画面いっぱいに覆い（cover）、画像が読み込まれていることも確かめる。
-const bgNow = (page) => page.evaluate(() => {
+const bgNow = (page) => settled(page).then(() => page.evaluate(() => {
   const el = document.querySelector('.kit-bg');
   const m = (el.style.backgroundImage || '').match(/url\("(.+)"\)/);
   const r = el.getBoundingClientRect();
   return { file: m ? m[1] : '', size: getComputedStyle(el).backgroundSize, fills: r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight };
-});
+}));
 const waitBgLoaded = (page) => page.waitForFunction(() => {
   const m = (document.querySelector('.kit-bg').style.backgroundImage || '').match(/url\("(.+)"\)/);
   if (!m) return false;
@@ -586,12 +590,12 @@ async function lodgingInPlay(browser, viewport, label, pick) {
 
 // 5-5〜5-12 の立ち絵：代表的な会話、5-9の両分岐、河本の来校、5-11の回想と現在への復帰、5-13で残らないこと。
 // 各区間の行で保存し、リロード後の「つづきから」でその行の人物が戻ることも確かめる。
-const portraitSet = (page) => page.evaluate(() => ['left', 'right'].map((slot) => {
+const portraitSet = (page) => settled(page).then(() => page.evaluate(() => ['left', 'right'].map((slot) => {
   const img = document.querySelector('.kit-portrait-' + slot + ' img');
   if (!img) return '-';
   const m = img.getAttribute('src').match(/([a-z]+)-(.+)\.webp$/);
   return (img.complete && img.naturalWidth === 859 ? '' : '(未読込)') + m[1] + '/' + m[2];
-}).join(','));
+}).join(',')));
 async function portraitsLater(browser, viewport, label, pick) {
   const ctx = await browser.newContext({ viewport });
   const page = await openGame(ctx, { speedZero: true });
@@ -789,7 +793,7 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
 }
 
 // 中田の表情差分：通常画面→差分→通常画面を実際に送り、差分の途中で保存・リロードして専用レイアウトが戻ること、区間の後で解除されることを確かめる。
-const layoutNow = (page) => page.evaluate(() => {
+const layoutNow = (page) => settled(page).then(() => page.evaluate(() => {
   const d = document.querySelector('.kit-dialogue').getBoundingClientRect();
   const sc = document.querySelector('.kit-scene').getBoundingClientRect();
   return ['left', 'right'].map((slot) => {
@@ -801,7 +805,7 @@ const layoutNow = (page) => page.evaluate(() => {
       top: r.top, bottom: r.bottom, left: r.left, right: r.right, width: r.width, height: r.height, fit: cs.objectFit,
       dialogueTop: d.top, scene: { left: sc.left, right: sc.right, top: sc.top, bottom: sc.bottom }, vw: innerWidth, vh: innerHeight };
   }).filter(Boolean);
-});
+}));
 const at = (l, nx, ny) => ({ x: l.left + nx / 859 * l.width, y: l.top + ny / 1280 * l.height }); // 元画像の座標 → 画面の座標（全身表示のとき）
 
 async function expressionsBatch01(browser, viewport) {
@@ -878,7 +882,8 @@ async function expressionsInPlay(browser, viewport, label) {
   check('c08-021 で中田の激怒に切り替わり、美空は一時的に出ない', (await files()) === 'right:nakata-practice-rage.webp' && l.loaded, await files());
   const fist = l && at(l, 450, 750);
   check('激怒：湯気と顔が画面内にあり、硬球を握る拳（元画像の上から750px）までが本文欄の上に収まる', l && l.top >= -1 && fist.y <= l.dialogueTop + 2, JSON.stringify(l));
-  check('激怒：通常の全身立ち絵より大きい寄りで、画面の中央に置く', l && l.height > l.vh * (l.vh <= 500 ? 0.9 : 1.0) && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
+  // 高さの小さい画面では本文枠（4行分で固定）が高いので、拳を本文枠の上に残す大きさ（画面の高さの7割程度）になる
+  check('激怒：通常の全身立ち絵より大きい寄り（高さの小さい画面では画面の高さの7割以上）で、画面の中央に置く', l && l.height > l.vh * (l.vh <= 500 ? 0.7 : 1.0) && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
   await advance(page);
   await resumeHere(page);
   l = await one('nakata-practice-rage.webp');
@@ -937,7 +942,7 @@ async function expressionsInPlay(browser, viewport, label) {
 }
 
 // 一枚絵第2便：表示開始・維持・解除と通常画面への復帰、区間中のつづきから、重要部分の位置、CG 鑑賞への解放、5-26 の両分岐。
-const cgNow = (page) => page.evaluate(() => {
+const cgNow = (page) => settled(page).then(() => page.evaluate(() => {
   const cg = document.querySelector('.kit-cg');
   const dEl = document.querySelector('.kit-dialogue');
   const d = dEl.getBoundingClientRect();
@@ -956,15 +961,16 @@ const cgNow = (page) => page.evaluate(() => {
     full: r.left <= 0 && r.top <= 0 && r.right >= innerWidth && r.bottom >= innerHeight && cs.objectFit === 'cover' && pad === 0 &&
       left <= 0.5 && top <= 0.5 && left + w >= innerWidth - 0.5 && top + h >= innerHeight - 0.5,
     img: { left, top, w, h }, rects, dialogueTop: d.top, dialogueMinHeight: getComputedStyle(dEl).minHeight, vw: innerWidth, vh: innerHeight };
-});
+}));
 // 本文欄・場面名・ページ数・操作ボタンのどれにも重ならず、画面内にある
 const cgVisible = (c, pt) => pt && pt.x > 0 && pt.x < c.vw && pt.y > 0 && pt.y < c.vh &&
   c.rects.every((b) => !(pt.x >= b.l - 4 && pt.x <= b.r + 4 && pt.y >= b.t - 4 && pt.y <= b.b + 4));
 // 通常画面の本文欄（CG 専用の調整が残っていない）
-const plainDialogue = (page) => page.evaluate(() => {
+const plainDialogue = (page) => settled(page).then(() => page.evaluate(() => {
   const d = getComputedStyle(document.querySelector('.kit-dialogue'));
-  return { minHeight: d.minHeight, bg: d.backgroundColor, width: document.querySelector('.kit-dialogue').getBoundingClientRect().width, vh: innerHeight };
-});
+  const r = document.querySelector('.kit-dialogue').getBoundingClientRect();
+  return { minHeight: d.minHeight, bg: d.backgroundColor, width: r.width, vh: innerHeight, rect: [r.left, r.top, r.width, r.height].map(Math.round).join(',') };
+}));
 const cgPoint = (c, fx, fy) => ({ x: c.img.left + fx * c.img.w, y: c.img.top + fy * c.img.h });
 async function cgBatch02InPlay(browser, viewport, label, pick) {
   const ctx = await browser.newContext({ viewport });
@@ -996,13 +1002,18 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   for (const [before, start, mid, end, release, file, after, points, name] of spans) {
     await resumeAt(before);
     check(name + '：直前（' + before + '）は一枚絵なし', (await cgNow(page)) === null);
+    const frameBefore = (await plainDialogue(page)).rect;
     await advance(page); await waitCg();
     let c = await cgNow(page);
+    const frameDuring = (await plainDialogue(page)).rect;
+    check(name + '：一枚絵の表示中も、本文枠の下地は通常と同じ', (await plainDialogue(page)).bg === 'rgba(12, 12, 18, 0.82)');
     check(name + '：' + start + ' で一枚絵が表示され、縮小・余白なしで画面全体を覆う（cover）', (await show(page)).lineId === start && c && c.file === file && c.loaded && c.full, JSON.stringify(c));
     check(name + '：一枚絵の表示中は立ち絵を出さない', (await portraitNow(page)).length === 0);
     for (const [fx, fy, what] of points) {
       const pt = c && cgPoint(c, fx, fy);
-      check(name + '：' + what + ' が画面内で、本文欄・操作ボタンに隠れない', c && cgVisible(c, pt), JSON.stringify(pt) + ' ' + JSON.stringify(c && c.rects[0]));
+      // 本文枠は一枚絵の表示中も固定なので、重要部分が本文枠に重なることがある（docs/cg-staging.md に記録）。画面内にあることだけを確かめ、重なりは記録する
+      check(name + '：' + what + ' が画面内にある', pt && pt.x > 0 && pt.x < c.vw && pt.y > 0 && pt.y < c.vh, JSON.stringify(pt));
+      if (c && !cgVisible(c, pt)) CG_HIDDEN.add(viewport.width + '×' + viewport.height + ' ' + name + '：' + what);
     }
     check(name + '：' + start + ' に到達して CG 鑑賞へ解放される', !!(await gallery())[file.replace('.webp', '')]);
     await advanceToPicking(page, mid, pick);
@@ -1016,7 +1027,7 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
     const files = (await layoutNow(page)).map((l) => l.slot + ':' + l.file).join(',');
     check(name + '：' + release + ' で一枚絵を解除し、その行の背景と立ち絵に戻る', (await show(page)).lineId === release && (await cgNow(page)) === null && files === after, files);
     const pd = await plainDialogue(page);
-    check(name + '：解除後の本文欄に一枚絵用の調整が残らない（高さ30%・通常の下地・全幅）', Math.abs(parseFloat(pd.minHeight) - pd.vh * 0.3) < 1 && pd.bg === 'rgba(12, 12, 18, 0.82)' && pd.width > viewport.width - 40, JSON.stringify(pd));
+    check(name + '：一枚絵の前・表示中・解除後で、本文枠の位置と大きさと下地が同じ', pd.rect === frameBefore && frameDuring === frameBefore && pd.bg === 'rgba(12, 12, 18, 0.82)' && pd.bgDuring === undefined, frameBefore + ' / ' + frameDuring + ' / ' + pd.rect);
   }
   // 5-26 の分岐：選んだ側だけを解放し、合流後も残さない
   const other = pick === 0 ? 'c26b-komiya-daydream-hand' : 'c26a-tahara-daydream-home';
@@ -1038,9 +1049,10 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   await resumeAt('cnews-011'); await waitCg();
   const news = await cgNow(page);
   check('新聞：cnews-011 で一枚絵が画面全体を覆う（cover）', news && news.file === 'cnews-oyama-tears-newspaper.webp' && news.full && news.loaded, JSON.stringify(news));
-  check('新聞：破った新聞と大山の顔が、本文欄・操作ボタンに隠れない', [[0.18, 0.12], [0.43, 0.12], [0.62, 0.14]].every(([x, y]) => cgVisible(news, cgPoint(news, x, y))));
+  check('新聞：破った新聞と大山の顔が、本文枠・操作ボタンに隠れない', [[0.18, 0.12], [0.43, 0.12], [0.62, 0.14]].every(([x, y]) => cgVisible(news, cgPoint(news, x, y))));
+  const newsFrame = (await plainDialogue(page)).rect;
   await advanceToPicking(page, 'cnews-012', pick);
-  check('新聞：cnews-012 で解除し、本文欄の調整も残らない', (await cgNow(page)) === null && Math.abs(parseFloat((await plainDialogue(page)).minHeight) - viewport.height * 0.3) < 1);
+  check('新聞：cnews-012 で解除し、本文枠は一枚絵の表示中と同じ位置と大きさ', (await cgNow(page)) === null && (await plainDialogue(page)).rect === newsFrame);
   await ctx.close();
 }
 
@@ -1281,6 +1293,253 @@ async function consistencyRoutes(browser, viewport) {
   await ctx.close();
 }
 
+// ----- 本文枠の固定と選択肢（docs/ui-frame.md） -----
+// 全行を表示して、本文枠・本文の読み始め・場面名・操作ボタンの位置と大きさが、同じ画面サイズで一つに決まることを確かめる。
+const frameRects = (page) => page.evaluate(() => {
+  const R = (s) => { const e = document.querySelector(s); const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v)).join(','); };
+  const prose = document.querySelector('.kit-prose').getBoundingClientRect();
+  const sceneR = document.querySelector('.kit-scene').getBoundingClientRect();
+  const pg = document.querySelector('.kit-page').getBoundingClientRect();
+  return { frame: R('.kit-dialogue'), bar: R('.kit-bar'), page: Math.round(pg.left) + ',' + Math.round(pg.top), sceneTop: Math.round(sceneR.top) + ',' + Math.round(sceneR.left) + ',' + Math.round(sceneR.height),
+    prose: Math.round(prose.top) + ',' + Math.round(prose.left) };
+});
+async function frameAndChoices(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  const size = viewport.width + '×' + viewport.height;
+  section('本文枠の固定（' + size + '）');
+  // 全行：表示を完了した状態で測る（文章量・話者の有無・背景・一枚絵によらない）
+  const all = await page.evaluate(() => {
+    const d = document.querySelector('.kit-dialogue'), pr = document.querySelector('.kit-prose');
+    const sets = { frame: new Set(), prose: new Set(), bar: new Set(), scene: new Set() };
+    const overflow = [];
+    let cg = 0, spk = 0, nospk = 0;
+    for (const sc of Object.values(KIT_GAME.scenes)) for (const l of sc.lines) {
+      KIT.goLine(l.id, { jump: true });
+      KIT.complete(KIT.currentLine(), l.text);
+      const r = d.getBoundingClientRect(), p = pr.getBoundingClientRect(), b = document.querySelector('.kit-bar').getBoundingClientRect(), s = document.querySelector('.kit-scene').getBoundingClientRect();
+      sets.frame.add([r.left, r.top, r.width, r.height].map(Math.round).join(','));
+      sets.prose.add([p.top, p.left].map(Math.round).join(','));
+      sets.bar.add([b.left, b.top, b.width, b.height].map(Math.round).join(','));
+      sets.scene.add([s.left, s.top, s.height].map(Math.round).join(','));
+      const padB = parseFloat(getComputedStyle(d).paddingBottom);
+      if (d.scrollHeight > d.clientHeight + 1 || p.bottom > r.bottom - padB + 1 || p.right > r.right + 1) overflow.push(l.id);
+      if (KIT.s.cg) cg++; if (l.speaker) spk++; else nospk++;
+    }
+    return { frame: [...sets.frame], prose: [...sets.prose], bar: [...sets.bar], scene: [...sets.scene], overflow, cg, spk, nospk,
+      vh: innerHeight, frameBottom: d.getBoundingClientRect().bottom, barTop: document.querySelector('.kit-bar').getBoundingClientRect().top };
+  });
+  check('全行（台詞 ' + all.spk + '・地の文 ' + all.nospk + '・一枚絵の表示中 ' + all.cg + '）で本文枠の位置・幅・高さが一つに決まる', all.frame.length === 1, all.frame.join(' | '));
+  check('全行で本文の読み始めの位置が同じ（話者名の有無・文章量で動かない）', all.prose.length === 1, all.prose.join(' | '));
+  check('全行で場面名の札とページ表示・操作ボタンの列が動かない', all.bar.length === 1 && all.scene.length === 1, all.bar.join(' | ') + ' / ' + all.scene.join(' | '));
+  check('全行の本文が本文枠に収まる（切れない・はみ出さない）', all.overflow.length === 0, all.overflow.slice(0, 8).join(' '));
+  check('本文枠は操作ボタンの列と重ならない', all.frameBottom <= all.barTop, all.frameBottom + ' / ' + all.barTop);
+  const base = await frameRects(page);
+
+  section('選択肢（' + size + '）：本文枠を押し上げず、その上に独立して出る');
+  const choiceScenes = await page.evaluate(() => Object.entries(KIT_GAME.scenes).filter(([, s]) => s.choices && s.choices.length).map(([k, s]) => [k, s.lines.at(-1).id, s.choices.map((c) => c.text)]));
+  const issues = [];
+  for (const [key, last] of choiceScenes) {
+    await page.evaluate((id) => { KIT.goLine(id, { jump: true }); KIT.complete(KIT.currentLine(), KIT.currentLine().text); KIT.next(); }, last);
+    const m = await page.evaluate(() => {
+      const c = document.querySelector('.kit-choices').getBoundingClientRect();
+      const s = document.querySelector('.kit-scene').getBoundingClientRect();
+      const btns = [...document.querySelectorAll('.kit-choice')].map((b) => { const r = b.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right, fits: b.scrollWidth <= b.clientWidth + 1 && b.scrollHeight <= b.clientHeight + 1 }; });
+      return { visible: KIT.s.choicesVisible, top: c.top, bottom: c.bottom, sceneTop: s.top, btns, vw: innerWidth, prose: document.querySelector('.kit-prose').textContent, text: KIT.currentLine().text };
+    });
+    const now = await frameRects(page);
+    const ok = m.visible && JSON.stringify(now) === JSON.stringify(base) && m.top >= 0 && m.bottom <= m.sceneTop - 8 &&
+      m.btns.length === 2 && m.btns.every((b) => b.fits && b.left >= 0 && b.right <= m.vw && b.top >= 0 && b.bottom <= m.sceneTop - 8) && m.prose === m.text;
+    if (!ok) issues.push(key + ' ' + JSON.stringify(m).slice(0, 160));
+  }
+  check('作品の選択肢 ' + choiceScenes.length + ' か所すべてで、本文枠・場面名・ページ表示・操作ボタンが通常時の位置のまま', issues.length === 0, issues.slice(0, 3).join(' | '));
+  check('選択肢は場面名の札の上に間隔（8px 以上）を空けて出て、画面内に収まり、最後の本文は本文枠に残る', issues.length === 0);
+  // 選択肢を押した操作が、次の本文の送りを兼ねない
+  const [ckey, clast] = choiceScenes[0];
+  await page.evaluate((id) => { KIT.goLine(id, { jump: true }); KIT.complete(KIT.currentLine(), KIT.currentLine().text); KIT.next(); }, clast);
+  await page.waitForTimeout(50);
+  const target = await page.evaluate((k) => KIT_GAME.scenes[k].choices[0].to, ckey);
+  const firstId = await page.evaluate((t) => KIT_GAME.scenes[t].lines[0].id, target);
+  await page.locator('.kit-choice').first().click();
+  await page.waitForTimeout(300);
+  const after = await show(page);
+  check('選択肢を押すと、選んだ先の最初の行（' + firstId + '）で止まり、その次の行へは進まない', after.lineId === firstId && !after.choices, after.lineId);
+  check('選択肢を閉じた後も、本文枠は同じ位置と大きさ', JSON.stringify(await frameRects(page)) === JSON.stringify(base));
+  await snap(page, 'frame-' + viewport.width);
+  await ctx.close();
+}
+
+// ----- 画像の切り替え（docs/ui-frame.md、game-stage.js） -----
+// 毎フレーム（requestAnimationFrame）、表示中の背景・一枚絵・立ち絵を記録し、
+// 「背景が空」「読み込みの終わっていない画像を表示」「一枚絵の区間なのに立ち絵が出る」フレームがないことを確かめる。
+async function installRecorder(page) {
+  await page.evaluate(() => {
+    const rec = window.__rec = { frames: 0, bad: [], applied: [] };
+    const st = window.KIT_STAGE;
+    const loaded = (img) => img.complete && img.naturalWidth > 0;
+    const tick = () => {
+      if (window.KIT && KIT.s.screen === 'play') {
+        rec.frames++;
+        const bg = document.querySelector('.kit-bg').style.backgroundImage;
+        const m = /url\("?([^"]+)"?\)/.exec(bg);
+        const bgFile = m ? m[1] : '';
+        const cg = document.querySelector('.kit-cg');
+        const ports = [...document.querySelectorAll('.kit-portrait img')];
+        const problems = [];
+        if (!bgFile) problems.push('背景が空');
+        else if (!st.isReady(bgFile)) problems.push('未読込の背景 ' + bgFile);
+        if (!cg.hidden && !(cg.getAttribute('src') && loaded(cg))) problems.push('未読込の一枚絵');
+        for (const p of ports) if (!loaded(p)) problems.push('未読込の立ち絵 ' + p.getAttribute('src'));
+        if (!cg.hidden && ports.length) problems.push('一枚絵の上に立ち絵');
+        if (problems.length && rec.bad.length < 20) rec.bad.push(KIT.s.lineId + ': ' + problems.join(' / '));
+        const shown = (bgFile.split('/').pop() || '') + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + ports.map((p) => p.getAttribute('src').split('/').pop()).join('+');
+        if (rec.applied.at(-1) !== shown) rec.applied.push(shown);
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+}
+// 期待する表示（行の演出の状態から求める）
+const expectedShown = (page, lineId) => page.evaluate((id) => {
+  const st = KitValidate.stateAt(KIT_GAME, id);
+  const a = KIT_GAME.assets;
+  const f = (u) => (u || '').split('/').pop();
+  const ports = ['left', 'right'].map((s) => st.portraits[s]).filter(Boolean).map((p) => f(a.portraits[p.char][p.expr]));
+  return f(a.backgrounds[st.bg]) + '|' + (st.cg ? f(a.cgs[st.cg].src) : '') + '|' + (st.cg ? '' : ports.join('+'));
+}, lineId);
+const prevLine = (page, id) => page.evaluate((id) => { const all = Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)); return all[all.indexOf(id) - 1]; }, id);
+
+async function stageSwitching(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  section('画像の切り替え（' + size + '・キャッシュなし・画像の応答を遅らせる）');
+  const ctx = await browser.newContext({ viewport });
+  // 画像の応答を 700ms 遅らせる（キャッシュのない新しい文脈）
+  let delay = 700;
+  await ctx.route(/\/assets\/(backgrounds|portraits|cg)\//, async (route) => { await new Promise((r) => setTimeout(r, delay)); await route.continue(); });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  await settled(page);
+  await installRecorder(page);
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+    await installRecorder(page);
+  };
+  // [切り替えの行, 内容]
+  const cases = [
+    ['c02-001', '通常の背景の変更（朝のフェンス → 教室）'],
+    ['c01-009', '通常画面 → 一枚絵（平野の朝練見学）'],
+    ['c01-012', '一枚絵 → 通常画面'],
+    ['c10-015', '通常画面（立ち絵2人） → 一枚絵（河本）'],
+    ['c10-018', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
+    ['c15-008', '回想へ入る（試合中のベンチ → 廊下）'],
+    ['c15-014', '回想から出る（廊下 → 試合中のベンチ）'],
+  ];
+  let pendingCases = 0;
+  for (const [id, what] of cases) {
+    const before = await prevLine(page, id);
+    await goTo(before);
+    const shownBefore = await expectedShown(page, before);
+    await page.evaluate(() => { window.__rec.bad = []; window.__rec.applied = []; });
+    await advance(page);
+    const immediate = await page.evaluate(() => ({ line: KIT.s.lineId, pending: !!KIT_STAGE.pending }));
+    const firstShown = await page.evaluate(() => window.__rec.applied[0] || null);
+    await settled(page);
+    await page.waitForTimeout(120);
+    const rec = await page.evaluate(() => window.__rec);
+    const want = await expectedShown(page, id);
+    const last = rec.applied.at(-1);
+    check(what + '：' + id + ' へ進むと本文はすぐ進み、画像は読み込みが終わるまで前の画面を残す',
+      immediate.line === id && (immediate.pending ? (firstShown === null || firstShown === shownBefore) : true), JSON.stringify(immediate) + ' ' + firstShown + ' / ' + shownBefore);
+    if (immediate.pending) pendingCases++;
+    check(what + '：準備ができたら次の画面へ直接切り替わる（途中の黒・空白・未読込の画像・人物の誤表示なし）',
+      rec.bad.length === 0 && last === want && rec.applied.every((s) => s === shownBefore || s === want), rec.bad.slice(0, 3).join(' | ') + ' ' + JSON.stringify(rec.applied));
+  }
+
+  check('上の切り替えのうち、読み込みを待った（遅延のかかった）ものが 5 件以上ある', pendingCases >= 5, String(pendingCases));
+  section('画像の切り替え（' + size + '）：高速送り・既読SKIP・古い画像の後出し');
+  // 古い画像の後出し：遅い画像の行へ進んだ直後に、別の行へ移る
+  delay = 1500;
+  await goTo('c02-005');
+  await page.evaluate(() => { window.__rec.bad = []; window.__rec.applied = []; });
+  await advance(page); // c02-006（放課後のグラウンド：まだ読み込まれていない）
+  await page.evaluate(() => KIT.goLine('c01-005', { jump: true })); // すでに読み込んだ朝のフェンスへ戻る
+  await page.waitForTimeout(2000);
+  let rec = await page.evaluate(() => window.__rec);
+  const wantBack = await expectedShown(page, 'c01-005');
+  check('遅い画像の読み込み中に別の行へ移ると、後から読み込みが終わっても古い切り替えは表示しない',
+    rec.applied.at(-1) === wantBack && rec.applied.every((s) => !s.startsWith('hosho-field-afternoon')) && rec.bad.length === 0, JSON.stringify(rec.applied) + ' ' + rec.bad.join(' | '));
+  // 高速送り：画像の応答時間をばらつかせ、背景が何度も変わる区間を速く送る
+  delay = 0;
+  await ctx.unroute(/\/assets\/(backgrounds|portraits|cg)\//);
+  await ctx.route(/\/assets\/(backgrounds|portraits|cg)\//, async (route) => { await new Promise((r) => setTimeout(r, 50 + Math.floor(Math.random() * 500))); await route.continue(); });
+  const runOrder = async (label) => {
+    rec = await page.evaluate(() => window.__rec);
+    const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+    const finalLine = (await show(page)).lineId;
+    await page.waitForTimeout(150);
+    rec = await page.evaluate(() => window.__rec);
+    const want = await expectedShown(page, finalLine);
+    // 表示した状態が、行の並びで後戻りしない（後から古い画像が出ない）
+    const firstLineOf = await page.evaluate((shownList) => {
+      const a = KIT_GAME.assets, f = (u) => (u || '').split('/').pop();
+      const ids = Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id));
+      const key = (id) => { const st = KitValidate.stateAt(KIT_GAME, id); const ports = ['left', 'right'].map((s) => st.portraits[s]).filter(Boolean).map((p) => f(a.portraits[p.char][p.expr]));
+        return f(a.backgrounds[st.bg]) + '|' + (st.cg ? f(a.cgs[st.cg].src) : '') + '|' + (st.cg ? '' : ports.join('+')); };
+      const idx = {}; ids.forEach((id, i) => { const k = key(id); (idx[k] = idx[k] || []).push(i); });
+      return shownList.map((s) => idx[s] || []);
+    }, rec.applied);
+    let pos = -1, back = false;
+    for (const list of firstLineOf) { const nxt = list.find((i) => i >= pos); if (nxt === undefined) { back = true; break; } pos = nxt; }
+    check(label + '：最後の行（' + finalLine + '）の画像で止まり、途中で古い画像へ戻らず、未読込の画像や空の背景を出さない',
+      rec.applied.at(-1) === want && !back && rec.bad.length === 0, JSON.stringify(rec.applied.slice(-4)) + ' ' + rec.bad.slice(0, 3).join(' | '));
+    void order;
+  };
+  await goTo('c01-020');
+  await page.evaluate(() => { window.__rec.bad = []; window.__rec.applied = []; });
+  for (let i = 0; i < 40; i++) await page.click('.kit-dialogue', { delay: 0 });
+  await settled(page);
+  await runOrder('高速送り（40回）');
+  // 既読SKIP：今読んだ区間をもう一度、既読SKIP で送る
+  await goTo('c01-020');
+  await page.evaluate(() => { window.__rec.bad = []; window.__rec.applied = []; });
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
+  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+  await settled(page);
+  await runOrder('既読SKIP');
+  await ctx.close();
+
+  section('画像の切り替え（' + size + '）：読み込みに失敗した画像');
+  const ctx2 = await browser.newContext({ viewport });
+  const failing = 'hosho-classroom';
+  await ctx2.route(new RegExp('/assets/backgrounds/' + failing), (route) => route.abort());
+  const page2 = await ctx2.newPage();
+  const warns = [];
+  page2.on('console', (m) => { if (m.type() === 'warning') warns.push(m.text()); });
+  page2.on('pageerror', (e) => ERRORS.push('pageerror: ' + e.message));
+  await page2.goto(BASE + 'index.html');
+  await page2.waitForFunction(() => window.KIT && window.KIT.s);
+  await clickText(page2, 'はじめから');
+  await page2.evaluate(() => { KIT.s.speed = 0; KIT.goLine('c01-023', { jump: true }); });
+  await settled(page2);
+  await installRecorder(page2);
+  await page2.evaluate(() => { window.__rec.bad = []; window.__rec.applied = []; });
+  await page2.click('.kit-dialogue');
+  await page2.waitForFunction(() => KIT.s.lineId === 'c02-001');
+  await settled(page2);
+  await page2.waitForTimeout(200);
+  const r2 = await page2.evaluate(() => ({ line: KIT.s.lineId, bg: document.querySelector('.kit-bg').style.backgroundImage, errors: KIT_STAGE.errors.slice(), rec: window.__rec }));
+  check('背景の読み込みに失敗しても、本文は進み、前の背景を残す（黒や空白にしない）', r2.line === 'c02-001' && r2.bg.includes('hosho-field-fence-morning') && r2.rec.bad.length === 0, JSON.stringify(r2).slice(0, 200));
+  check('失敗した画像を記録する（window.KIT_STAGE.errors と console の警告）', r2.errors.some((u) => u.includes(failing)) && warns.some((w) => w.includes('画像の読み込みに失敗') && w.includes(failing)), JSON.stringify(r2.errors) + ' ' + warns.join(' | '));
+  for (let i = 0; i < 6; i++) await page2.click('.kit-dialogue');
+  await settled(page2);
+  check('失敗のあとも進行できる（進行不能にならない）', (await page2.evaluate(() => KIT.s.lineId)) !== 'c02-001');
+  await ctx2.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1334,11 +1593,15 @@ async function main() {
     await cgBatch02InPlay(browser, WIDE_LANDSCAPE, '956×440', 1);
     await expressionsBatch01(browser, SMALL_LANDSCAPE);
     await expressionsBatch01(browser, DESKTOP);
+    for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await frameAndChoices(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await stageSwitching(browser, vp);
     await consistencyRoutes(browser, SMALL_LANDSCAPE);
     await consistencyRoutes(browser, DESKTOP);
     await practicePlaythrough(browser, 0);
     await practicePlaythrough(browser, 1);
 
+    section('本文枠に重なる一枚絵の重要部分（記録）');
+    console.log([...CG_HIDDEN].map((t) => '  - ' + t).join('\n') || '  なし');
     section('実行中のエラー');
     check('ページの例外・console error・404 がない（公開先の外への参照もない）', ERRORS.length === 0, ERRORS.slice(0, 5).join(' | '));
     const needed = [BASE + 'index.html', BASE + 'game.js', BASE + 'kit/releases/0.1.0/kit.css',
