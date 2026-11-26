@@ -17,7 +17,7 @@
 | `cnews-oyama-tears-newspaper` | 幕間「新聞と記録」 | `cnews-010`〜`cnews-011c` | `cnews-012` | `hosho-clubroom` | 大山が新聞を破る（表情第1便で追加） |
 | `hirano-field-visit-vision` | 5-1「春のグラウンド」 | `c01-009`〜`c01-011` | `c01-012` | `hosho-field-fence-morning` | 平野の主観。普通の朝練が、猛獣の暴れる地獄のように見える。平野本人は描かない |
 | `c10-kawamoto-daydream-embrace` | 5-10「河本の来校」 | `c10-015`〜`c10-017` | `c10-018` | `hosho-field-bench` | 河本の妄想。試合後の球場で、飛びついた美空を抱き止める。河本の顔は美化されている（自分を美化している表れ）。表情は目を伏せた微笑み（納品画像を正とする） |
-| `c13-shinjo-daydream-dinner` | 5-13「新庄との接触」 | `c13-021`〜`c13-022` | `c13-023` | `hosho-field-bench` | 新庄の妄想。夜景の見える席で向き合って乾杯する、対等な二人の時間。油彩調 |
+| `c13-shinjo-daydream-dinner` | 5-13「新庄との接触」 | `c13-021`〜`c13-022` | `c13-023` | `hosho-field-bench` | 新庄の妄想。夜景の見える席で向き合って乾杯する、対等な2人の時間。油彩調 |
 | `cbus-oyama-daydream-bride` | 幕間「行きのバス」 | `cbus-003a` | `cbus-004` | `bus-interior` | 大山の妄想。白無垢と綿帽子の美空。大山本人は描かない |
 | `c26a-tahara-daydream-home` | 5-26 分岐「田原の捕球」 | `c26a-008` | `c26a-009` | `hosho-field-afternoon` | 田原の妄想。ふつうの家の夕食で、皿を運んで微笑む美空。田原は後ろ姿。水彩調 |
 | `c26b-komiya-daydream-hand` | 5-26 分岐「小宮の守備」 | `c26b-008` | `c26b-008a` | `hosho-field-afternoon` | 小宮の妄想。小宮の目線で、手をつないだ美空が桜並木で振り返る。小宮だけは通常の絵柄のまま |

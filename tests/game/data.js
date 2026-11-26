@@ -519,6 +519,46 @@ check('調整前の保存（同じ版 2026.11-4）の位置と選択を、その
   ccResume(['c32i-004', { aotakeRecovery: true }], ['c05e-003', 'c19-025', 'c24-002']) &&
   ccResume(['c33k-001c', {}], ['c32h-001', 'c33i-004', 'c33k-002']));
 
+section('校正・校閲（言葉選び・改行と表示単位・表記）');
+{
+  const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
+  const flat = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
+  const fixes = {
+    'c03-018': '守備についていると、どうしても自分の守備範囲に目が行く。ベンチからだと、打球に触らなかった選手の動きまで見えた。',
+    'c08-004': '2塁を狙える当たりでも、1塁を優先するのか、ってことですか？',
+    'c29f-002': 'そこ、捕手が最初から外に構えてました。スライダーでストライクを取りに来てるんだと思います。',
+    'c32i-004': '低い変化球は来てます。真っすぐが戻るのを待つより、次はそれでゴロを打たせましょう。',
+    'c16-016': '2人の生還を書き込み、得点欄に3と記した。3対2。鳳翔が初めて前に出た。',
+  };
+  check('指定の行を承認された文に直した（c03-018・c08-004・c29f-002・c32i-004・c16-016）', Object.entries(fixes).every(([id, t]) => flat(id) === t),
+    Object.entries(fixes).filter(([id, t]) => flat(id) !== t).map(([id]) => id).join(' '));
+  check('c31a-007：日和は返球が走塁に与える影響まで話し、「もう1本、似た打球」を残す', flat('c31a-007').includes('中継を越えて') && flat('c31a-007').includes('帰れない') && flat('c31a-007').includes('もう1本、似た打球があった'));
+  check('c25-001：スコアの写しを球場の記録係に届ける', flat('c25-001').includes('球場の記録係にスコアの写しを届けに行った') && !flat('c25-001').includes('本部席'));
+  check('c19-002：打球と選手の動きが分かり、無理をしない捕球と返球の描写は残す', flat('c19-002').includes('大山なら直接捕れたはずの球が、先輩の手前で跳ねた。') && flat('c19-002').includes('余計な塁は与えない返球'));
+  check('c28-016：操作対象が試合映像と分かる', flat('c28-016').includes('今年の鳳翔の試合映像に切り替えた'));
+  check('c33k-001・c33k-001c：前足を「着けた」「着け」', flat('c33k-001').includes('前足を早く着けた') && flat('c33k-001c').includes('前足を先に着け、'));
+  const texts = [...Object.values(G.scenes).flatMap((sc) => [...sc.lines.map((l) => l.text), ...(sc.choices || []).map((c) => c.text)])].join('\n');
+  check('表記：「平野君」「かご」「一塁・二塁・三塁」「二人」「二組」がない（「平野くん」「カゴ」、算用数字）', !/平野君|かご|[一二三]塁|二人|二組|一球も/.test(texts));
+  check('表記：「一軍」「一緒」「一瞬」「一度」「四球」など、数字にしない語はそのまま', /一軍/.test(texts) && /一緒/.test(texts) && /一瞬/.test(texts) && /四球/.test(texts));
+  // 改行
+  const all = Object.values(G.scenes).flatMap((sc) => sc.lines);
+  check('本文の改行は1つずつで、先頭・末尾・空行（連続した改行）がない', all.every((l) => !/^\n|\n$|\n\n/.test(l.text)));
+  check('改行を入れた行が600行以上ある（全文の改行を整えた）', all.filter((l) => l.text.includes('\n')).length >= 600, String(all.filter((l) => l.text.includes('\n')).length));
+  check('既読の指紋は改行を無視する（改行だけの行は既読のまま）', V.hashLine({ speaker: 'hirano', text: 'あ。\nい。' }) === V.hashLine({ speaker: 'hirano', text: 'あ。い。' }));
+  // c24-013 の分割
+  const sight = G.scenes['tsuyoshi-sighting'];
+  const ids = sight.lines.slice(-3).map((l) => l.id);
+  check('c24-013 は3つの表示単位（c24-013・c24-013-2・c24-013-3）に分け、元の行IDを先頭に残す', ids.join() === 'c24-013,c24-013-2,c24-013-3');
+  check('c24-013 の分割前の本文を削らず、順に読ませる', ids.map(flat).join('') === '俺は2人を見送った。ふと横を見ると、美空が置いた紙袋がベンチに残っていた。紙袋に手を伸ばしたとき、バス停の案内板の陰から大山が飛び出した。部の先輩も追いかけてきた。何か叫んで大山を止めようとしたが、駅へ向かう2人を見た途端、先輩まで走る速度を上げた。');
+  check('c24-013 の選択肢は、最後の単位（c24-013-3）を読んだ後に出る', sight.lines.at(-1).id === 'c24-013-3' && sight.choices.length === 2);
+  check('分割で足した行は背景・立ち絵・一枚絵を変えない（直前の行と同じ）', ['c24-013-2', 'c24-013-3'].every((id) => { const a = V.stateAt(G, id), b = V.stateAt(G, 'c24-013'); return a.bg === b.bg && a.cg === b.cg && JSON.stringify(a.portraits) === JSON.stringify(b.portraits); }) && !G.cues.some((c) => /^c24-013-/.test(c.at)));
+  const ccFalse2 = Object.fromEntries(Object.keys(G.flags).map((k) => [k, false]));
+  const rec = { v: 1, game: G.id, dataVersion: G.dataVersion, flagSchema: saves.flagSchema(G),
+    auto: { at: 'c24-013', flags: ccFalse2, dataVersion: G.dataVersion }, slots: [{ at: 'c24-013-2', flags: ccFalse2, dataVersion: G.dataVersion }, { at: 'c16-016', flags: ccFalse2, dataVersion: G.dataVersion }], seen: [] };
+  const r = saves.assess(G, rec, JSON.stringify(rec));
+  check('旧版の保存（c24-013）と、足した行（c24-013-2）の保存から再開できる', r.mode === 'current' && r.record.auto.at === 'c24-013' && r.record.slots[0]?.at === 'c24-013-2' && r.record.slots[1]?.at === 'c16-016', r.mode);
+}
+
 section('最後のアウト');
 const lastOut = G.scenes['last-out'];
 const lastOutDoc = read('docs/last-out-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
@@ -784,8 +824,8 @@ check('驚きは c08-041〜c08-043 だけで、左の枠に出る', JSON.stringi
   ['c08-041', 'c08-042', 'c08-043'].every((id) => V.stateAt(G, id).portraits.left.expr === 'practice-shock'));
 check('激怒の区間は美空を出さず、c08-024 で美空に戻る', ['c08-021', 'c08-022', 'c08-023'].every((id) => !shownAt(id).includes('misora')) && shownAt('c08-024') === 'misora/game-uniform-normal');
 const lineText = (id) => allLines.find((l) => l.id === id).text;
-check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
-check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをかごに入れる音がした。'));
+check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022').replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
+check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをカゴに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
   (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock)|misora-game-uniform-flustered-chibi|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
 check('game.css の一枚絵の調整は、第2便の5枚だけを対象にする（新聞と新庄の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|c13-shinjo-daydream-dinner/.test(read('game.css')));
