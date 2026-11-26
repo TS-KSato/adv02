@@ -876,19 +876,28 @@ async function expressionsInPlay(browser, viewport, label) {
   const files = async () => (await layoutNow(page)).map((l) => l.slot + ':' + l.file).join(',');
   const one = async (file) => (await layoutNow(page)).find((l) => l.file === file);
 
+  const geo = () => page.evaluate(() => {
+    const btn = [...document.querySelectorAll('.kit-bar .kit-btn, .kit-bar .kit-sound, .kit-page')].map((e) => e.getBoundingClientRect()).map((r) => ({ l: r.left, t: r.top, r: r.right, b: r.bottom }));
+    return { btn };
+  });
+  const underButton = async (p) => (await geo()).btn.some((r) => p.x >= r.l && p.x <= r.r && p.y >= r.t && p.y <= r.b);
+  const small = viewport.height <= 500;
+
   // 激怒：c08-020（美空との会話）→ c08-021〜c08-023（中田の寄り）→ c08-024（美空に戻る）
+  // 素材は上半身で、元画像の下端で太ももが切れている。切り口（画像の下端）は必ず画面の下へ出す。
   check('5-8 c08-020 は美空との通常の会話画面', await resumeAt('c08-020') && await files() === 'right:misora-game-uniform-normal.webp', await files());
   await advance(page); await waitPortraitLoaded(page);
   let l = await one('nakata-practice-rage.webp');
   check('c08-021 で中田の激怒に切り替わり、美空は一時的に出ない', (await files()) === 'right:nakata-practice-rage.webp' && l.loaded, await files());
-  const fist = l && at(l, 450, 750);
-  check('激怒：湯気と顔が画面内にあり、硬球を握る拳（元画像の上から750px）までが本文欄の上に収まる', l && l.top >= -1 && fist.y <= l.dialogueTop + 2, JSON.stringify(l));
-  // 高さの小さい画面では本文枠（4行分で固定）が高いので、拳を本文枠の上に残す大きさ（画面の高さの7割程度）になる
-  check('激怒：通常の全身立ち絵より大きい寄り（高さの小さい画面では画面の高さの7割以上）で、画面の中央に置く', l && l.height > l.vh * (l.vh <= 500 ? 0.7 : 1.0) && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
+  check('激怒：身体の切り口（画像の下端）が画面の下へ抜け、画面内に出ない', l && l.bottom >= l.vh - 0.5, JSON.stringify(l));
+  check('激怒：湯気の残る頭と吠える顔（元画像の上から約320pxまで）が本文枠の上にある', l && at(l, 430, 60).y >= -40 && at(l, 430, 320).y <= l.dialogueTop, JSON.stringify(l));
+  check(small ? '激怒：潰れた硬球を握る拳（元画像の上から約750px）は画面内（高さの小さい画面では本文枠の上端あたり）' : '激怒：潰れた硬球を握る拳（元画像の上から約750px）まで本文枠の上にある',
+    l && (small ? at(l, 450, 750).y < l.vh - 40 : at(l, 450, 750).y <= l.dialogueTop + 2), JSON.stringify(l));
+  check('激怒：通常の全身立ち絵より大きい寄り（画面の高さ以上）で、画面の中央に置く', l && l.height >= l.vh && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
   await advance(page);
   await resumeHere(page);
   l = await one('nakata-practice-rage.webp');
-  check('c08-022 でリロードし、つづきからで激怒の画像と寄りの配置が戻る', (await show(page)).lineId === 'c08-022' && l && l.loaded && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2 && at(l, 450, 750).y <= l.dialogueTop + 2, JSON.stringify(l));
+  check('c08-022 でリロードし、つづきからで激怒の画像と寄りの配置が戻る（切り口は画面外のまま）', (await show(page)).lineId === 'c08-022' && l && l.loaded && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2 && l.bottom >= l.vh - 0.5, JSON.stringify(l));
   check('c08-022 の本文は硬球の確定文', (await show(page)).prose.replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
   await advance(page); await advance(page); await waitPortraitLoaded(page);
   l = await one('misora-game-uniform-normal.webp');
@@ -900,33 +909,52 @@ async function expressionsInPlay(browser, viewport, label) {
   await advance(page); await waitPortraitLoaded(page);
   l = await one('nakata-practice-shock.webp');
   check('c08-041 で左に中田の驚き、右の美空はそのまま', (await files()) === 'left:nakata-practice-shock.webp,right:misora-game-uniform-normal.webp' && l.loaded, await files());
-  const ball = l && at(l, 745, 1120), feet = l && at(l, 400, 1256), jaw = l && at(l, 800, 560);
+  const ball = l && at(l, 745, 1230), feet = l && at(l, 400, 1256), jaw = l && at(l, 800, 560);
   const inScene = (p) => p.x >= l.scene.left && p.x <= l.scene.right && p.y >= l.scene.top && p.y <= l.scene.bottom;
-  check('驚き：足元が本文欄の上にあり、頭は画面内（足元を基準に縮小）', l && feet.y <= l.dialogueTop + 2 && l.top >= -1, JSON.stringify(l));
-  check('驚き：伸ばした手の下の球と、伸びた顎が、本文欄にも場面名の札にも隠れない', l && ball.y < l.dialogueTop && !inScene(ball) && jaw.y < l.dialogueTop && !inScene(jaw), JSON.stringify({ ball, jaw, scene: l && l.scene }));
-  check('驚き：画面の左側に置く（左右反転しない）', l && l.left < l.vw / 2 && l.right < l.vw * 0.6, JSON.stringify(l));
+  check('驚き：本文枠の上に浮かせず、足元は本文枠の後ろか画面の下（通常の立ち絵と同じ立ち位置）。頭は画面内', l && feet.y >= l.dialogueTop - 2 && at(l, 500, 169).y >= 0, JSON.stringify(l));
+  check('驚き：伸びた顎と開いた口が本文枠の上にあり、場面名の札に隠れない', l && jaw.y < l.dialogueTop && !inScene(jaw), JSON.stringify({ jaw, scene: l && l.scene }));
+  check('驚き：転がる球は画面内で、操作ボタンとページ表示に隠れない', l && ball.y < l.vh && ball.x > 0 && !(await underButton(ball)), JSON.stringify(ball));
+  check('驚き：顔が読める大きさ（高さの小さい画面では画面の高さいっぱい）', l && (small ? l.height >= l.vh - 1 : l.height >= l.vh * 0.7), JSON.stringify(l));
+  check('驚き：画面の左側に置く（左右反転しない）', l && l.left < l.vw / 2 && l.right < l.vw * 0.62, JSON.stringify(l));
   await advance(page);
   await resumeHere(page);
   l = await one('nakata-practice-shock.webp');
-  check('c08-042 でリロードし、つづきからで驚きの画像と足元基準の配置が戻る', (await show(page)).lineId === 'c08-042' && l && l.loaded && at(l, 400, 1256).y <= l.dialogueTop + 2, JSON.stringify(l));
+  check('c08-042 でリロードし、つづきからで驚きの画像と配置が戻る', (await show(page)).lineId === 'c08-042' && l && l.loaded && at(l, 400, 1256).y >= l.dialogueTop - 2, JSON.stringify(l));
   await advance(page); await advance(page); await waitPortraitLoaded(page);
   check('c08b-001 で中田は消え、部室と日和の画面へ移る', (await show(page)).lineId === 'c08b-001' && (await files()) === 'right:hiyori-jersey-normal.webp' && (await bgIs(page, 'hosho-clubroom')).ok, await files());
 
-  // 照れ笑い（5-4）：c04-021 → c04-022（着席の顔〜胸）→ c04-023（中田を消す）
+  // 照れ笑い（5-4）：c04-021 → c04-022（ベンチに座った中田）→ c04-023（中田を消す）
+  // 切り抜かず、全身の立ち絵を下へずらして、腰から下と手に下げたグラブ（元画像の上から約660px以下）を画面の下へ出す。
   await resumeAt('c04-019');
   await advanceTo(page, 'c04-022'); await waitPortraitLoaded(page);
   l = await one('nakata-practice-bashful.webp');
+  let m = await one('misora-game-uniform-normal.webp');
   check('5-4 c04-022 で照れ笑いの中田が左に出る（右に美空）', (await files()) === 'left:nakata-practice-bashful.webp,right:misora-game-uniform-normal.webp' && l.loaded, await files());
-  check('5-4 の照れ笑いは顔〜胸の切り抜き（立った脚とグラブを見せない）', l && l.fit === 'cover' && Math.abs(l.width / l.height - 859 / 520) < 0.02 && l.top >= -1, JSON.stringify(l));
-  check('5-4 の照れ笑い：顔（元画像の上から顎の220pxまで）が本文欄の上にある', l && l.top + 220 / 520 * l.height <= l.dialogueTop + 2, JSON.stringify(l));
+  check('5-4 の照れ笑いは切り抜かない（画像の縦横比のまま。身体の切り口が画面に出ない）', l && l.fit !== 'cover' && Math.abs(l.width / l.height - 859 / 1280) < 0.02, JSON.stringify(l));
+  check('5-4 の照れ笑い：座っているので、手に下げたグラブと脚は画面の下へ出る', l && at(l, 600, 660).y >= l.vh - 1, JSON.stringify(l));
+  check('5-4 の照れ笑い：頭は画面内、顎（元画像の上から約230px）は本文枠の上', l && at(l, 430, 40).y >= 0 && at(l, 430, 230).y <= l.dialogueTop + 2, JSON.stringify(l));
+  check('5-4 の照れ笑い：座った中田の頭は、立っている美空の頭より低い', l && m && at(l, 430, 40).y > at(m, 430, 26).y, JSON.stringify({ nakata: at(l, 430, 40), misora: m && at(m, 430, 26) }));
   await resumeHere(page);
   l = await one('nakata-practice-bashful.webp');
-  check('c04-022 でリロードし、つづきからで顔〜胸の切り抜きが戻る', l && l.fit === 'cover' && Math.abs(l.width / l.height - 859 / 520) < 0.02, JSON.stringify(l));
+  check('c04-022 でリロードし、つづきからで同じ座った画角が戻る', l && l.fit !== 'cover' && at(l, 600, 660).y >= l.vh - 1, JSON.stringify(l));
   await advance(page);
   check('c04-023 で中田を消し、美空だけに戻る', (await show(page)).lineId === 'c04-023' && (await files()) === 'right:misora-game-uniform-normal.webp', await files());
 
-  // 照れ笑い（5-7）：c07-016（美空が褒める・立ち絵なし）→ c07-017〜c07-018（立ち姿の全身）→ c07-019（消す）→ c07-020（通常顔）
-  check('5-7 c07-016（美空が褒める行）ではまだ照れ顔を出さない', await resumeAt('c07-016') && await files() === 'right:misora-game-uniform-flustered-chibi.webp', await files());
+  // 5-7：c07-005〜c07-006（美空の動揺。中田は給水台から叫んで突っ込んでくる）→ c07-006a（美空が手を引いて通常の顔）
+  // → c07-007〜c07-015（中田が2人のあいだに立つ）→ c07-016（美空の動揺、中田は残る）→ c07-017〜c07-018（照れ笑い・立ち姿の全身）
+  check('5-7 c07-005 は美空の動揺デフォルメ（中田はまだ給水台から叫んでいる段階）', await resumeAt('c07-005') && await files() === 'right:misora-game-uniform-flustered-chibi.webp', await files());
+  let c = await one('misora-game-uniform-flustered-chibi.webp');
+  check('動揺デフォルメ：アイコンのように縮めず、顔（元画像の上から約560pxまで）が本文枠の上で読める大きさ',
+    c && (small ? c.height >= c.vh * 0.9 : c.height >= c.vh * 0.75) && at(c, 430, 560).y <= c.dialogueTop + 2 && at(c, 430, 180).y >= 0, JSON.stringify(c));
+  check('動揺デフォルメ：屋根の上などに浮かせず、足元は本文枠の後ろか画面の下', c && at(c, 430, 1160).y >= c.dialogueTop - 2, JSON.stringify(c));
+  await advanceTo(page, 'c07-006a'); await waitPortraitLoaded(page);
+  m = await one('misora-game-uniform-normal.webp');
+  check('c07-006a で美空は通常の顔に戻り、通常の美空と同じ右の位置にいる', (await files()) === 'right:misora-game-uniform-normal.webp' && c && m && Math.abs((c.left + c.right) / 2 - (m.left + m.right) / 2) < c.vw * 0.15, await files());
+  await advance(page); await waitPortraitLoaded(page);
+  check('c07-007 で中田が平野の前まで来て、左に出る（右の美空はそのまま）', (await show(page)).lineId === 'c07-007' && (await files()) === 'left:nakata-practice-normal.webp,right:misora-game-uniform-normal.webp', await files());
+  await resumeAt('c07-013');
+  check('c07-013（「外周50周！」）でつづきからでも、中田と美空が戻る', (await files()) === 'left:nakata-practice-normal.webp,right:misora-game-uniform-normal.webp', await files());
+  check('5-7 c07-016（美空が褒める行）は美空の動揺。中田は残り、まだ照れ顔を出さない', await resumeAt('c07-016') && await files() === 'left:nakata-practice-normal.webp,right:misora-game-uniform-flustered-chibi.webp', await files());
   await advance(page); await waitPortraitLoaded(page);
   l = await one('nakata-practice-bashful.webp');
   check('c07-017 で照れ笑いの中田が全身の立ち姿で出る（切り抜かない）', (await files()) === 'left:nakata-practice-bashful.webp' && l.fit !== 'cover' && Math.abs(l.width / l.height - 859 / 1280) < 0.02, JSON.stringify(l));
@@ -1658,6 +1686,58 @@ async function addedSectionsInPlay(browser, viewport) {
   await ctx.close();
 }
 
+// 立ち絵の全使用区間の点検（docs/portrait-staging.md）。立ち絵の組み合わせが変わる全ての行（一枚絵の区間を除く）を表示し、
+// 実画像の透明領域（ブラウザで画像を読み、描かれている範囲を求める）と表示位置から、次を確かめる。
+// ・切り抜き（object-fit: cover）を使わない。
+// ・絵が元画像の下端で切れている素材（上半身の素材）は、画像の下端を画面の下へ出す（切り口を画面に出さない）。
+// ・全身の素材は、足元を本文枠の上に浮かせない（足元は本文枠の後ろか画面の下）。
+// ・頭（描かれている範囲の上端）が画面の上で大きく切れない。人物が画面の外へ出てしまわない。
+async function portraitAuditInPlay(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  section('立ち絵の全使用区間の点検（' + viewport.width + '×' + viewport.height + '）');
+  const starts = await page.evaluate(() => {
+    const V = KitValidate, G = KIT_GAME; const ids = Object.values(G.scenes).flatMap((s) => s.lines.map((l) => l.id));
+    let prev = ''; const r = [];
+    for (const id of ids) { const st = V.stateAt(G, id); if (st.cg) { prev = ''; continue; } const k = JSON.stringify(st.portraits); if (k !== prev && (st.portraits.left || st.portraits.right)) r.push(id); prev = k; }
+    return r;
+  });
+  const bboxes = await page.evaluate(async () => {
+    const out = {};
+    for (const ex of Object.values(KIT_GAME.assets.portraits)) for (const src of Object.values(ex)) {
+      const img = new Image(); img.src = src; await img.decode();
+      const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const g = c.getContext('2d'); g.drawImage(img, 0, 0); const d = g.getImageData(0, 0, c.width, c.height).data;
+      let top = -1, bottom = -1;
+      for (let y = 0; y < c.height && top < 0; y++) for (let x = 0; x < c.width; x += 2) if (d[(y * c.width + x) * 4 + 3] > 16) { top = y; break; }
+      for (let y = c.height - 1; y >= 0 && bottom < 0; y--) for (let x = 0; x < c.width; x += 2) if (d[(y * c.width + x) * 4 + 3] > 16) { bottom = y; break; }
+      out[src.split('/').pop()] = { top, bottom, h: c.height };
+    }
+    return out;
+  });
+  const bad = [];
+  let shown = 0;
+  for (const id of starts) {
+    await page.evaluate((i) => { KIT.goLine(i, { jump: true }); KIT.complete(KIT.currentLine(), KIT.currentLine().text); }, id);
+    await waitPortraitLoaded(page);
+    for (const l of await layoutNow(page)) {
+      shown++;
+      const b = bboxes[l.file]; const sc = l.height / b.h;
+      const top = l.top + b.top * sc, bottom = l.top + b.bottom * sc;
+      if (l.fit === 'cover') bad.push(id + ' ' + l.file + ' 切り抜き');
+      if (b.bottom >= b.h - 2 && l.bottom < l.vh - 0.5) bad.push(id + ' ' + l.file + ' 切り口が画面内 ' + Math.round(l.bottom));
+      if (b.bottom < b.h - 2 && bottom < l.dialogueTop - 2) bad.push(id + ' ' + l.file + ' 足元が本文枠の上に浮く ' + Math.round(bottom));
+      if (top < -8) bad.push(id + ' ' + l.file + ' 頭が画面の上で切れる ' + Math.round(top));
+      if (l.right < 24 || l.left > l.vw - 24) bad.push(id + ' ' + l.file + ' 画面の外');
+    }
+  }
+  const cutAssets = Object.entries(bboxes).filter(([, b]) => b.bottom >= b.h - 2).map(([f]) => f);
+  check('元画像の下端で絵が切れている素材は ' + cutAssets.join('、') + ' だけ（ほかは全身）', cutAssets.join() === 'nakata-practice-rage.webp', cutAssets.join());
+  check('立ち絵が切り替わる ' + starts.length + ' 行（表示 ' + shown + ' 件）で、切り抜き・切り口の露出・浮き・頭の欠けがない', bad.length === 0, bad.slice(0, 6).join(' | '));
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1703,6 +1783,9 @@ async function main() {
     await rookiesHomeGround(browser, DESKTOP, '1280×720', 1);
     await expressionsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await expressionsInPlay(browser, DESKTOP, '1280×720');
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
+    await expressionsInPlay(browser, LANDSCAPE, '844×390');
+    await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
     await cgBatch02InPlay(browser, SMALL_LANDSCAPE, '667×375', 0);
     await cgBatch02InPlay(browser, DESKTOP, '1280×720', 1);
     await cgBatch02InPlay(browser, SMALL_LANDSCAPE, '667×375', 1);
