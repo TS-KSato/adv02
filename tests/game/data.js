@@ -674,8 +674,8 @@ section('主要人物の紹介');
   const before = (a, b) => order.indexOf(a) < order.indexOf(b);
   check('中田：名前が分かった直後に、3年で内野のレギュラーと紹介する', /3年で、内野のレギュラー/.test(t('c04-019-p1')) && before('c04-018', 'c04-019-p1') && before('c04-019-p1', 'c04-022'));
   check('日和：初登場の直後に、平野と同じ1年のマネージャーと紹介する', /同じ1年のマネージャー/.test(t('c08b-001-p1')) && !/紅一点/.test(t('c08b-001-p1')));
-  check('佐々木：5-9 の両分岐それぞれで、初めて出る行の直後に上級生と紹介する（学年は決めない）',
-    G.scenes['hiyori-drinks'].lines.some((l) => l.id === 'c09d-002-p1') && G.scenes['hiyori-equipment'].lines.some((l) => l.id === 'c09t-004-p1') && /上級生/.test(t('c09d-002-p1')) && t('c09d-002-p1') === t('c09t-004-p1') && !/[23]年/.test(t('c09d-002-p1')));
+  check('佐々木：5-9 の両分岐それぞれで、初めて出る行の直後に3年と紹介する（「最後の夏」「努力家」「控え」は重ねない）',
+    G.scenes['hiyori-drinks'].lines.some((l) => l.id === 'c09d-002-p1') && G.scenes['hiyori-equipment'].lines.some((l) => l.id === 'c09t-004-p1') && t('c09d-002-p1') === '佐々木先輩は3年で、練習が終わっても打撃ケージの近くに残っていることが多い。' && t('c09d-002-p1') === t('c09t-004-p1') && !/最後の夏|努力家|控え/.test(t('c09d-002-p1')) && /佐々木は、平野が1年のときの3年/.test(read('docs/characters-and-timeline.md')));
   check('厳は美空の父、野原は龍成の監督と分かる', /父の厳/.test(t('c17-007')) && /監督の野原/.test(t('c19-013')));
 }
 
