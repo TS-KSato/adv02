@@ -611,6 +611,41 @@ section('時間経過・関係性・対戦相手の補強');
   check('既存の行・追加した行・冬の章間の保存から再開できる（データ版 2026.11-4 のまま）', G.dataVersion === '2026.11-4' && r.mode === 'current' && r.record.auto.at === 'cwinter-010' && r.record.slots.map((x) => x && x.at).join() === 'c26e-001,c02e-003-p8,c33a-002', r.mode);
 }
 
+section('人物の判断と情報共有（選ばなかった経路でも、知っていることを使う）');
+{
+  const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
+  const sceneOf = new Map(Object.entries(G.scenes).flatMap(([k, sc]) => sc.lines.map((l) => [l.id, k])));
+  const t = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
+  // 港南
+  check('港南：右翼手の前進と返球は、全経路が通る 9回の場面でミーティングの共有として示す', sceneOf.get('c31h-001-p1') === 'konan-ninth' && /ミーティング/.test(t('c31h-001-p1')) && /3塁コーチ/.test(t('c31h-001-p1')));
+  check('港南：追加確認で得るのは「高く跳ねた打球でも足を止めない」処理（準備・当日の確認・伝達）',
+    ['c31b-002', 'c31e-001', 'c31g-002'].every((id) => /高く跳ね/.test(t(id)) && /足を止め/.test(t(id))));
+  check('港南：敗北側の3塁コーチは右翼を警戒したうえで「一拍ある」と判断して回し、上回られる',
+    /跳ね上がった/.test(t('c31j-001')) && /腕を回した/.test(t('c31j-001')) && /一拍ある/.test(t('c31j-005-p2')) && /足を止めねえ/.test(t('c31j-005-p2')));
+  check('港南：日和の映像（c31a-007）は選択前の共通区間にあり、内容を消していない', sceneOf.get('c31a-007') === 'konan-press' && /中継を越えて/.test(t('c31a-007')));
+  // 龍成
+  check('龍成：大山も共通区間で初球の外のスライダーに気づき、勝負どころで変えてくると読む',
+    sceneOf.get('c29d-008-p2') === 'ryusei-middle' && ln.get('c29d-008-p2').speaker === 'oyama' && /外のスライダー/.test(t('c29d-008-p2')) && /変えてくる/.test(t('c29d-008-p2')));
+  check('龍成：追加確認で得るのは「終盤・走者がいても変えない」根拠', /9回/.test(t('c29b-002')) && /終盤も変えない/.test(t('c29b-002')) && /走者がいたときも/.test(t('c29f-002-p1')) && /走者がいても/.test(t('c29f-003')));
+  check('龍成：勝利側の大山は、根拠を聞いて読みを修正して初球を打つ', /変えてこない/.test(t('c29i-002')) && /変えてくると思ってた/.test(t('c29i-003')) && /踏み込んで/.test(t('c29i-004')));
+  check('龍成：敗北側の大山は内を待って初球を見送り、追い込まれて内いっぱいの真っすぐに詰まる', /内を待つ/.test(t('c29j-001')) && /振らなかった/.test(t('c29j-001')) && /内側いっぱい/.test(t('c29j-002')));
+  // 決勝
+  check('決勝：確認しなかった経路でも、平野は前足の懸念を田原へ伝え、田原は自分の読みで答える',
+    sceneOf.get('c33g-001-p1') === 'teirei-unrecovered' && ln.get('c33g-001-p1').speaker === 'hirano' && /前足/.test(t('c33g-001-p1')) &&
+    ln.get('c33g-001-p2').speaker === 'tahara' && /開く/.test(t('c33g-001-p2')) && /外の低い端/.test(t('c33g-001-p2')) && !/聞けなかった/.test(t('c33g-001')));
+  check('決勝：準備・当日の確認で得るのは「前足が早くても肩は開かない」根拠', ['c33b-001', 'c33f-003', 'c33i-002'].every((id) => /肩/.test(t(id)) && /開/.test(t(id))));
+  check('決勝：田原は根拠を聞いて読みを修正する（勝利側）', /開くのも早いと思ってました/.test(t('c33i-003a')) && /外の端でも届きます/.test(t('c33i-003a')));
+  check('決勝：大山は内角を「逃げ」と言わず、最善と考えた外の低い端を選ぶ', !/逃げ/.test(t('c33k-001o')) && /外/.test(t('c33k-001o')) && /端/.test(t('c33k-001o')));
+  check('決勝：新庄がさらに対応して打つ描写は残す', /肩は最後まで残す/.test(t('c33k-001q')) && /右翼線/.test(t('c33k-002')));
+  // 小宮の挨拶
+  check('小宮の挨拶は家族同士の関係を伝える言い方（「御社」を使わない）', /お父様にお世話になっております/.test(t('c26e-006')) && !/御社/.test(t('c26e-006') + t('c26e-007')) && /父に？/.test(t('c26e-007')));
+  // 動機の反復
+  const repeated = ['c14-002-p11', 'c18-001-p5', 'c26e-001-p28', 'c26e-001-p29', 'c29a-001-p13', 'c29a-001-p14', 'c29a-001-p17', 'c30-001-p7', 'c33a-001-p9'];
+  check('野球の情報交換の締めを、毎回美空へ戻さない（整理した行に監督・前髪の描写がない）', repeated.every((id) => !/監督|前髪/.test(t(id))), repeated.filter((id) => /監督|前髪/.test(t(id))).join(' '));
+  check('プレーへの反応と自己都合が続く場面（c30-019〜c30-022）は残す', ['c30-019', 'c30-020', 'c30-021', 'c30-022'].every((id) => ln.has(id)));
+  check('決勝前の会話は、質問への返答として情報が出る（全員が順番に述べない）', /\？$/.test(t('c33a-001-p2')) && ln.get('c33a-001-p3').speaker === 'hiyori' && /？$/.test(t('c33a-001-p5')) && !['c33a-001-p2','c33a-001-p3','c33a-001-p4','c33a-001-p5','c33a-001-p6','c33a-001-p7','c33a-001-p8','c33a-001-p9','c33a-001-p10','c33a-001-p11'].some((id) => ln.get(id).speaker === 'tahara'));
+}
+
 section('最後のアウト');
 const lastOut = G.scenes['last-out'];
 const lastOutDoc = read('docs/last-out-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
