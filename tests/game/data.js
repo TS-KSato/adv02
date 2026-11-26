@@ -582,7 +582,8 @@ section('時間経過・関係性・対戦相手の補強');
     !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.find((l) => l.id === 'cwinter-019').text + win.lines.find((l) => l.id === 'cwinter-020').text));
   // 追加行は一枚絵の区間に入れない
   const added = order.filter((l) => /-p\d+$/.test(l.id) || /^cwinter-/.test(l.id));
-  check('追加した行（' + added.length + '行）は、どれも一枚絵の区間に入っていない', added.every((l) => !V.stateAt(G, l.id).cg), added.filter((l) => V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
+  const cgLineAllowed = ['c10-015-p1']; // 河本の一枚絵を出す行（河本の受け取り方）として足した行
+  check('追加した行（' + added.length + '行）は、河本の一枚絵の行（c10-015-p1）を除き、一枚絵の区間に入っていない', added.every((l) => cgLineAllowed.includes(l.id) || !V.stateAt(G, l.id).cg), added.filter((l) => !cgLineAllowed.includes(l.id) && V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
   // 選択前の共通区間で、選択によって得る情報を先取りしない（今回追加した行）
   const addedIn = (keys) => added.filter((l) => keys.includes(sceneOf.get(l.id)));
   const leak = (lines, re) => lines.filter((l) => re.test(flat(l))).map((l) => l.id);
@@ -677,6 +678,17 @@ section('主要人物の紹介');
   check('佐々木：5-9 の両分岐それぞれで、初めて出る行の直後に3年と紹介する（「最後の夏」「努力家」「控え」は重ねない）',
     G.scenes['hiyori-drinks'].lines.some((l) => l.id === 'c09d-002-p1') && G.scenes['hiyori-equipment'].lines.some((l) => l.id === 'c09t-004-p1') && t('c09d-002-p1') === '佐々木先輩は3年で、練習が終わっても打撃ケージの近くに残っていることが多い。' && t('c09d-002-p1') === t('c09t-004-p1') && !/最後の夏|努力家|控え/.test(t('c09d-002-p1')) && /佐々木は、平野が1年のときの3年/.test(read('docs/characters-and-timeline.md')));
   check('厳は美空の父、野原は龍成の監督と分かる', /父の厳/.test(t('c17-007')) && /監督の野原/.test(t('c19-013')));
+}
+
+section('河本の妄想の一枚絵と、5-10 の流れ');
+{
+  const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
+  const t = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
+  const cgAt = (id) => V.stateAt(G, id).cg;
+  check('現実の「そう。おめでとう。」（c10-015）は通常画面で、美空と河本が並ぶ', !cgAt('c10-015') && ln.get('c10-015').speaker === 'misora' && /おめでとう/.test(t('c10-015')) && V.stateAt(G, 'c10-015').portraits.left?.char === 'misora' && V.stateAt(G, 'c10-015').portraits.right?.char === 'kawamoto');
+  check('一枚絵は、河本がその一言を都合よく受け取る1行（c10-015-p1）だけに出る', cgAt('c10-015-p1') === 'c10-kawamoto-daydream-embrace' && /河本の耳には/.test(t('c10-015-p1')) && /自分だけに向けられた声/.test(t('c10-015-p1')));
+  check('切り抜きを練習メニューの下へ入れる現実の行（c10-016）からは通常画面に戻り、一枚絵を重ねない', ['c10-016', 'c10-017', 'c10-018', 'c10-019'].every((id) => !cgAt(id)) && /いちばん下に入った/.test(t('c10-016')));
+  check('平野の地の文で河本の頭の中を知ったことにしない（他視点の行は「河本さん」と呼ばない）', !/河本さん/.test(t('c10-015-p1')));
 }
 
 section('最後のアウト');
@@ -984,7 +996,7 @@ for (const [expr, expected] of Object.entries(addedSpans)) {
 const cgKey = 'cnews-oyama-tears-newspaper';
 const CG_BATCH02 = {
   'hirano-field-visit-vision': { lines: ['c01-009', 'c01-010', 'c01-011'], release: 'c01-012', bg: 'hosho-field-fence-morning' },
-  'c10-kawamoto-daydream-embrace': { lines: ['c10-015', 'c10-016', 'c10-017'], release: 'c10-018', bg: 'hosho-field-bench' },
+  'c10-kawamoto-daydream-embrace': { lines: ['c10-015-p1'], release: 'c10-016', bg: 'hosho-field-bench' },
   'c13-shinjo-daydream-dinner': { lines: ['c13-021', 'c13-022'], release: 'c13-023', bg: 'hosho-field-bench' },
   'cbus-oyama-daydream-bride': { lines: ['cbus-003a'], release: 'cbus-004', bg: 'bus-interior' },
   'c26a-tahara-daydream-home': { lines: ['c26a-008'], release: 'c26a-009', bg: 'hosho-field-afternoon' },

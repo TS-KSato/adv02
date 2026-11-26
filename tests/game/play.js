@@ -835,7 +835,7 @@ async function expressionsBatch01(browser, viewport) {
   for (const [first,last,after,file] of spans) {
     await resumeAt(first);
     let l = (await layoutNow(page)).find(x => x.file === file);
-    check(first + ': 再開で差分が読み込まれる', l && l.loaded && l.top >= -1, JSON.stringify(l));
+    check(first + ': 再開で差分が読み込まれる（描かれた頭は画面内）', l && l.loaded && l.top + (file === 'oyama-practice-angry.webp' ? 94 / 1280 * l.height : 0) >= -1, JSON.stringify(l));
     check(first + ': 本文と操作が画面内に収まる', fits(await layout(page)));
     await snap(page, 'batch01-' + first + '-' + viewport.width);
     await advanceTo(page,last);
@@ -923,20 +923,18 @@ async function expressionsInPlay(browser, viewport, label) {
   await advance(page); await advance(page); await waitPortraitLoaded(page);
   check('c08b-001 で中田は消え、部室と日和の画面へ移る', (await show(page)).lineId === 'c08b-001' && (await files()) === 'right:hiyori-jersey-normal.webp' && (await bgIs(page, 'hosho-clubroom')).ok, await files());
 
-  // 照れ笑い（5-4）：c04-021 → c04-022（ベンチに座った中田）→ c04-023（中田を消す）
-  // 切り抜かず、全身の立ち絵を下へずらして、腰から下と手に下げたグラブ（元画像の上から約660px以下）を画面の下へ出す。
+  // 照れ笑い（5-4）：c04-019 → c04-022 → c04-023（中田を消す）。隣の美空や、5-7 の通常の中田と同じ尺度で並べる（座った姿勢を上下位置で再現しない）。
   await resumeAt('c04-019');
   await advanceTo(page, 'c04-022'); await waitPortraitLoaded(page);
   l = await one('nakata-practice-bashful.webp');
   let m = await one('misora-game-uniform-normal.webp');
   check('5-4 c04-022 で照れ笑いの中田が左に出る（右に美空）', (await files()) === 'left:nakata-practice-bashful.webp,right:misora-game-uniform-normal.webp' && l.loaded, await files());
   check('5-4 の照れ笑いは切り抜かない（画像の縦横比のまま。身体の切り口が画面に出ない）', l && l.fit !== 'cover' && Math.abs(l.width / l.height - 859 / 1280) < 0.02, JSON.stringify(l));
-  check('5-4 の照れ笑い：座っているので、手に下げたグラブと脚は画面の下へ出る', l && at(l, 600, 660).y >= l.vh - 1, JSON.stringify(l));
+  check('5-4 の照れ笑い：隣の美空と同じ尺度（画像の高さと上端が同じ。中田だけ低い・大きいことがない）', l && m && Math.abs(l.height - m.height) < 1 && Math.abs(l.top - m.top) < 1, JSON.stringify({ nakata: l && [l.top, l.height], misora: m && [m.top, m.height] }));
   check('5-4 の照れ笑い：頭は画面内、顎（元画像の上から約230px）は本文枠の上', l && at(l, 430, 40).y >= 0 && at(l, 430, 230).y <= l.dialogueTop + 2, JSON.stringify(l));
-  check('5-4 の照れ笑い：座った中田の頭は、立っている美空の頭より低い', l && m && at(l, 430, 40).y > at(m, 430, 26).y, JSON.stringify({ nakata: at(l, 430, 40), misora: m && at(m, 430, 26) }));
   await resumeHere(page);
-  l = await one('nakata-practice-bashful.webp');
-  check('c04-022 でリロードし、つづきからで同じ座った画角が戻る', l && l.fit !== 'cover' && at(l, 600, 660).y >= l.vh - 1, JSON.stringify(l));
+  const l2 = await one('nakata-practice-bashful.webp');
+  check('c04-022 でリロードし、つづきからで同じ尺度と位置が戻る', l2 && l && Math.abs(l2.height - l.height) < 1 && Math.abs(l2.top - l.top) < 1, JSON.stringify(l2));
   await advance(page);
   check('c04-023 で中田を消し、美空だけに戻る', (await show(page)).lineId === 'c04-023' && (await files()) === 'right:misora-game-uniform-normal.webp', await files());
 
@@ -966,6 +964,20 @@ async function expressionsInPlay(browser, viewport, label) {
   check('c07-019 で中田を消す', (await show(page)).lineId === 'c07-019' && (await files()) === '', await files());
   await advance(page); await waitPortraitLoaded(page);
   check('c07-020 で既存の通常顔に切り替わる', (await files()) === 'left:nakata-practice-normal.webp', await files());
+  // 5-10：河本の驚き（c10-020）は、隣の美空・通常の河本と同じ尺度。大山の怒り（c10-022）は、顔と叫ぶ口が本文枠の上
+  await resumeAt('c10-019');
+  const kn = await one('kawamoto-casual-normal.webp');
+  await advance(page); await waitPortraitLoaded(page);
+  const ks = await one('kawamoto-casual-shock.webp'), ms = await one('misora-game-uniform-normal.webp');
+  check('c10-020：河本の驚きは、通常の河本・隣の美空と同じ尺度（驚いても人物全体が縮まない）', ks && kn && ms && Math.abs(ks.height - kn.height) < 1 && Math.abs(ks.top - kn.top) < 1 && Math.abs(ks.height - ms.height) < 1, JSON.stringify({ normal: kn && [kn.top, kn.height], shock: ks && [ks.top, ks.height], misora: ms && [ms.top, ms.height] }));
+  check('c10-020：河本の驚いた顔（元画像の上から顎の約300pxまで）は本文枠の上', ks && at(ks, 430, 300).y <= ks.dialogueTop + 2 && at(ks, 430, 25).y >= -2, JSON.stringify(ks));
+  await advanceTo(page, 'c10-022'); await waitPortraitLoaded(page);
+  const oa = await one('oyama-practice-angry.webp'), ks2 = await one('kawamoto-casual-shock.webp');
+  check('c10-022：大山の怒りは、髪が画面内で、叫ぶ口（元画像の上から約500px）が本文枠の上', oa && at(oa, 300, 94).y >= -2 && at(oa, 300, 500).y <= oa.dialogueTop + 2, JSON.stringify(oa));
+  check('c10-022：大山の怒りは、隣の河本より極端に小さくしない（画像の高さが河本の7割以上）', oa && ks2 && oa.height >= ks2.height * 0.7, JSON.stringify({ oyama: oa && oa.height, kawamoto: ks2 && ks2.height }));
+  await advance(page); await waitPortraitLoaded(page);
+  const kn2 = await one('kawamoto-casual-normal.webp');
+  check('c10-023：河本は通常顔に戻り、驚きのときと同じ尺度', kn2 && ks2 && Math.abs(kn2.height - ks2.height) < 1 && Math.abs(kn2.top - ks2.top) < 1, JSON.stringify(kn2));
   await snap(page, 'expressions-' + viewport.width);
   await ctx.close();
 }
@@ -1022,7 +1034,7 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   // [直前の行, 開始, 途中, 末尾, 解除の行, 画像, 解除後の立ち絵, 重要部分（画像内の割合）, 名前]
   const spans = [
     ['c01-008', 'c01-009', 'c01-010', 'c01-011', 'c01-012', 'hirano-field-visit-vision.webp', '', [[0.93, 0.8, 'グラブと球']], '平野の朝練見学'],
-    ['c10-014', 'c10-015', 'c10-016', 'c10-017', 'c10-018', 'c10-kawamoto-daydream-embrace.webp', 'left:misora-game-uniform-normal.webp,right:kawamoto-casual-normal.webp', [[0.31, 0.85, '美空の浮いた足'], [0.58, 0.4, '抱き止める姿']], '河本'],
+    ['c10-015', 'c10-015-p1', 'c10-015-p1', 'c10-015-p1', 'c10-016', 'c10-kawamoto-daydream-embrace.webp', 'left:misora-game-uniform-normal.webp,right:kawamoto-casual-normal.webp', [[0.31, 0.85, '美空の浮いた足'], [0.58, 0.4, '抱き止める姿']], '河本'],
     ['c13-020', 'c13-021', 'c13-022', 'c13-022', 'c13-023', 'c13-shinjo-daydream-dinner.webp', '', [[0.52, 0.43, '乾杯するグラス'], [0.28, 0.27, '美空の顔'], [0.63, 0.27, '新庄の顔']], '新庄'],
     ['cbus-003', 'cbus-003a', 'cbus-003a', 'cbus-003a', 'cbus-004', 'cbus-oyama-daydream-bride.webp', '', [[0.48, 0.33, '美空の顔'], [0.33, 0.2, '綿帽子']], '大山'],
   ];
@@ -1461,8 +1473,8 @@ async function stageSwitching(browser, viewport) {
     ['c02-001', '通常の背景の変更（朝のフェンス → 教室）'],
     ['c01-009', '通常画面 → 一枚絵（平野の朝練見学）'],
     ['c01-012', '一枚絵 → 通常画面'],
-    ['c10-015', '通常画面（立ち絵2人） → 一枚絵（河本）'],
-    ['c10-018', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
+    ['c10-015-p1', '通常画面（立ち絵2人） → 一枚絵（河本）'],
+    ['c10-016', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
     ['c15-008', '回想へ入る（試合中のベンチ → 廊下）'],
     ['c15-014', '回想から出る（廊下 → 試合中のベンチ）'],
   ];
@@ -1742,6 +1754,68 @@ async function portraitAuditInPlay(browser, viewport) {
   await ctx.close();
 }
 
+// 5-10：河本の妄想の一枚絵。現実の「そう。おめでとう。」→ 河本の受け取り方（一枚絵）→ 切り抜きを入れる現実へ戻る、の流れを
+// 実際に送り、毎フレームの表示を記録して、一枚絵が c10-015-p1 の間だけ出ることを確かめる。つづきからと既読SKIP でも同じ。
+async function kawamotoCgFlow(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  section('5-10 河本の一枚絵の流れ（' + viewport.width + '×' + viewport.height + '）');
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+  };
+  const startRec = () => page.evaluate(() => {
+    window.__cgrec = [];
+    const tick = () => {
+      if (window.KIT && KIT.s.screen === 'play') {
+        const cg = document.querySelector('.kit-cg');
+        const vis = !cg.hidden && !!cg.getAttribute('src');
+        const ports = [...document.querySelectorAll('.kit-portrait img')].map((i) => i.getAttribute('src').split('/').pop());
+        const last = window.__cgrec.at(-1);
+        const k = KIT.s.lineId + '|' + vis + '|' + ports.join('+') + '|' + !!KIT_STAGE.pending;
+        if (!last || last !== k) window.__cgrec.push(k);
+      }
+      if (window.__cgrecOn !== false) requestAnimationFrame(tick);
+    };
+    window.__cgrecOn = true; requestAnimationFrame(tick);
+  });
+  const judge = (rec) => rec.filter((k) => { const [id, vis, ports, pending] = k.split('|'); return pending === 'false' && ((vis === 'true') !== (id === 'c10-015-p1') || (vis === 'true' && ports)); });
+  // 通常の送り
+  await goTo('c10-013');
+  await startRec();
+  const seen = [];
+  for (let i = 0; i < 12; i++) { const st = await show(page); seen.push(st.lineId); if (st.lineId === 'c10-024') break; await advance(page); }
+  await page.waitForTimeout(150);
+  let rec = await page.evaluate(() => window.__cgrec);
+  check('c10-013 から送ると c10-014 → c10-015 → c10-015-p1 → c10-016 の順に進む', seen.slice(0, 5).join() === 'c10-013,c10-014,c10-015,c10-015-p1,c10-016', seen.join());
+  check('送りの全フレームで、一枚絵は c10-015-p1 の間だけ出て、その間は立ち絵を重ねない', judge(rec).length === 0 && rec.some((k) => k.startsWith('c10-015-p1|true')), judge(rec).slice(0, 3).join(' / '));
+  // つづきから
+  await goTo('c10-015-p1');
+  let st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden, ports: document.querySelectorAll('.kit-portrait img').length }));
+  check('c10-015-p1 の保存から「つづきから」で一枚絵が戻る（立ち絵なし）', st.vis && st.ports === 0, JSON.stringify(st));
+  for (const id of ['c10-015', 'c10-016', 'c10-017']) {
+    await goTo(id);
+    st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden, ports: [...document.querySelectorAll('.kit-portrait img')].map((i) => i.getAttribute('src').split('/').pop()).join('+') }));
+    check(id + ' の保存から「つづきから」で通常画面（美空と河本）になり、一枚絵は出ない', !st.vis && st.ports === 'misora-game-uniform-normal.webp+kawamoto-casual-normal.webp', JSON.stringify(st));
+  }
+  // 既読SKIP（上で読んだ c10-013〜c10-024 を送り抜ける）
+  await goTo('c10-013');
+  await startRec();
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
+  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+  await settled(page); await page.waitForTimeout(150);
+  rec = await page.evaluate(() => window.__cgrec);
+  const end = (await show(page)).lineId;
+  const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+  check('既読SKIP で読んだ区間を c10-024 より先まで送り抜ける', order.indexOf(end) >= order.indexOf('c10-024'), end);
+  check('既読SKIP 中の全フレームで、一枚絵が c10-015-p1 以外に残らず、立ち絵と重ならない', judge(rec).length === 0, judge(rec).slice(0, 3).join(' / '));
+  st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden }));
+  check('既読SKIP の後も一枚絵は残らない', !st.vis);
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1788,6 +1862,7 @@ async function main() {
     await expressionsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await expressionsInPlay(browser, DESKTOP, '1280×720');
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await kawamotoCgFlow(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
     await cgBatch02InPlay(browser, SMALL_LANDSCAPE, '667×375', 0);

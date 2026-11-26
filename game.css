@@ -84,19 +84,9 @@
   .kit-portrait-img[src$="nakata-practice-rage.webp"] { height: 106%; margin-top: -2vh; }
 }
 
-/* 照れ笑い（5-4）：ベンチに座った中田。右に美空がいる5-4の左の枠だけ、全身の立ち絵を大きめに出して下へずらし、
-   腰から下と手に下げたグラブ（元画像の上から約660px以下）を画面の下へ出す（座っていて脚が見えない画角）。
-   切り抜きはしないので、身体の切り口は画面に出ない。顎（元画像の上から約230px）は本文枠の上端より上に置く。
-   座っているので、立っている美空より頭の位置は低い。5-7（右に誰もいない）は通常の立ち絵と同じ全身のまま。 */
-.kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
-  align-self: flex-start; max-width: none; width: auto;
-  height: 107vh; margin-top: 45vh; margin-left: 0;
-}
-@media (max-height: 500px) {
-  .kit-root:has(.kit-portrait-right .kit-portrait-img) .kit-portrait-left .kit-portrait-img[src$="nakata-practice-bashful.webp"] {
-    height: 180vh; margin-top: 8vh; margin-left: -4vw;
-  }
-}
+/* 照れ笑い（nakata-practice-bashful.webp）は、5-4（座った場面）・5-7 とも通常の立ち絵と同じ大きさ・位置にする。
+   隣の美空や、同じ中田の通常の立ち絵と顔・胴体の尺度がそろうことを優先し、座った姿勢を画像の上下位置で再現しない
+   （高さの小さい画面では脚とグラブは本文枠の後ろ・画面の下）。素材は全身なので、切り口は出ない。 */
 
 /* 驚き：前かがみの全身。高さのある画面は通常の立ち絵と同じ（画面下端にそろえた全身。転がる球と伸ばした手は本文枠の下、操作ボタンの左）。
    高さの小さい画面は、通常の上半身拡大（165%）だと顔も手も本文枠に隠れ、本文枠の上に収めると小さく浮くので、
@@ -113,16 +103,14 @@
 @media (max-height: 500px) {
   .kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] { height: 94%; max-width: none; margin-right: 2vw; }
 }
-@media (max-height: 500px) {
-  /* 前へ突き出した顔・口・手を本文欄の上に残す。左右反転しない。 */
-  .kit-portrait-img[src$="oyama-practice-angry.webp"],
-  .kit-portrait-img[src$="kawamoto-casual-shock.webp"] {
-    height: 100%;
-    max-width: none;
-  }
-}
 
 /* 一枚絵（docs/cg-staging.md）。7枚ともキットの既定どおり表示領域全体に敷く（object-fit: cover。縮小・余白なし）。
    本文枠は一枚絵の表示中も通常と同じ（位置・大きさ・下地を変えない）。
    平野の朝練見学だけは、横長の画面で下側（グラブと球）を見せる（上の空を切る）。 */
 .kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"] { object-position: 50% 100%; }
+
+/* 大山の怒り（oyama-practice-angry.webp）：前かがみで頭が画像の中ほどにある素材。高さの小さい画面で通常の165%にすると
+   顔と口が本文枠の後ろに入るので、120%にして上の透明な余白の分だけ上へずらす（頭は大きく描かれているので、隣の人物と顔の大きさはそろう）。 */
+@media (max-height: 500px) {
+  .kit-portrait-img[src$="oyama-practice-angry.webp"] { height: 120%; max-width: none; margin-top: -8vh; }
+}
