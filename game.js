@@ -768,6 +768,7 @@ window.KIT_GAME = {
         { id: 'c10-013', text: "マウンドに立つ河本さんの写真が載っていた。\n折り目は、写真の外を通っていた。" },
         { id: 'c10-014', text: "監督は持っていた紙を机に置き、切り抜きを受け取った。" },
         { id: 'c10-015', speaker: 'misora', text: "そう。おめでとう。" },
+        { id: 'c10-015-p1', text: "河本の耳には、その一言が、試合のあとの球場で、\n自分だけに向けられた声に聞こえていた。" },
         { id: 'c10-016', text: "切り抜きは練習メニューのいちばん下に入った。紙の束の角をまた揃える。" },
         { id: 'c10-017', text: "河本さんは口元を緩めた。\nまだ帰らず、監督がもう一度こっちを向くのを待っていた。" },
         { id: 'c10-018', speaker: 'kawamoto', text: "俺がここにいたときは――" },
@@ -2779,10 +2780,10 @@ window.KIT_GAME = {
     { at: 'c10-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（河本の来校）：右を明示して消す
     { at: 'c10-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 5-10：グラウンドの入口に立つ河本
     { at: 'c10-008', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 机の端で紙を揃える監督
-    { at: 'c10-015', portrait: { slot: 'left', clear: true } }, // 河本の一枚絵（c10-015〜c10-017）の間は立ち絵を重ねない
-    { at: 'c10-015', portrait: { slot: 'right', clear: true } },
-    { at: 'c10-018', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 一枚絵の後、一枚絵の前と同じ監督と河本に戻す
-    { at: 'c10-018', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } },
+    { at: 'c10-015-p1', portrait: { slot: 'left', clear: true } }, // 河本の一枚絵（c10-015-p1）の間は立ち絵を重ねない
+    { at: 'c10-015-p1', portrait: { slot: 'right', clear: true } },
+    { at: 'c10-016', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 現実へ戻る：切り抜きを練習メニューの下へ入れる監督と、河本
+    { at: 'c10-016', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } },
     { at: 'c10-020', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-shock' } },
     { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入る。美空を外し、次の台詞から大山の怒りを出す
     { at: 'c10-022', portrait: { slot: 'left', char: 'oyama', expr: 'practice-angry' } },
@@ -2817,7 +2818,7 @@ window.KIT_GAME = {
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
     // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
     { at: 'c01-009', cg: { id: 'hirano-field-visit-vision', until: 'c01-011' } }, // 5-1：朝練を見る平野の主観（c01-012 で解除）
-    { at: 'c10-015', cg: { id: 'c10-kawamoto-daydream-embrace', until: 'c10-017' } }, // 5-10：河本（c10-018 で解除）
+    { at: 'c10-015-p1', cg: { id: 'c10-kawamoto-daydream-embrace', until: 'c10-015-p1' } }, // 5-10：河本の受け取り方（c10-016 で現実へ戻る）
     { at: 'c13-021', cg: { id: 'c13-shinjo-daydream-dinner', until: 'c13-022' } }, // 5-13：新庄（c13-023 で解除）
     { at: 'cbus-003a', cg: { id: 'cbus-oyama-daydream-bride' } }, // 行きのバス：大山（この1行だけ。cbus-004 で解除）
     { at: 'c26a-008', cg: { id: 'c26a-tahara-daydream-home' } }, // 5-26 田原の分岐：田原（この1行だけ。c26a-009 で解除）
