@@ -352,7 +352,7 @@ const press = G.scenes['parents-and-press'];
 const pressDoc = read('docs/parents-and-press-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
 const pressLines = press.lines.map(l => (l.speaker ? G.speakers[l.speaker] + '｜' : '') + l.text);
 check('本文と話者が docs/parents-and-press-script.md と一致する', JSON.stringify(pressDoc) === JSON.stringify(pressLines));
-check('父親たちと取材から新年度の幕間へ進む', press.next === 'second-scorebook' && !press.choices);
+check('父親たちと取材から冬の章間（12月の記録）を経て、新年度の幕間へ進む', press.next === 'winter-records' && !press.choices && G.scenes['winter-records'].next === 'second-scorebook' && !G.scenes['winter-records'].choices);
 
 section('二冊目');
 const secondScorebook = G.scenes['second-scorebook'];
@@ -557,6 +557,58 @@ section('校正・校閲（言葉選び・改行と表示単位・表記）');
     auto: { at: 'c24-013', flags: ccFalse2, dataVersion: G.dataVersion }, slots: [{ at: 'c24-013-2', flags: ccFalse2, dataVersion: G.dataVersion }, { at: 'c16-016', flags: ccFalse2, dataVersion: G.dataVersion }], seen: [] };
   const r = saves.assess(G, rec, JSON.stringify(rec));
   check('旧版の保存（c24-013）と、足した行（c24-013-2）の保存から再開できる', r.mode === 'current' && r.record.auto.at === 'c24-013' && r.record.slots[0]?.at === 'c24-013-2' && r.record.slots[1]?.at === 'c16-016', r.mode);
+}
+
+section('時間経過・関係性・対戦相手の補強');
+{
+  const order = Object.values(G.scenes).flatMap((sc) => sc.lines);
+  const byId = new Map(order.map((l) => [l.id, l]));
+  const sceneOf = new Map(Object.entries(G.scenes).flatMap(([k, sc]) => sc.lines.map((l) => [l.id, k])));
+  const flat = (l) => l.text.replace(/\n/g, '');
+  check('話者に三浦（miura）と岡田（okada）がいる', G.speakers.miura === '三浦' && G.speakers.okada === '岡田');
+  const intro = order.findIndex((l) => l.id === 'c02e-003-p3');
+  const lateFirstyear = order.slice(intro + 1).filter((l) => l.speaker === 'firstyear').map((l) => l.id);
+  check('三浦が名乗った後（c02e-003-p3 以降）は、同じ同級生を「1年生」と呼ばない', intro > 0 && lateFirstyear.length === 0, lateFirstyear.join(' '));
+  const all = order.map(flat).join('\n');
+  check('出身の割り当てが一貫している（平野＝水沢中、三浦＝城南シニア、岡田＝南町中）',
+    order.filter((l) => /水沢中/.test(l.text)).every((l) => ['hirano', undefined].includes(l.speaker) || /平野/.test(l.text)) &&
+    !/(岡田|平野)[^。]{0,8}城南シニア/.test(all) && !/(三浦|平野)[^。]{0,8}南町中/.test(all) && /城南シニア/.test(all) && /南町中/.test(all));
+  check('岡田は南町中のサードで4番、市のベスト4', /南町中。サードで、4番/.test(all) && /市でベスト4/.test(all));
+  // 冬の章間
+  const win = G.scenes['winter-records'];
+  check('冬の章間（12月の記録）が 5-25 と翌春の「二冊目」のあいだにある', win && G.scenes['parents-and-press'].next === 'winter-records' && win.next === 'second-scorebook' && /^12月/.test(win.lines[0].text));
+  check('冬の章間は部室で、立ち絵・一枚絵を出さない', win.lines.every((l) => { const st = V.stateAt(G, l.id); return st.bg === 'hosho-clubroom' && !st.cg && !st.portraits.left && !st.portraits.right; }));
+  check('冬の章間：大山は礼を言わず、平野の守る日を把握し、平野はグラブを持って練習へ戻る',
+    !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.at(-2).text + win.lines.at(-1).text));
+  // 追加行は一枚絵の区間に入れない
+  const added = order.filter((l) => /-p\d+$/.test(l.id) || /^cwinter-/.test(l.id));
+  check('追加した行（' + added.length + '行）は、どれも一枚絵の区間に入っていない', added.every((l) => !V.stateAt(G, l.id).cg), added.filter((l) => V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
+  // 選択前の共通区間で、選択によって得る情報を先取りしない（今回追加した行）
+  const addedIn = (keys) => added.filter((l) => keys.includes(sceneOf.get(l.id)));
+  const leak = (lines, re) => lines.filter((l) => re.test(flat(l))).map((l) => l.id);
+  const ry = leak(addedIn(['ryusei-rematch']), /スライダー|初球だけ外/);
+  check('龍成戦：選択前に追加した行は、強打者の初球の外のスライダーに触れない', ry.length === 0, ry.join(' '));
+  const ko = leak(addedIn(['national-opponents', 'konan-press']).filter((l) => /^c30-025-p/.test(l.id)), /ライト|右翼|送球/);
+  check('港南戦：選択前に追加した行は、右翼手の位置や送球に触れない', ko.length === 0, ko.join(' '));
+  const ao = leak(addedIn(['aotake-game']), /高め|浮い|浮く|高く/);
+  check('青岳戦：試合当日の共通区間に追加した行は、直球が浮くことに触れない', ao.length === 0, ao.join(' '));
+  const te = leak(addedIn(['teirei-final', 'rookies-teirei']), /前足|踏み出|外の直球|外の真っすぐ|外寄りの直球/);
+  check('帝嶺戦：決勝の朝と春の練習試合前に追加した行は、新庄の前足や外の直球に触れない', te.length === 0, te.join(' '));
+  check('決勝の朝の映像（c33a-003）は全経路の共通区間のまま', sceneOf.get('c33a-003') === 'teirei-final');
+  // 新庄・大山
+  check('ある先輩は小学校でも中学でも新庄に敗れ、四球で歩かせても走塁で崩された', /小学校でも中学でも/.test(all) && /歩かせた/.test(all) && /2塁に走られた/.test(all));
+  check('決勝前は昔話を再説明せず「今度こそ、あいつの前で終わりたくない」', /今度こそ、あいつの前で終わりたくない/.test(all));
+  check('大山の段階：練習で捕手が左手を開く／実戦で打者が振り遅れに気づく／甲子園で太鼓が途切れる',
+    /左手を一度開き/.test(flat(byId.get('c03-042-p2'))) && /もうミットに入ってた/.test(flat(byId.get('c29d-000-p3'))) && /太鼓が/.test(flat(byId.get('c32e-001-p1'))));
+  check('三浦の母の映像：先輩は「俺じゃなくて母ちゃんに言え」、三浦が短く礼を返す', /俺じゃなくて母ちゃんに言え/.test(all) && /ありがと。使う/.test(all));
+  check('平野は2年として小宮に名乗り、中学の部活か硬式クラブかを尋ねる', /2年の平野/.test(flat(byId.get('c26-005-p1'))) && /部活？　それとも硬式のクラブ？/.test(flat(byId.get('c26-006-p1'))));
+  // 保存互換
+  const f0 = Object.fromEntries(Object.keys(G.flags).map((k) => [k, false]));
+  const rec = { v: 1, game: G.id, dataVersion: G.dataVersion, flagSchema: saves.flagSchema(G),
+    auto: { at: 'cwinter-010', flags: f0, dataVersion: G.dataVersion },
+    slots: [{ at: 'c26e-001', flags: f0, dataVersion: G.dataVersion }, { at: 'c02e-003-p8', flags: f0, dataVersion: G.dataVersion }, { at: 'c33a-002', flags: f0, dataVersion: G.dataVersion }], seen: [] };
+  const r = saves.assess(G, rec, JSON.stringify(rec));
+  check('既存の行・追加した行・冬の章間の保存から再開できる（データ版 2026.11-4 のまま）', G.dataVersion === '2026.11-4' && r.mode === 'current' && r.record.auto.at === 'cwinter-010' && r.record.slots.map((x) => x && x.at).join() === 'c26e-001,c02e-003-p8,c33a-002', r.mode);
 }
 
 section('最後のアウト');
