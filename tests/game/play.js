@@ -1540,6 +1540,49 @@ async function stageSwitching(browser, viewport) {
   await ctx2.close();
 }
 
+// 校正・校閲：分割した c24-013 を実際に送り、順序・選択肢への接続・途中からの再開・既読SKIP を確かめる。
+async function splitLinesInPlay(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  const size = viewport.width + '×' + viewport.height;
+  section('分割した表示単位（' + size + '）：c24-013');
+  const units = await page.evaluate(() => KIT_GAME.scenes['tsuyoshi-sighting'].lines.slice(-3).map((l) => ({ id: l.id, text: l.text })));
+  await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, 'c24-012']);
+  await resumeHere(page);
+  const base = await frameRects(page);
+  const seen = [];
+  let early = false;
+  for (const u of units) {
+    await advance(page);
+    const st = await show(page);
+    seen.push(st.lineId);
+    if (st.choices) early = true;
+    if (st.prose !== u.text || !fits(await layout(page))) seen.push('×' + u.id);
+    if (JSON.stringify(await frameRects(page)) !== JSON.stringify(base)) seen.push('枠が動いた');
+    await snap(page, 'split-' + u.id + '-' + viewport.width);
+  }
+  check('c24-012 から送ると、c24-013 → c24-013-2 → c24-013-3 の順に、改行どおりの本文が枠に収まって出る（本文枠は動かない）', seen.join() === units.map((u) => u.id).join(), seen.join());
+  check('分割の途中では選択肢を出さない', !early);
+  await advance(page);
+  const ch = await show(page);
+  check('c24-013-3 を読んだ後に、選択肢が出る', ch.choices && ch.lineId === 'c24-013-3' && ch.prose === units[2].text);
+  check('選択肢の表示中も本文枠は動かない', JSON.stringify(await frameRects(page)) === JSON.stringify(base));
+  // 足した行の途中から再開
+  await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, 'c24-013-2']);
+  await resumeHere(page);
+  const back = await show(page);
+  check('足した行（c24-013-2）の保存から、つづきからで同じ本文に戻る', back.lineId === 'c24-013-2' && back.prose === units[1].text && back.bg.includes('station-plaza-autumn'));
+  // 既読SKIP：一度読んだ区間は、分割した行も含めて選択肢まで送られる
+  await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, 'c24-012']);
+  await resumeHere(page);
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => KIT.s.choicesVisible || !KIT.s.skip_on, null, { timeout: 20000 }).catch(() => {});
+  const sk = await show(page);
+  check('既読SKIP は読んだ行（改行を入れた行・分割した行）を送り、選択肢で止まる', sk.choices && sk.lineId === 'c24-013-3', JSON.stringify(sk).slice(0, 160));
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1594,6 +1637,7 @@ async function main() {
     await expressionsBatch01(browser, SMALL_LANDSCAPE);
     await expressionsBatch01(browser, DESKTOP);
     for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await frameAndChoices(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await splitLinesInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await stageSwitching(browser, vp);
     await consistencyRoutes(browser, SMALL_LANDSCAPE);
     await consistencyRoutes(browser, DESKTOP);
