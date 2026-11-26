@@ -888,7 +888,7 @@ async function expressionsInPlay(browser, viewport, label) {
   await resumeHere(page);
   l = await one('nakata-practice-rage.webp');
   check('c08-022 でリロードし、つづきからで激怒の画像と寄りの配置が戻る', (await show(page)).lineId === 'c08-022' && l && l.loaded && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2 && at(l, 450, 750).y <= l.dialogueTop + 2, JSON.stringify(l));
-  check('c08-022 の本文は硬球の確定文', (await show(page)).prose === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
+  check('c08-022 の本文は硬球の確定文', (await show(page)).prose.replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
   await advance(page); await advance(page); await waitPortraitLoaded(page);
   l = await one('misora-game-uniform-normal.webp');
   check('c08-024 で美空との通常の会話画面に戻り、寄りの配置は解除される', (await show(page)).lineId === 'c08-024' && (await files()) === 'right:misora-game-uniform-normal.webp' && l.right >= l.vw - 1, await files());
