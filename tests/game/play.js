@@ -239,6 +239,7 @@ async function practicePlaythrough(browser, choiceIndex) {
     await readScene(sightingChoice.to);
     await readScene('tsuyoshi-end');
     await readScene('parents-and-press');
+    await readScene('winter-records');
     await readScene('second-scorebook');
     await readScene('tahara-and-komiya');
     const rookieChoice = G.scenes['tahara-and-komiya'].choices[choiceIndex];
@@ -781,7 +782,7 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
   check('分岐の終わり（' + branchEnd + '）は放課後のグラウンド', (await bgIs(page, 'hosho-field-afternoon')).ok);
   await advance(page);
   let r = await bgIs(page, 'hosho-field-bench');
-  check('合流（c26e-001）で鳳翔のベンチに切り替わる', (await show(page)).lineId === 'c26e-001' && r.ok, JSON.stringify(r.got));
+  check('合流（' + G.scenes['rookies-teirei'].lines[0].id + '）で鳳翔のベンチに切り替わる', (await show(page)).lineId === G.scenes['rookies-teirei'].lines[0].id && r.ok, JSON.stringify(r.got));
   check('合流の練習試合では立ち絵を出さない（既存の演出のまま）', (await portraitNow(page)).length === 0);
   await advanceToPicking(page, 'c26e-006', pick);
   await resumeHere(page);
@@ -1583,6 +1584,78 @@ async function splitLinesInPlay(browser, viewport) {
   await ctx.close();
 }
 
+// 時間経過・関係性の補強：追加した区間を実際に送り、本文枠・演出（背景・立ち絵・一枚絵）・途中からの再開・既読SKIP を確かめる。
+const shownNow = (page) => settled(page).then(() => page.evaluate(() => {
+  const m = /url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage);
+  const cg = document.querySelector('.kit-cg');
+  const ports = [...document.querySelectorAll('.kit-portrait img')];
+  return (m ? m[1].split('/').pop() : '') + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + ports.map((x) => x.getAttribute('src').split('/').pop()).join('+');
+}));
+async function addedSectionsInPlay(browser, viewport) {
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  const size = viewport.width + '×' + viewport.height;
+  section('追加した区間（' + size + '）：送り・演出・再開・既読SKIP');
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+  };
+  // [開始の行, 最後の行, 途中で再開する行, 名前]
+  const spans = [
+    ['c02e-003', 'c02e-010', 'c02e-003-p9', '5-2 給水の同級生（三浦・岡田）'],
+    ['c03-007', 'c03-009', 'c03-007-p2', '5-3 先輩から三浦への修正'],
+    ['c03-021', 'c03-022', 'c03-021-p2', '5-3 三浦の「次1つ」'],
+    ['c03-040', 'c03-043', 'c03-042-p3', '5-3 大山の投球（先輩捕手）'],
+    ['c14-002', 'c14-003', 'c14-002-p9', '5-14 北陵戦前の相手情報'],
+    ['c18-pre-m', 'c18-002', 'c18-001-p4', '5-18 清峰戦の終盤'],
+    ['c25-019', 'csecond-001', 'cwinter-010', '冬の章間（12月の記録）'],
+    ['c26-005', 'c26-008', 'c26-006-p4', '5-26 平野が先輩になる'],
+    ['c26e-001-p1', 'c26e-002', 'c26e-001-p16', '5-26 保護者の映像と新庄の記憶'],
+    ['c29a-001', 'c29a-003', 'c29a-001-p10', '5-29 中田の記録と武藤の記憶'],
+    ['c29d-000-p1', 'c29d-002', 'c29d-000-p3', '5-29 龍成の打者（大山）'],
+    ['c30-001', 'c30-002', 'c30-001-p6', '5-30 星浜戦前'],
+    ['c30-010', 'c30-010h', 'c30-010g-p2', '5-30 星浜の監督が見た田原'],
+    ['c30-025', 'c31a-001', 'c30-025-p8', '5-31 港南戦前（宿の食堂）'],
+    ['c32e-001', 'c32e-002', 'c32e-001-p8', '5-32 青岳戦前'],
+    ['c33a-001', 'c33a-004', 'c33a-001-p8', '5-33 決勝前'],
+  ];
+  let base = null;
+  for (const [from, to, mid, name] of spans) {
+    await goTo(from);
+    base = base || await frameRects(page);
+    const bad = [];
+    let midShown = null, midProse = null;
+    for (let i = 0; i < 60; i++) {
+      const st = await show(page);
+      if (st.choices) { bad.push('選択肢 ' + st.lineId); break; }
+      const want = await expectedShown(page, st.lineId);
+      const got = await shownNow(page);
+      if (want !== got) bad.push(st.lineId + ' 演出 ' + got + ' ≠ ' + want);
+      if (!fits(await layout(page))) bad.push(st.lineId + ' 見切れ');
+      if (JSON.stringify(await frameRects(page)) !== JSON.stringify(base)) bad.push(st.lineId + ' 本文枠');
+      if (st.lineId === mid) { midShown = got; midProse = st.prose; }
+      if (st.lineId === to) break;
+      await advance(page);
+    }
+    check(name + '：' + from + '〜' + to + ' を送ると、本文枠が動かず、本文が収まり、行ごとの背景・立ち絵・一枚絵が正しい', bad.length === 0 && midShown !== null, bad.slice(0, 3).join(' | '));
+    await goTo(mid);
+    const back = await show(page);
+    check(name + '：途中の ' + mid + ' から「つづきから」で同じ本文と演出に戻る', back.lineId === mid && back.prose === midProse && (await shownNow(page)) === midShown);
+  }
+  // 既読SKIP：読んだ冬の章間と給水の会話を送り抜ける（途中で止まらない）
+  for (const [from, past] of [['c25-019', 'csecond-002'], ['c02e-003', 'c02e-011']]) {
+    await goTo(from);
+    await clickText(page, '既読SKIP');
+    await page.waitForFunction((p) => { const ids = Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)); return ids.indexOf(KIT.s.lineId) >= ids.indexOf(p) || !KIT.s.skip_on; }, past, { timeout: 30000 }).catch(() => {});
+    const at = await show(page);
+    if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+    const ok = await page.evaluate(([a, p]) => { const ids = Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)); return ids.indexOf(a) >= ids.indexOf(p); }, [at.lineId, past]);
+    check('既読SKIP：' + from + ' から、読んだ追加区間を止まらずに ' + past + ' まで送る', ok, at.lineId);
+  }
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1638,6 +1711,7 @@ async function main() {
     await expressionsBatch01(browser, DESKTOP);
     for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await frameAndChoices(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await splitLinesInPlay(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await addedSectionsInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await stageSwitching(browser, vp);
     await consistencyRoutes(browser, SMALL_LANDSCAPE);
     await consistencyRoutes(browser, DESKTOP);
