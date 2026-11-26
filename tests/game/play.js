@@ -239,6 +239,7 @@ async function practicePlaythrough(browser, choiceIndex) {
     await readScene(sightingChoice.to);
     await readScene('tsuyoshi-end');
     await readScene('parents-and-press');
+    await readScene('winter-records');
     await readScene('second-scorebook');
     await readScene('tahara-and-komiya');
     const rookieChoice = G.scenes['tahara-and-komiya'].choices[choiceIndex];
@@ -781,7 +782,7 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
   check('分岐の終わり（' + branchEnd + '）は放課後のグラウンド', (await bgIs(page, 'hosho-field-afternoon')).ok);
   await advance(page);
   let r = await bgIs(page, 'hosho-field-bench');
-  check('合流（c26e-001）で鳳翔のベンチに切り替わる', (await show(page)).lineId === 'c26e-001' && r.ok, JSON.stringify(r.got));
+  check('合流（' + G.scenes['rookies-teirei'].lines[0].id + '）で鳳翔のベンチに切り替わる', (await show(page)).lineId === G.scenes['rookies-teirei'].lines[0].id && r.ok, JSON.stringify(r.got));
   check('合流の練習試合では立ち絵を出さない（既存の演出のまま）', (await portraitNow(page)).length === 0);
   await advanceToPicking(page, 'c26e-006', pick);
   await resumeHere(page);
