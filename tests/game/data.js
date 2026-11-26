@@ -577,9 +577,9 @@ section('時間経過・関係性・対戦相手の補強');
   // 冬の章間
   const win = G.scenes['winter-records'];
   check('冬の章間（12月の記録）が 5-25 と翌春の「二冊目」のあいだにある', win && G.scenes['parents-and-press'].next === 'winter-records' && win.next === 'second-scorebook' && /^12月/.test(win.lines[0].text));
-  check('冬の章間は部室で、立ち絵・一枚絵を出さない', win.lines.every((l) => { const st = V.stateAt(G, l.id); return st.bg === 'hosho-clubroom' && !st.cg && !st.portraits.left && !st.portraits.right; }));
+  check('冬の章間は部室（翌日の投内連係はグラウンド）で、立ち絵・一枚絵を出さない', win.lines.every((l) => { const st = V.stateAt(G, l.id); return st.bg === (Number(l.id.slice(-3)) >= 21 ? 'hosho-field-afternoon' : 'hosho-clubroom') && !st.cg && !st.portraits.left && !st.portraits.right; }));
   check('冬の章間：大山は礼を言わず、平野の守る日を把握し、平野はグラブを持って練習へ戻る',
-    !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.at(-2).text + win.lines.at(-1).text));
+    !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.find((l) => l.id === 'cwinter-019').text + win.lines.find((l) => l.id === 'cwinter-020').text));
   // 追加行は一枚絵の区間に入れない
   const added = order.filter((l) => /-p\d+$/.test(l.id) || /^cwinter-/.test(l.id));
   check('追加した行（' + added.length + '行）は、どれも一枚絵の区間に入っていない', added.every((l) => !V.stateAt(G, l.id).cg), added.filter((l) => V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
@@ -644,6 +644,26 @@ section('人物の判断と情報共有（選ばなかった経路でも、知�
   check('野球の情報交換の締めを、毎回美空へ戻さない（整理した行に監督・前髪の描写がない）', repeated.every((id) => !/監督|前髪/.test(t(id))), repeated.filter((id) => /監督|前髪/.test(t(id))).join(' '));
   check('プレーへの反応と自己都合が続く場面（c30-019〜c30-022）は残す', ['c30-019', 'c30-020', 'c30-021', 'c30-022'].every((id) => ln.has(id)));
   check('決勝前の会話は、質問への返答として情報が出る（全員が順番に述べない）', /\？$/.test(t('c33a-001-p2')) && ln.get('c33a-001-p3').speaker === 'hiyori' && /？$/.test(t('c33a-001-p5')) && !['c33a-001-p2','c33a-001-p3','c33a-001-p4','c33a-001-p5','c33a-001-p6','c33a-001-p7','c33a-001-p8','c33a-001-p9','c33a-001-p10','c33a-001-p11'].some((id) => ln.get(id).speaker === 'tahara'));
+}
+
+section('選手としての平野と、先輩の一歩');
+{
+  const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
+  const sceneOf = new Map(Object.entries(G.scenes).flatMap(([k, sc]) => sc.lines.map((l) => [l.id, k])));
+  const t = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
+  const ids = (a, b, pre) => Array.from({ length: b - a + 1 }, (_, i) => pre + String(a + i).padStart(3, '0'));
+  check('追加A：冬の章間の翌日、投内連係で平野が2塁に入り、大山の送球を受けて1塁へ回す（cwinter-021〜034）',
+    ids(21, 34, 'cwinter-').every((id) => sceneOf.get(id) === 'winter-records') && /投内連係/.test(t('cwinter-021')) && /2塁へは俺が入る/.test(t('cwinter-023')) && /球が来た/.test(t('cwinter-024')) && /1塁へ投げた/.test(t('cwinter-025')));
+  check('追加A：平野の短い言葉で、中学の失敗と反復が今の動きにつながる', ln.get('cwinter-028').speaker === 'hirano' && /中学/.test(t('cwinter-028')) && /毎日/.test(t('cwinter-028')));
+  check('追加A：大山は自分の都合で平野を指名し、その中に技術の評価がある（礼や励ましではない）',
+    ln.get('cwinter-030').speaker === 'oyama' && /平野にしとけ/.test(t('cwinter-030')) && /入る場所がずれねえ。投げやすい/.test(t('cwinter-032')) && /俺の練習/.test(t('cwinter-032')) && !/頑張|すごい|ありがと/.test(t('cwinter-030') + t('cwinter-032')));
+  check('追加A：翌日の投内連係はグラウンド、その後は翌春の部室（二冊目）へ進む', V.stateAt(G, 'cwinter-021').bg === 'hosho-field-afternoon' && V.stateAt(G, 'csecond-001').bg === 'hosho-clubroom' && G.scenes['winter-records'].next === 'second-scorebook');
+  check('追加B：北陵戦5回裏、前年の秋に北陵のエースに打ち取られた先輩の打席（c14-011-p3〜c14-012-p1）',
+    sceneOf.get('c14-011-p3') === 'regional-quarterfinal' && /5回裏、2アウト2塁/.test(t('c14-011-p3')) && /去年の秋/.test(t('c14-011-p3')) && /握り直した/.test(t('c14-011-p4')) && /肩/.test(t('c14-011-p4')));
+  check('追加B：美空は打順を確かめるだけで、「まあ、大丈夫でしょ」で話を終える（意図して励まさない）',
+    ln.get('c14-011-p6').speaker === 'misora' && /打順/.test(t('c14-011-p6')) && t('c14-011-p8') === 'まあ、大丈夫でしょ。' && /打順表に目を戻した/.test(t('c14-011-p9')));
+  check('追加B：先輩は「大丈夫」を自分への信頼と受け取るが、緊張は残る', ln.get('c14-011-p11').speaker === 'senpai' && /大丈夫だってよ。監督が/.test(t('c14-011-p11')) && /肩はまだ/.test(t('c14-011-p12')));
+  check('追加B：打席結果は既存のまま（外の球をライト前、1点を返す）。以前より踏み込んで右へ押し返す', /踏み込んで/.test(t('c14-011-p13')) && /ライト前に落ちた/.test(t('c14-012')) && /1点を返した/.test(t('c14-012')) && /ショートの正面/.test(t('c14-013')));
 }
 
 section('最後のアウト');
