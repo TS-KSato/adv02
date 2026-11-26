@@ -2733,7 +2733,8 @@ window.KIT_GAME = {
     { at: 'c07-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（外周50周）：左を明示して消す
     { at: 'c07-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（外周50周）：右を明示して消す
     { at: 'c07-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
-    { at: 'c07-006a', portrait: { slot: 'right', clear: true } },
+    { at: 'c07-006a', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 手を引いた監督は、取り繕った通常の顔に戻る（その場にいる）
+    { at: 'c07-007', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 中田が平野の前まで来て、2人のあいだに立つ（しかめ面）
     { at: 'c07-016', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
     { at: 'c07-017', portrait: { slot: 'left', char: 'nakata', expr: 'practice-bashful' } }, // 5-7：美空に褒められ、背筋を伸ばして名乗る中田（照れ笑い・立ち姿）
     { at: 'c07-017', portrait: { slot: 'right', clear: true } },
