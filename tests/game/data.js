@@ -785,7 +785,7 @@ check('驚きは c08-041〜c08-043 だけで、左の枠に出る', JSON.stringi
 check('激怒の区間は美空を出さず、c08-024 で美空に戻る', ['c08-021', 'c08-022', 'c08-023'].every((id) => !shownAt(id).includes('misora')) && shownAt('c08-024') === 'misora/game-uniform-normal');
 const lineText = (id) => allLines.find((l) => l.id === id).text;
 check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
-check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをかごに入れる音がした。'));
+check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをカゴに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
   (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock)|misora-game-uniform-flustered-chibi|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
 check('game.css の一枚絵の調整は、第2便の5枚だけを対象にする（新聞と新庄の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|c13-shinjo-daydream-dinner/.test(read('game.css')));
