@@ -666,6 +666,19 @@ section('選手としての平野と、先輩の一歩');
   check('追加B：打席結果は既存のまま（外の球をライト前、1点を返す）。以前より踏み込んで右へ押し返す', /踏み込んで/.test(t('c14-011-p13')) && /ライト前に落ちた/.test(t('c14-012')) && /1点を返した/.test(t('c14-012')) && /ショートの正面/.test(t('c14-013')));
 }
 
+section('主要人物の紹介');
+{
+  const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
+  const t = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
+  const order = Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => l.id));
+  const before = (a, b) => order.indexOf(a) < order.indexOf(b);
+  check('中田：名前が分かった直後に、3年で内野のレギュラーと紹介する', /3年で、内野のレギュラー/.test(t('c04-019-p1')) && before('c04-018', 'c04-019-p1') && before('c04-019-p1', 'c04-022'));
+  check('日和：初登場の直後に、平野と同じ1年のマネージャーと紹介する', /同じ1年のマネージャー/.test(t('c08b-001-p1')) && !/紅一点/.test(t('c08b-001-p1')));
+  check('佐々木：5-9 の両分岐それぞれで、初めて出る行の直後に上級生と紹介する（学年は決めない）',
+    G.scenes['hiyori-drinks'].lines.some((l) => l.id === 'c09d-002-p1') && G.scenes['hiyori-equipment'].lines.some((l) => l.id === 'c09t-004-p1') && /上級生/.test(t('c09d-002-p1')) && t('c09d-002-p1') === t('c09t-004-p1') && !/[23]年/.test(t('c09d-002-p1')));
+  check('厳は美空の父、野原は龍成の監督と分かる', /父の厳/.test(t('c17-007')) && /監督の野原/.test(t('c19-013')));
+}
+
 section('最後のアウト');
 const lastOut = G.scenes['last-out'];
 const lastOutDoc = read('docs/last-out-script.md').split('## 本文\n')[1].trim().split(/\n\n+/);
