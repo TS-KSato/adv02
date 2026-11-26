@@ -835,7 +835,7 @@ async function expressionsBatch01(browser, viewport) {
   for (const [first,last,after,file] of spans) {
     await resumeAt(first);
     let l = (await layoutNow(page)).find(x => x.file === file);
-    check(first + ': 再開で差分が読み込まれる', l && l.loaded && l.top >= -1, JSON.stringify(l));
+    check(first + ': 再開で差分が読み込まれる（描かれた頭は画面内）', l && l.loaded && l.top + (file === 'oyama-practice-angry.webp' ? 94 / 1280 * l.height : 0) >= -1, JSON.stringify(l));
     check(first + ': 本文と操作が画面内に収まる', fits(await layout(page)));
     await snap(page, 'batch01-' + first + '-' + viewport.width);
     await advanceTo(page,last);
@@ -1473,8 +1473,8 @@ async function stageSwitching(browser, viewport) {
     ['c02-001', '通常の背景の変更（朝のフェンス → 教室）'],
     ['c01-009', '通常画面 → 一枚絵（平野の朝練見学）'],
     ['c01-012', '一枚絵 → 通常画面'],
-    ['c10-015', '通常画面（立ち絵2人） → 一枚絵（河本）'],
-    ['c10-018', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
+    ['c10-015-p1', '通常画面（立ち絵2人） → 一枚絵（河本）'],
+    ['c10-016', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
     ['c15-008', '回想へ入る（試合中のベンチ → 廊下）'],
     ['c15-014', '回想から出る（廊下 → 試合中のベンチ）'],
   ];
