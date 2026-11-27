@@ -1,6 +1,6 @@
 // 『きみのための甲子園』の作品データ。冒頭から優勝エンド「本当の約束」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
-// 背景32枚と挿絵2枚、立ち絵48枚、一枚絵4枚。音素材は未登録。
+// 背景32枚と挿絵2枚、立ち絵48枚、一枚絵9枚。音素材は未登録。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
@@ -143,7 +143,12 @@ window.KIT_GAME = {
       // 第2便
       'hirano-field-visit-vision': { src: 'assets/cg/hirano-field-visit-vision.webp', title: '春のグラウンド' },
       'c16-sasaki-daydream-bride': { src: 'assets/cg/c16-sasaki-daydream-bride.webp', title: '一度だけの本塁打' },
+      'c20-misora-tears': { src: 'assets/cg/c20-misora-tears.webp', title: '一人の涙、別々の意味' },
+      'c24-tsuyoshi-looming': { src: 'assets/cg/c24-tsuyoshi-looming.webp', title: '剛の目撃' },
+      'c29h-misora-shadowed-smile': { src: 'assets/cg/c29h-misora-shadowed-smile.webp', title: '龍成との再戦' },
       'cbus-oyama-daydream-bride': { src: 'assets/cg/cbus-oyama-daydream-bride.webp', title: '行きのバス' },
+      'c35-misora-full-smile': { src: 'assets/cg/c35-misora-full-smile.webp', title: '公開求婚' },
+      'c36-ending-leap': { src: 'assets/cg/c36-ending-leap.webp', title: '本当の約束' },
     },
     bgm: {},
     ambience: {},
@@ -2747,6 +2752,7 @@ window.KIT_GAME = {
     { at: 'c07-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-hush' } }, // 場面の始まり（外周50周）：c06e-010 からの口止めを明示して続ける
     { at: 'c07-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
     { at: 'c07-006', portrait: { slot: 'left', char: 'nakata', expr: 'practice-confronting' } }, // 給水台から突っ込んでくる中田（〜c07-006a）
+    { at: 'c07-006', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 美空の動揺（c07-005）のあと、中田の突進を順に見せる：美空は通常の顔に戻る
     { at: 'c07-006a', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 手を引いた監督は、取り繕った通常の顔に戻る（その場にいる）
     { at: 'c07-007', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 中田が平野の前まで来て、2人のあいだに立つ（しかめ面）
     { at: 'c07-016', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
@@ -2991,7 +2997,7 @@ window.KIT_GAME = {
     { at: 'c29h-008', portrait: { slot: 'right', clear: true } }, // 試合の経過
     { at: 'c29h-009', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 伝令を止める野原
     { at: 'c29h-011', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 鳳翔ベンチ：予約控えをしまう監督
-    { at: 'c29h-013', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 龍成ベンチ：野原の読み
+    { at: 'c29h-012', portrait: { slot: 'right', clear: true } }, // 野原から見えた美空の笑み：一枚絵の区間（c29h-012〜c29h-013）は立ち絵を重ねない
     { at: 'c29i-001', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 勝利の経路：打順表を受け取る大山
     { at: 'c29i-004', portrait: { slot: 'right', clear: true } }, // 打球を追う（背景で進める）
     { at: 'c29j-001', portrait: { slot: 'right', clear: true } }, // 敗戦の経路：場面の始まり（勝利の経路の人物を残さない）
@@ -3098,19 +3104,26 @@ window.KIT_GAME = {
     { at: 'c35-014', portrait: { slot: 'right', clear: true } }, // （同じ）
     { at: 'c35-016', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // 帝嶺のベンチ前の新庄
     { at: 'c35-018', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // マイクを返し、美空のほうへ顎をしゃくる大山（美空の満面の笑みは差分がないので出さない）
+    { at: 'c35-019', portrait: { slot: 'right', clear: true } }, // 美空の満面の笑み：一枚絵の区間（c35-019〜c36-002）は立ち絵を重ねない
     { at: 'c36-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（本当の約束）：左を明示して消す
-    { at: 'c36-001', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // マイクを持つ監督へ一歩出る大山（前の場面から続けて明示）
-    { at: 'c36-002', portrait: { slot: 'right', clear: true } }, // 美空の宣言（大きな喜びの差分がないので出さない）
+    { at: 'c36-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり：満面の笑みの一枚絵（c35-019〜c36-002）が続くので立ち絵を重ねない（前の場面から続けて明示）
     { at: 'c36-010', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 応援席の厳
     { at: 'c36-012', portrait: { slot: 'left', clear: true } }, // ベンチへ戻る（大山の驚きは差分がないので出さない）
     { at: 'c36-013', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 応援席の厳（言葉に詰まる。厳の差分は通常のみ）
     { at: 'c36-019', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // ベンチの出口で平野のほうを向く日和
+    { at: 'c36-020', portrait: { slot: 'left', clear: true } }, // 幕切れの一枚絵（c36-020〜c36-021）は立ち絵を重ねない
     // 章間「新聞と記録」：一枚絵は区間内だけ表示する。
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
     // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
     { at: 'c01-009', cg: { id: 'hirano-field-visit-vision', until: 'c01-011' } }, // 5-1：朝練を見る平野の主観（c01-012 で解除）
     { at: 'c16-004', cg: { id: 'c16-sasaki-daydream-bride' } }, // 5-16：佐々木の妄想（この1行だけ。c16-004a で打席の通常画面へ）
+    { at: 'c20-004', cg: { id: 'c20-misora-tears', until: 'c20-005a' } }, // 5-20：美空の涙（c20-005b で夕日のベンチへ）。c20-004 は最初に本文枠を隠して絵を見せる（game-reveal.js）
+    { at: 'c24-011', cg: { id: 'c24-tsuyoshi-looming' } }, // 5-24：大山の目に映った剛（この1行だけ。c24-012 で広場へ）
+    { at: 'c29h-012', cg: { id: 'c29h-misora-shadowed-smile', until: 'c29h-013' } }, // 5-29：野原から見た美空の笑み（勝利 c29i-001・敗北 c29j-001 で解除）。c29h-012 は最初に本文枠を隠す
     { at: 'cbus-003a', cg: { id: 'cbus-oyama-daydream-bride' } }, // 行きのバス：大山（この1行だけ。cbus-004 で解除）
+    { at: 'c35-019', cg: { id: 'c35-misora-full-smile', until: 'c35-021' } }, // 公開求婚：美空の満面の笑み。c35-019 は最初に本文枠を隠す（game-reveal.js）
+    { at: 'c36-001', cg: { id: 'c35-misora-full-smile', until: 'c36-002' } }, // 同じ一枚絵を次の場面の c36-002（辞任宣言）まで続ける（キットは区間を場面の中に限るので2つに分ける。同じ画像なので切り替わらない）。c36-003 で解除
+    { at: 'c36-020', cg: { id: 'c36-ending-leap', until: 'c36-021' } }, // 幕切れ（最後の2行。本文枠は隠さない）
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。

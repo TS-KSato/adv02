@@ -77,7 +77,12 @@ const layout = (page) => settled(page).then(() => page.evaluate(() => {
 const fits = (f) => f.noHScroll && f.dialogueInside && f.proseInside && f.speakerInside && f.dialogueFits;
 
 // ----- 操作（実際のクリック・キー） -----
-const advance = (page) => page.click('.kit-dialogue');
+// 一枚絵の導入で本文枠を隠している行（game-reveal.js）では、プレイヤーと同じく、まず1回の入力で本文枠を戻してから送る
+const advance = async (page) => {
+  await page.waitForFunction(() => !window.GAME_REVEAL || GAME_REVEAL.phase !== 'waiting', null, { timeout: 10000 }).catch(() => {});
+  if (await page.evaluate(() => !!window.GAME_REVEAL && GAME_REVEAL.phase === 'hidden')) await page.evaluate(() => KIT.next());
+  return page.click('.kit-dialogue');
+};
 const clickText = (page, name) => page.getByRole('button', { name, exact: true }).click();
 const waitFull = (page, text) => page.waitForFunction((t) => document.querySelector('.kit-prose').textContent === t, text, { timeout: 8000 });
 const snap = async (page, name) => {
@@ -827,7 +832,7 @@ async function expressionsBatch01(browser, viewport) {
   const spans = [
     ['c06e-004a','c06e-005','c06e-006','misora-game-uniform-pale.webp'],
     ['c06e-006','c06e-007','c06e-008','misora-game-uniform-angry.webp'],
-    ['c07-005','c07-006','c07-006a','misora-game-uniform-flustered-chibi.webp'],
+    ['c07-005','c07-005','c07-006','misora-game-uniform-flustered-chibi.webp'],
     ['c07-016','c07-016','c07-017','misora-game-uniform-flustered-chibi.webp'],
     ['c10-020','c10-022','c10-023','kawamoto-casual-shock.webp'],
     ['c10-022','c10-027','c10-028','oyama-practice-angry.webp'],
@@ -945,11 +950,15 @@ async function expressionsInPlay(browser, viewport, label) {
 
   // 5-7：c07-005〜c07-006（美空の動揺。中田は給水台から叫んで突っ込んでくる）→ c07-006a（美空が手を引いて通常の顔）
   // → c07-007〜c07-015（中田が2人のあいだに立つ）→ c07-016（美空の動揺、中田は残る）→ c07-017〜c07-018（照れ笑い・立ち姿の全身）
-  check('5-7 c07-005 は美空の動揺デフォルメ（中田はまだ給水台から叫んでいる段階）', await resumeAt('c07-005') && await files() === 'right:misora-game-uniform-flustered-chibi.webp', await files());
+  check('5-7 c07-005 は美空の動揺（半デフォルメ版。中田はまだ給水台から叫んでいる段階）', await resumeAt('c07-005') && await files() === 'right:misora-game-uniform-flustered-chibi.webp', await files());
   let c = await one('misora-game-uniform-flustered-chibi.webp');
-  check('動揺デフォルメ：アイコンのように縮めず、顔（元画像の上から約560pxまで）が本文枠の上で読める大きさ',
-    c && (small ? c.height >= c.vh * 0.9 : c.height >= c.vh * 0.75) && at(c, 430, 560).y <= c.dialogueTop + 2 && at(c, 430, 180).y >= 0, JSON.stringify(c));
-  check('動揺デフォルメ：屋根の上などに浮かせず、足元は本文枠の後ろか画面の下', c && at(c, 430, 1160).y >= c.dialogueTop - 2, JSON.stringify(c));
+  check('動揺（半デフォルメ版）：帽子（元画像の上から約75px）は画面内で、顔と顎（約420pxまで）が本文枠の上にある', c && at(c, 430, 420).y <= c.dialogueTop + 2 && at(c, 430, 75).y >= 0, JSON.stringify(c));
+  check('動揺（半デフォルメ版）：浮かせず、足元（約1260px）は本文枠の後ろか画面の下', c && at(c, 430, 1260).y >= c.dialogueTop - 2, JSON.stringify(c));
+  await advance(page); await waitPortraitLoaded(page);
+  check('c07-006 で美空は通常の顔に戻り、左に中田の突進が出る（動揺 → 突進の順）', (await show(page)).lineId === 'c07-006' && (await files()) === 'left:nakata-practice-confronting.webp,right:misora-game-uniform-normal.webp', await files());
+  const mn = await one('misora-game-uniform-normal.webp');
+  // 肩幅：半デフォルメ版は元画像で約 360px（x 540〜900 のうち描かれた肩）、通常の美空は約 320px。見かけの肩の大きさをそろえる
+  check('動揺（半デフォルメ版）は、通常の美空と肩の見かけの大きさがそろう（比 0.8〜1.25）、同じ右の位置', c && mn && (c.height * 360) / (mn.height * 320) >= 0.8 && (c.height * 360) / (mn.height * 320) <= 1.25 && Math.abs((c.left + c.right) / 2 - (mn.left + mn.right) / 2) < c.vw * 0.15, JSON.stringify({ c: c && c.height, n: mn && mn.height }));
   await advanceTo(page, 'c07-006a'); await waitPortraitLoaded(page);
   m = await one('misora-game-uniform-normal.webp');
   check('c07-006a で美空は通常の顔に戻り、通常の美空と同じ右の位置にいる（左は中田の突進）', (await files()) === 'left:nakata-practice-confronting.webp,right:misora-game-uniform-normal.webp' && c && m && Math.abs((c.left + c.right) / 2 - (m.left + m.right) / 2) < c.vw * 0.15, await files());
@@ -1081,7 +1090,7 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   await clickText(page, 'CG鑑賞');
   const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), text: b.textContent })));
   const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
-  check('CG 鑑賞の項目は4枚（佐々木の花嫁を含む）だけで、削除した4枚の項目は出ない', cards.length === 4 && JSON.stringify(ids.slice().sort()) === JSON.stringify(['c16-sasaki-daydream-bride', 'cbus-oyama-daydream-bride', 'cnews-oyama-tears-newspaper', 'hirano-field-visit-vision']), JSON.stringify(cards));
+  check('CG 鑑賞の項目は9枚（第5便を含む）だけで、削除した4枚の項目は出ない', cards.length === 9 && JSON.stringify(ids.slice().sort()) === JSON.stringify(['c16-sasaki-daydream-bride', 'c20-misora-tears', 'c24-tsuyoshi-looming', 'c29h-misora-shadowed-smile', 'c35-misora-full-smile', 'c36-ending-leap', 'cbus-oyama-daydream-bride', 'cnews-oyama-tears-newspaper', 'hirano-field-visit-vision']), JSON.stringify(cards));
   check('通った場面の一枚絵（平野の朝練見学・大山の白無垢）は解放されている', ALL.every((id) => cards[ids.indexOf(id)] && cards[ids.indexOf(id)].open), JSON.stringify(cards));
   await snap(page, 'cg-batch02-' + viewport.width + '-' + pick);
   // 新聞の一枚絵（表情第1便）も、縮小・余白なしで画面全体を覆う
@@ -1841,7 +1850,7 @@ async function removedCgFlow(browser, viewport) {
   await page.waitForFunction(() => KIT.s.screen === 'title');
   await clickText(page, 'CG鑑賞');
   const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), img: b.querySelector('img') ? b.querySelector('img').getAttribute('src') : '' })));
-  check('CG 鑑賞は4項目で、壊れた項目・削除した画像への参照がない', cards.length === 4 && !cards.some((c) => REMOVED.some((id) => c.img.includes(id))), JSON.stringify(cards));
+  check('CG 鑑賞は9項目で、壊れた項目・削除した画像への参照がない', cards.length === 9 && !cards.some((c) => REMOVED.some((id) => c.img.includes(id))), JSON.stringify(cards));
   await clickText(page, '閉じる');
 
   section('既読SKIP（' + size + '）');
@@ -1945,7 +1954,7 @@ async function batch03InPlay(browser, viewport) {
   await goTo('c06e-009');
   const expected = {
     'c06e-009': '', 'c06e-010': 'R:misora-game-uniform-hush', 'c07-001': 'R:misora-game-uniform-hush', 'c07-004': 'R:misora-game-uniform-hush',
-    'c07-005': 'R:misora-game-uniform-flustered-chibi', 'c07-006': 'L:nakata-practice-confronting,R:misora-game-uniform-flustered-chibi',
+    'c07-005': 'R:misora-game-uniform-flustered-chibi', 'c07-006': 'L:nakata-practice-confronting,R:misora-game-uniform-normal',
     'c07-006a': 'L:nakata-practice-confronting,R:misora-game-uniform-normal', 'c07-007': 'L:nakata-practice-normal,R:misora-game-uniform-normal',
     'c07-016': 'L:nakata-practice-normal,R:misora-game-uniform-flustered-chibi', 'c07-017': 'L:nakata-practice-bashful', 'c07-018': 'L:nakata-practice-bashful',
   };
@@ -2156,8 +2165,185 @@ async function sasakiDaydreamFlow(browser, viewport) {
   const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), text: b.getAttribute('aria-label') || '' })));
   const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
   const i16 = ids.indexOf('c16-sasaki-daydream-bride');
-  check('CG 鑑賞は4項目で、佐々木の花嫁は「一度だけの本塁打」として解放済み。陶酔の差分は項目にない', cards.length === 4 && i16 >= 0 && cards[i16].open && /一度だけの本塁打/.test(cards[i16].text) && !ids.some((x) => /daydream$/.test(x) && /sasaki-game/.test(x)), JSON.stringify(cards));
+  check('CG 鑑賞は9項目で、佐々木の花嫁は「一度だけの本塁打」として解放済み。陶酔の差分は項目にない', cards.length === 9 && i16 >= 0 && cards[i16].open && /一度だけの本塁打/.test(cards[i16].text) && !ids.some((x) => /daydream$/.test(x) && /sasaki-game/.test(x)), JSON.stringify(cards));
   await clickText(page, '閉じる');
+  await ctx.close();
+}
+
+// 第5便（docs/ui-frame.md、docs/cg-staging.md）：一枚絵の導入で本文枠を一時的に隠す演出（game-reveal.js）。
+// c20-004・c29h-012・c35-019 で「本文枠なし → 同じ行の本文枠あり → 次の行」の順になること、AUTO・既読SKIP・再開・タイトル往復・
+// 画面サイズの変更・読み込み失敗でも隠れたままにならないこと、本文枠と操作ボタンの位置・大きさが変わらないことを確かめる。
+async function revealFlow(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  await settled(page);
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+  };
+  const st = () => page.evaluate(() => {
+    const R = (e) => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map((v) => Math.round(v * 10) / 10).join(','); };
+    const d = document.querySelector('.kit-dialogue');
+    const cg = document.querySelector('.kit-cg');
+    const line = Object.values(KIT_GAME.scenes).flatMap((s) => s.lines).find((l) => l.id === KIT.s.lineId);
+    return { line: KIT.s.lineId, phase: GAME_REVEAL.phase, timer: !!GAME_REVEAL.timer, hidden: getComputedStyle(d).visibility === 'hidden', sceneHidden: getComputedStyle(document.querySelector('.kit-scene')).visibility === 'hidden',
+      prose: document.querySelector('.kit-prose').textContent, text: line.text, seen: KIT.s.seen.has(line.id + '#' + KitValidate.hashLine(line)),
+      cg: cg.hidden ? '' : cg.getAttribute('src').split('/').pop(), ports: document.querySelectorAll('.kit-portrait img').length,
+      frame: R(d), bar: [...document.querySelectorAll('.kit-bar .kit-btn, .kit-bar .kit-sound')].map(R).join('|'), page: document.querySelector('.kit-page').textContent };
+  });
+  const waitPhase = (ph) => page.waitForFunction((p) => GAME_REVEAL.phase === p, ph, { timeout: 10000 }).catch(() => {});
+  const tapPicture = () => page.mouse.click(Math.round(viewport.width / 2), Math.round(viewport.height * 0.3));
+  const targets = [['c20-003', 'c20-004', 'c20-005', 'c20-misora-tears.webp', '涙'], ['c29h-011', 'c29h-012', 'c29h-013', 'c29h-misora-shadowed-smile.webp', '影の笑み'], ['c35-018', 'c35-019', 'c35-020', 'c35-misora-full-smile.webp', '満面の笑み']];
+  for (const [prev, at, after, file, name] of targets) {
+    section('本文枠を隠す演出：' + name + '（' + size + '）');
+    await goTo(prev);
+    const before = await st();
+    await advance(page);
+    await waitPhase('hidden');
+    const h = await st();
+    check(name + '：' + at + ' で一枚絵の準備ができてから、本文枠・話者名・「タップで進む」・場面名の札を隠す（立ち絵は重ねない）', h.line === at && h.phase === 'hidden' && h.hidden && h.sceneHidden && h.cg === file && h.ports === 0, JSON.stringify(h));
+    check(name + '：本文枠を隠している間は本文を出さず、既読にもしない', h.prose !== h.text && !h.seen, JSON.stringify({ prose: h.prose.slice(0, 20), seen: h.seen }));
+    check(name + '：本文枠を隠しても、本文枠と操作ボタンの位置・大きさは変わらない', h.frame === before.frame && h.bar === before.bar, before.frame + ' / ' + h.frame);
+    await snap(page, 'reveal-' + viewport.width + '-' + at + '-hidden');
+    await tapPicture();
+    await page.waitForTimeout(100);
+    const v = await st();
+    check(name + '：絵をタップすると、同じ行（' + at + '）の本文枠を戻して本文を表示し、次の行へは進まない', v.line === at && v.phase === 'none' && !v.hidden && !v.sceneHidden && v.prose === v.text && v.seen && v.cg === file && v.frame === before.frame, JSON.stringify(v));
+    await snap(page, 'reveal-' + viewport.width + '-' + at + '-shown');
+    await advance(page); await settled(page);
+    const n = await st();
+    check(name + '：次の送りで ' + after + ' へ進み、同じ一枚絵の2行目では本文枠を隠さない', n.line === after && n.phase === 'none' && !n.hidden && n.cg === file && n.prose === n.text, JSON.stringify(n));
+  }
+  section('本文枠を隠す演出：キー・AUTO・既読SKIP・再開（' + size + '）');
+  // 送りキー（Space）でも本文枠を戻すだけ
+  await goTo('c20-003'); await advance(page); await waitPhase('hidden');
+  await page.keyboard.press('Space'); await page.waitForTimeout(80);
+  let k = await st();
+  check('送りキー（Space）でも、同じ行の本文枠を戻すだけで次へ進まない', k.line === 'c20-004' && k.phase === 'none' && k.prose === k.text, JSON.stringify(k));
+  // AUTO：絵が出てから約1秒で本文枠を戻し、そのあと AUTO の待ち時間で次の行へ
+  await goTo('c29h-011');
+  await clickText(page, 'AUTO');
+  await page.waitForFunction(() => KIT.s.lineId === 'c29h-012', null, { timeout: 15000 });
+  await waitPhase('hidden');
+  const t0 = Date.now();
+  check('AUTO：本文枠を隠している間は次の行へ進まない', (await st()).line === 'c29h-012');
+  await waitPhase('none');
+  const dt = Date.now() - t0;
+  check('AUTO：絵が出てから約1秒で、同じ行の本文枠を戻す', dt >= 800 && dt <= 1600 && (await st()).line === 'c29h-012' && (await st()).prose === (await st()).text, String(dt));
+  await page.waitForFunction(() => KIT.s.lineId === 'c29h-013', null, { timeout: 8000 }).catch(() => {});
+  check('AUTO：本文を表示したあと、既存の待ち時間で次の行（c29h-013）へ進む（2行目は隠さない）', (await st()).line === 'c29h-013' && (await st()).phase === 'none');
+  await clickText(page, 'AUTO');
+  // AUTO 中に手で先に戻すと、残ったタイマーを取り消す
+  await goTo('c35-018');
+  await clickText(page, 'AUTO');
+  await page.waitForFunction(() => KIT.s.lineId === 'c35-019', null, { timeout: 15000 });
+  await waitPhase('hidden');
+  await tapPicture(); await page.waitForTimeout(60);
+  k = await st();
+  check('AUTO 中に手で先に本文枠を戻すと、演出のタイマーは残らない', k.line === 'c35-019' && k.phase === 'none' && !k.timer && k.prose === k.text, JSON.stringify(k));
+  await clickText(page, 'AUTO');
+  // AUTO を切っても隠れたままにならない（タップで戻せる）
+  await goTo('c20-003');
+  await clickText(page, 'AUTO');
+  await page.waitForFunction(() => KIT.s.lineId === 'c20-004', null, { timeout: 15000 });
+  await waitPhase('hidden');
+  await clickText(page, 'AUTO');
+  k = await st();
+  check('隠している間に AUTO を切ると、演出のタイマーを取り消し、隠したまま待つ', k.phase === 'hidden' && !k.timer, JSON.stringify(k));
+  await tapPicture(); await page.waitForTimeout(60);
+  check('AUTO を切ったあとも、タップで本文枠を戻せる（操作不能にならない）', (await st()).phase === 'none' && (await st()).prose === (await st()).text);
+  // 既読SKIP：読んだ c20-003〜c20-005 を送り抜けても一拍を挟まない
+  await goTo('c20-003');
+  await page.evaluate(() => { window.__ph = []; const tick = () => { if (GAME_REVEAL.phase !== 'none' && !window.__ph.includes(KIT.s.lineId + ':' + GAME_REVEAL.phase)) window.__ph.push(KIT.s.lineId + ':' + GAME_REVEAL.phase); if (window.__phOn !== false) requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
+  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+  await settled(page); await page.waitForTimeout(150);
+  const ph = await page.evaluate(() => window.__ph);
+  k = await st();
+  const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+  check('既読SKIP：既読の対象行（c20-004）では一拍を省き、隠した状態・タイマーを後の行に残さない', ph.length === 0 && order.indexOf(k.line) > order.indexOf('c20-005') && k.phase === 'none' && !k.hidden && !k.timer, ph.join(' ') + ' ' + k.line);
+  // 未読で止まったときは通常の送りと同じ（c35-019 は AUTO・タップで既読になったので、c36 側では未確認。ここでは新しい記録で確かめる）
+  await page.evaluate((key) => { const raw = JSON.parse(localStorage.getItem(key)); raw.seen = raw.seen.filter((x) => !x.startsWith('c29h-012#')); localStorage.setItem(key, JSON.stringify(raw)); }, SAVE_KEY);
+  await goTo('c29h-010');
+  await advance(page); await settled(page);
+  await clickText(page, '既読SKIP');
+  await waitPhase('hidden');
+  k = await st();
+  check('既読SKIP が未読の対象行（c29h-012）で止まったときは、通常の送りと同じく本文枠を隠して絵を見せる', k.line === 'c29h-012' && k.phase === 'hidden' && !(await page.evaluate(() => KIT.s.skip_on)), JSON.stringify(k));
+  // 隠している間に保存してリロード → つづきからは本文が読める状態
+  await resumeHere(page);
+  k = await st();
+  check('隠している間の保存からも、つづきからは本文枠が見える状態で再開する（一拍を繰り返さない）', k.line === 'c29h-012' && k.phase === 'none' && !k.hidden && k.prose === k.text && k.cg === 'c29h-misora-shadowed-smile.webp', JSON.stringify(k));
+  // タイトルへ往復しても、隠した状態を残さない
+  await goTo('c35-018'); await advance(page); await waitPhase('hidden');
+  await clickText(page, 'タイトル');
+  await page.waitForFunction(() => KIT.s.screen === 'title');
+  k = await st();
+  check('隠している間にタイトルへ戻ると、隠した状態・タイマーを残さない', k.phase === 'none' && !k.timer && !(await page.evaluate(() => document.querySelector('.kit-play').classList.contains('game-reveal-hidden'))), JSON.stringify(k));
+  await clickText(page, 'つづきから');
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  await settled(page);
+  k = await st();
+  check('タイトルから「つづきから」で、同じ行を本文枠が見える状態で再開する', k.line === 'c35-019' && k.phase === 'none' && !k.hidden && k.prose === k.text, JSON.stringify(k));
+  // 画面サイズを変えても、本文枠の位置・大きさは通常どおりで、タップで戻せる
+  await goTo('c20-003'); await advance(page); await waitPhase('hidden');
+  await page.setViewportSize({ width: viewport.height, height: viewport.width });
+  await page.waitForTimeout(150);
+  await page.setViewportSize(viewport);
+  await page.waitForTimeout(150);
+  await tapPicture(); await page.waitForTimeout(80);
+  k = await st();
+  check('隠している間に画面を回転して戻しても、タップで同じ行の本文枠を戻せる', k.line === 'c20-004' && k.phase === 'none' && k.prose === k.text && !(await page.evaluate(() => KIT.s.rotated)), JSON.stringify(k));
+  // 剛（c24-011）と幕切れ（c36-020）は本文枠を隠さない。幕切れは結末の処理を妨げず、タイトルへ移ったあとに画像を残さない
+  await goTo('c24-010'); await advance(page); await settled(page);
+  k = await st();
+  check('剛（c24-011）は本文枠を隠さずに一枚絵を出す', k.line === 'c24-011' && k.phase === 'none' && !k.hidden && k.cg === 'c24-tsuyoshi-looming.webp' && k.prose === k.text, JSON.stringify(k));
+  await advance(page); await settled(page);
+  check('剛：c24-012 で広場の通常画面へ戻る', (await st()).cg === '' && (await st()).line === 'c24-012');
+  await goTo('c36-019'); await advance(page); await settled(page);
+  k = await st();
+  check('幕切れ（c36-020）は一拍を足さず、最後の台詞と絵を同時に出す', k.line === 'c36-020' && k.phase === 'none' && !k.hidden && k.cg === 'c36-ending-leap.webp' && k.prose === k.text && k.ports === 0, JSON.stringify(k));
+  await advance(page); await settled(page);
+  check('幕切れ：最後の行（c36-021）まで同じ絵', (await st()).line === 'c36-021' && (await st()).cg === 'c36-ending-leap.webp');
+  await snap(page, 'reveal-' + viewport.width + '-c36-021');
+  await advance(page);
+  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 8000 }).catch(() => {});
+  k = await st();
+  check('結末のあとタイトルへ移り、一枚絵と演出の状態を残さない', (await page.evaluate(() => KIT.s.screen)) === 'title' && k.cg === '' && k.phase === 'none', JSON.stringify(k));
+  // CG 鑑賞：9枚。ここで通った一枚絵は解放されている
+  await clickText(page, 'CG鑑賞');
+  const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => (b.classList.contains('locked') ? '-' : '+') + b.getAttribute('aria-label')));
+  check('CG 鑑賞は9項目で、通った第5便の一枚絵（涙・剛・影の笑み・満面の笑み・幕切れ）は解放されている', cards.length === 9 && ['一人の涙、別々の意味', '剛の目撃', '龍成との再戦', '公開求婚', '本当の約束'].every((t) => cards.includes('+' + t)), cards.join(' '));
+  await clickText(page, '閉じる');
+  await ctx.close();
+}
+
+// 一枚絵の読み込みに失敗しても、本文枠を隠したままにせず、本文を読んで進める（1つの画面サイズで確かめる）
+async function revealLoadFailure(browser) {
+  section('本文枠を隠す演出：一枚絵の読み込みに失敗したとき');
+  const ctx = await browser.newContext({ viewport: DESKTOP });
+  await ctx.route(/c20-misora-tears\.webp/, (route) => route.abort());
+  const page = await ctx.newPage();
+  page.on('pageerror', (e) => ERRORS.push('pageerror: ' + e.message));
+  await page.goto(BASE + 'index.html');
+  await page.waitForFunction(() => window.KIT && window.KIT.s);
+  await page.evaluate(() => { KIT.s.speed = 0; });
+  await clickText(page, 'はじめから');
+  await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, 'c20-003']);
+  await page.reload();
+  await page.waitForFunction(() => window.KIT && window.KIT.s);
+  await clickText(page, 'つづきから');
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  await page.evaluate(() => { KIT.s.speed = 0; });
+  await page.click('.kit-dialogue');
+  await page.waitForFunction(() => KIT.s.lineId === 'c20-004' && GAME_REVEAL.phase === 'none' && !KIT_STAGE.pending, null, { timeout: 10000 }).catch(() => {});
+  const k = await page.evaluate(() => ({ line: KIT.s.lineId, phase: GAME_REVEAL.phase, vis: getComputedStyle(document.querySelector('.kit-dialogue')).visibility, prose: document.querySelector('.kit-prose').textContent, errors: KIT_STAGE.errors.length }));
+  check('読み込みに失敗したら、一拍を省いて本文を表示し、本文枠を隠したままにしない', k.line === 'c20-004' && k.phase === 'none' && k.vis === 'visible' && k.prose.length > 0 && k.errors > 0, JSON.stringify(k));
+  await page.click('.kit-dialogue');
+  check('読み込みに失敗したあとも、次の行へ進める', (await page.evaluate(() => KIT.s.lineId)) === 'c20-005');
   await ctx.close();
 }
 
@@ -2210,6 +2396,8 @@ async function main() {
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await removedCgFlow(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await placementFlowInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await sasakiDaydreamFlow(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await revealFlow(browser, vp);
+    await revealLoadFailure(browser);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
