@@ -1032,17 +1032,13 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   };
   const waitCg = () => page.waitForFunction(() => { const c = document.querySelector('.kit-cg'); return c.hidden || (c.complete && c.naturalWidth > 0); }, null, { timeout: 8000 });
   const gallery = () => page.evaluate(() => ({ ...KIT.s.gallery }));
-  const ALL = ['hirano-field-visit-vision', 'c10-kawamoto-daydream-embrace', 'c13-shinjo-daydream-dinner', 'cbus-oyama-daydream-bride', 'c26a-tahara-daydream-home', 'c26b-komiya-daydream-hand'];
+  const ALL = ['hirano-field-visit-vision', 'cbus-oyama-daydream-bride'];
   check('はじめの時点で、第2便の一枚絵はどれも未解放', Object.keys(await gallery()).filter((k) => ALL.includes(k)).length === 0, JSON.stringify(await gallery()));
   // [直前の行, 開始, 途中, 末尾, 解除の行, 画像, 解除後の立ち絵, 重要部分（画像内の割合）, 名前]
   const spans = [
     ['c01-008', 'c01-009', 'c01-010', 'c01-011', 'c01-012', 'hirano-field-visit-vision.webp', '', [[0.93, 0.8, 'グラブと球']], '平野の朝練見学'],
-    ['c10-015', 'c10-015-p1', 'c10-015-p1', 'c10-015-p1', 'c10-016', 'c10-kawamoto-daydream-embrace.webp', 'left:misora-game-uniform-normal.webp,right:kawamoto-casual-normal.webp', [[0.31, 0.85, '美空の浮いた足'], [0.58, 0.4, '抱き止める姿']], '河本'],
-    ['c13-020', 'c13-021', 'c13-022', 'c13-022', 'c13-023', 'c13-shinjo-daydream-dinner.webp', '', [[0.52, 0.43, '乾杯するグラス'], [0.28, 0.27, '美空の顔'], [0.63, 0.27, '新庄の顔']], '新庄'],
     ['cbus-003', 'cbus-003a', 'cbus-003a', 'cbus-003a', 'cbus-004', 'cbus-oyama-daydream-bride.webp', '', [[0.48, 0.33, '美空の顔'], [0.33, 0.2, '綿帽子']], '大山'],
   ];
-  if (pick === 0) spans.push(['c26a-007', 'c26a-008', 'c26a-008', 'c26a-008', 'c26a-009', 'c26a-tahara-daydream-home.webp', '', [[0.62, 0.84, '食卓の料理'], [0.67, 0.53, '皿を運ぶ美空']], '田原']);
-  else spans.push(['c26b-007', 'c26b-008', 'c26b-008', 'c26b-008', 'c26b-008a', 'c26b-komiya-daydream-hand.webp', '', [[0.5, 0.8, 'つないだ手'], [0.48, 0.24, '振り返る美空']], '小宮']);
   for (const [before, start, mid, end, release, file, after, points, name] of spans) {
     await resumeAt(before);
     check(name + '：直前（' + before + '）は一枚絵なし', (await cgNow(page)) === null);
@@ -1073,21 +1069,18 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
     const pd = await plainDialogue(page);
     check(name + '：一枚絵の前・表示中・解除後で、本文枠の位置と大きさと下地が同じ', pd.rect === frameBefore && frameDuring === frameBefore && pd.bg === 'rgba(12, 12, 18, 0.82)' && pd.bgDuring === undefined, frameBefore + ' / ' + frameDuring + ' / ' + pd.rect);
   }
-  // 5-26 の分岐：選んだ側だけを解放し、合流後も残さない
-  const other = pick === 0 ? 'c26b-komiya-daydream-hand' : 'c26a-tahara-daydream-home';
-  const mine = pick === 0 ? 'c26a-tahara-daydream-home' : 'c26b-komiya-daydream-hand';
+  // 5-26 の分岐（選んだ側）を通っても一枚絵は出ず、CG 鑑賞は残す3枚だけ
+  await resumeAt(await page.evaluate(() => KIT_GAME.scenes['tahara-and-komiya'].lines.at(-1).id));
   await advanceToPicking(page, 'c26e-001', pick);
-  const g = await gallery();
-  check('5-26 合流（c26e-001）：一枚絵は残らない', (await cgNow(page)) === null);
-  check('5-26：選んだ側の一枚絵（' + mine + '）だけが解放され、選ばなかった側（' + other + '）は未解放', !!g[mine] && !g[other], JSON.stringify(g));
+  check('5-26 合流（c26e-001）まで進んでも一枚絵は出ない', (await cgNow(page)) === null);
   await advanceToPicking(page, 'c27-001', pick);
-  check('5-27 へ進んでも、選ばなかった側の一枚絵は未解放のまま', !(await gallery())[other]);
   await clickText(page, 'タイトル');
   await page.waitForFunction(() => KIT.s.screen === 'title');
   await clickText(page, 'CG鑑賞');
-  const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => !b.classList.contains('locked')));
+  const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), text: b.textContent })));
   const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
-  check('CG 鑑賞：7枚のうち、選ばなかった分岐の一枚絵（' + other + '）だけが鍵のまま', cards.length === 7 && cards.filter(Boolean).length === 6 && cards[ids.indexOf(other)] === false, JSON.stringify(cards));
+  check('CG 鑑賞の項目は残す3枚だけで、削除した4枚の項目は出ない', cards.length === 3 && JSON.stringify(ids.slice().sort()) === JSON.stringify(['cbus-oyama-daydream-bride', 'cnews-oyama-tears-newspaper', 'hirano-field-visit-vision']), JSON.stringify(cards));
+  check('通った場面の一枚絵（平野の朝練見学・大山の白無垢）は解放されている', ALL.every((id) => cards[ids.indexOf(id)] && cards[ids.indexOf(id)].open), JSON.stringify(cards));
   await snap(page, 'cg-batch02-' + viewport.width + '-' + pick);
   // 新聞の一枚絵（表情第1便）も、縮小・余白なしで画面全体を覆う
   await resumeAt('cnews-011'); await waitCg();
@@ -1476,8 +1469,8 @@ async function stageSwitching(browser, viewport) {
     ['c02-001', '通常の背景の変更（朝のフェンス → 教室）'],
     ['c01-009', '通常画面 → 一枚絵（平野の朝練見学）'],
     ['c01-012', '一枚絵 → 通常画面'],
-    ['c10-015-p1', '通常画面（立ち絵2人） → 一枚絵（河本）'],
-    ['c10-016', '一枚絵 → 通常画面（監督と河本の立ち絵が戻る）'],
+    ['cbus-003a', '通常画面 → 一枚絵（大山の白無垢）'],
+    ['cbus-004', '一枚絵 → 通常画面（バスの車内）'],
     ['c15-008', '回想へ入る（試合中のベンチ → 廊下）'],
     ['c15-014', '回想から出る（廊下 → 試合中のベンチ）'],
   ];
@@ -1757,65 +1750,113 @@ async function portraitAuditInPlay(browser, viewport) {
   await ctx.close();
 }
 
-// 5-10：河本の妄想の一枚絵。現実の「そう。おめでとう。」→ 河本の受け取り方（一枚絵）→ 切り抜きを入れる現実へ戻る、の流れを
-// 実際に送り、毎フレームの表示を記録して、一枚絵が c10-015-p1 の間だけ出ることを確かめる。つづきからと既読SKIP でも同じ。
-async function kawamotoCgFlow(browser, viewport) {
+// 一枚絵4枚の削除（docs/cg-staging.md）：5-10・5-13・5-26 の両分岐を、通常画面のまま実際に送る。
+// 毎フレームの表示を記録し、一枚絵が出ない・背景が空（黒）にならない・立ち絵が行の指定どおり（消えない・残らない）ことを確かめる。
+// 旧版（2026.11-4）の保存（削除した行 c10-015-p1、削除した一枚絵の区間、削除した一枚絵の解放）からの再開と、既読SKIP も確かめる。
+async function removedCgFlow(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  const REMOVED = ['c10-kawamoto-daydream-embrace', 'c13-shinjo-daydream-dinner', 'c26a-tahara-daydream-home', 'c26b-komiya-daydream-hand'];
   const ctx = await browser.newContext({ viewport });
+  const requested = [];
+  ctx.on('request', (r) => { if (REMOVED.some((id) => r.url().includes(id))) requested.push(r.url()); });
   const page = await openGame(ctx, { speedZero: true });
   await clickText(page, 'はじめから');
-  section('5-10 河本の一枚絵の流れ（' + viewport.width + '×' + viewport.height + '）');
+  await settled(page);
+  await installRecorder(page);
   const goTo = async (id) => {
     await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
     await resumeHere(page);
+    await installRecorder(page);
   };
-  const startRec = () => page.evaluate(() => {
-    window.__cgrec = [];
-    const tick = () => {
-      if (window.KIT && KIT.s.screen === 'play') {
+  const lineNow = async () => (await show(page)).lineId;
+  // 送った各行で、落ち着いた表示が行の指定どおりか
+  const walk = async (from, to, pickIndex) => {
+    await goTo(from);
+    const seen = []; const wrong = [];
+    for (let i = 0; i < 90; i++) {
+      await settled(page); await waitPortraitLoaded(page);
+      const id = await lineNow();
+      seen.push(id);
+      const exp = await expectedShown(page, id);
+      const got = await page.evaluate(() => {
+        const m = /url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage);
         const cg = document.querySelector('.kit-cg');
-        const vis = !cg.hidden && !!cg.getAttribute('src');
-        const ports = [...document.querySelectorAll('.kit-portrait img')].map((i) => i.getAttribute('src').split('/').pop());
-        const last = window.__cgrec.at(-1);
-        const k = KIT.s.lineId + '|' + vis + '|' + ports.join('+') + '|' + !!KIT_STAGE.pending;
-        if (!last || last !== k) window.__cgrec.push(k);
-      }
-      if (window.__cgrecOn !== false) requestAnimationFrame(tick);
-    };
-    window.__cgrecOn = true; requestAnimationFrame(tick);
-  });
-  const judge = (rec) => rec.filter((k) => { const [id, vis, ports, pending] = k.split('|'); return pending === 'false' && ((vis === 'true') !== (id === 'c10-015-p1') || (vis === 'true' && ports)); });
-  // 通常の送り
-  await goTo('c10-013');
-  await startRec();
-  const seen = [];
-  for (let i = 0; i < 12; i++) { const st = await show(page); seen.push(st.lineId); if (st.lineId === 'c10-024') break; await advance(page); }
-  await page.waitForTimeout(150);
-  let rec = await page.evaluate(() => window.__cgrec);
-  check('c10-013 から送ると c10-014 → c10-015 → c10-015-p1 → c10-016 の順に進む', seen.slice(0, 5).join() === 'c10-013,c10-014,c10-015,c10-015-p1,c10-016', seen.join());
-  check('送りの全フレームで、一枚絵は c10-015-p1 の間だけ出て、その間は立ち絵を重ねない', judge(rec).length === 0 && rec.some((k) => k.startsWith('c10-015-p1|true')), judge(rec).slice(0, 3).join(' / '));
-  // つづきから
-  await goTo('c10-015-p1');
-  let st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden, ports: document.querySelectorAll('.kit-portrait img').length }));
-  check('c10-015-p1 の保存から「つづきから」で一枚絵が戻る（立ち絵なし）', st.vis && st.ports === 0, JSON.stringify(st));
-  for (const id of ['c10-015', 'c10-016', 'c10-017']) {
-    await goTo(id);
-    st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden, ports: [...document.querySelectorAll('.kit-portrait img')].map((i) => i.getAttribute('src').split('/').pop()).join('+') }));
-    check(id + ' の保存から「つづきから」で通常画面（美空と河本）になり、一枚絵は出ない', !st.vis && st.ports === 'misora-game-uniform-normal.webp+kawamoto-casual-normal.webp', JSON.stringify(st));
+        return (m ? m[1].split('/').pop() : '') + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + [...document.querySelectorAll('.kit-portrait img')].map((p) => p.getAttribute('src').split('/').pop()).join('+');
+      });
+      if (got !== exp) wrong.push(id + ' ' + got + ' ≠ ' + exp);
+      if (id === to) break;
+      if ((await show(page)).choices) await page.locator('.kit-choice').nth(pickIndex || 0).click(); else await advance(page);
+    }
+    const rec = await page.evaluate(() => window.__rec);
+    const cgFrames = rec.applied.filter((x) => x.split('|')[1]);
+    return { seen, wrong, bad: rec.bad, cgFrames };
+  };
+
+  section('5-10 河本の来校：一枚絵なしの流れ（' + size + '）');
+  let w = await walk('c10-013', 'c10-022');
+  check('c10-013 → c10-014 → c10-015 → c10-016 → c10-017 → c10-018 → c10-019「誰だっけ」→ c10-020 と通常画面でつながる', w.seen.slice(0, 8).join() === 'c10-013,c10-014,c10-015,c10-016,c10-017,c10-018,c10-019,c10-020', w.seen.join());
+  check('5-10：各行の背景と立ち絵が指定どおり（美空と河本は消えず、c10-020 の驚き・c10-022 の大山の割り込みも維持）', w.wrong.length === 0, w.wrong.slice(0, 3).join(' / '));
+  check('5-10：送りの全フレームで、一枚絵が出ず、背景が空にならない', w.cgFrames.length === 0 && w.bad.length === 0, w.cgFrames.concat(w.bad).slice(0, 3).join(' / '));
+
+  section('5-13 新庄との接触：一枚絵なしの流れ（' + size + '）');
+  w = await walk('c13-019', 'c13-025');
+  check('c13-020 帽子をかぶりかけて → c13-021 言葉が出ず → c13-022 道を空ける → c13-023 挨拶、と通常画面でつながる', ['c13-020', 'c13-021', 'c13-022', 'c13-023'].every((id) => w.seen.includes(id)) && w.wrong.length === 0, w.wrong.slice(0, 3).join(' / '));
+  check('5-13：送りの全フレームで、一枚絵が出ず、背景が空にならない', w.cgFrames.length === 0 && w.bad.length === 0, w.cgFrames.concat(w.bad).slice(0, 3).join(' / '));
+
+  for (const [pick, from, to, name] of [[0, 'c26a-005', 'c26e-001', '田原の分岐'], [1, 'c26b-005', 'c26e-001', '小宮の分岐']]) {
+    section('5-26 ' + name + '：一枚絵なしの流れと合流（' + size + '）');
+    w = await walk(from, to, pick);
+    if (pick === 0) check('田原の名乗りと求婚（c26a-008）から、先輩たちの怒声（c26a-009）へ直接つながる', w.seen.indexOf('c26a-009') === w.seen.indexOf('c26a-008') + 1, w.seen.join());
+    else check('小宮の球拾い（c26b-007）→ 美空「助かる。」（c26b-008）→ 平野（c26b-008a）→ 口元が緩む（c26b-009）', ['c26b-007', 'c26b-008', 'c26b-008a', 'c26b-009'].every((id, k, a) => k === 0 || w.seen.indexOf(id) === w.seen.indexOf(a[k - 1]) + 1), w.seen.join());
+    check(name + '：合流（c26e-001）まで、各行の背景と立ち絵が指定どおり（消えない・残らない）', w.seen.includes('c26e-001') && w.wrong.length === 0, w.wrong.slice(0, 3).join(' / '));
+    check(name + '：送りの全フレームで、一枚絵が出ず、背景が空にならない', w.cgFrames.length === 0 && w.bad.length === 0, w.cgFrames.concat(w.bad).slice(0, 3).join(' / '));
   }
-  // 既読SKIP（上で読んだ c10-013〜c10-024 を送り抜ける）
-  await goTo('c10-013');
-  await startRec();
-  await clickText(page, '既読SKIP');
-  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
-  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
-  await settled(page); await page.waitForTimeout(150);
-  rec = await page.evaluate(() => window.__cgrec);
-  const end = (await show(page)).lineId;
-  const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
-  check('既読SKIP で読んだ区間を c10-024 より先まで送り抜ける', order.indexOf(end) >= order.indexOf('c10-024'), end);
-  check('既読SKIP 中の全フレームで、一枚絵が c10-015-p1 以外に残らず、立ち絵と重ならない', judge(rec).length === 0, judge(rec).slice(0, 3).join(' / '));
-  st = await page.evaluate(() => ({ vis: !document.querySelector('.kit-cg').hidden }));
-  check('既読SKIP の後も一枚絵は残らない', !st.vis);
+
+  section('旧版の保存からの再開（' + size + '）');
+  const oldSave = (at, slots) => page.evaluate(([key, at, slots]) => {
+    const raw = JSON.parse(localStorage.getItem(key));
+    const flags = raw.auto.flags;
+    raw.dataVersion = '2026.11-4';
+    raw.auto = { at, flags, dataVersion: '2026.11-4' };
+    raw.slots = slots.map((s) => s && { at: s, flags, dataVersion: '2026.11-4', savedAt: 1 });
+    raw.seen = (raw.seen || []).concat(['c10-015-p1#00000000']);
+    raw.gallery = { ...(raw.gallery || {}), 'c10-kawamoto-daydream-embrace': true, 'c13-shinjo-daydream-dinner': true, 'c26a-tahara-daydream-home': true, 'c26b-komiya-daydream-hand': true, 'hirano-field-visit-vision': true };
+    localStorage.setItem(key, JSON.stringify(raw));
+  }, [SAVE_KEY, at, slots]);
+  await oldSave('c10-015-p1', ['c13-021', 'c26a-008', 'c26b-008']);
+  await resumeHere(page);
+  await settled(page); await waitPortraitLoaded(page);
+  check('削除した行 c10-015-p1 の旧自動セーブは、c10-016 から通常画面で再開する', (await lineNow()) === 'c10-016' && (await page.evaluate(() => document.querySelector('.kit-cg').hidden)) && (await expectedShown(page, 'c10-016')) === (await page.evaluate(() => { const m = /url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage); return (m ? m[1].split('/').pop() : '') + '||' + [...document.querySelectorAll('.kit-portrait img')].map((p) => p.getAttribute('src').split('/').pop()).join('+'); })));
+  const after = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), SAVE_KEY);
+  check('移行後の保存は新しい版で、手動セーブ（削除した一枚絵の区間）は同じ行のまま', after.dataVersion === '2026.11-5' && after.slots.map((x) => x && x.at).join() === 'c13-021,c26a-008,c26b-008', JSON.stringify([after.dataVersion, after.slots.map((x) => x && x.at)]));
+  check('削除した4枚の解放情報は読み捨て、残す一枚絵（平野の朝練見学）の解放は保つ', !REMOVED.some((id) => after.gallery[id]) && after.gallery['hirano-field-visit-vision'] === true, JSON.stringify(after.gallery));
+  for (const id of ['c13-021', 'c26a-008', 'c26b-008']) {
+    await goTo(id); await waitPortraitLoaded(page);
+    const ok = await page.evaluate(() => document.querySelector('.kit-cg').hidden && !!document.querySelector('.kit-bg').style.backgroundImage);
+    check('削除した一枚絵の区間（' + id + '）の保存から、通常画面で再開する', (await lineNow()) === id && ok);
+  }
+  await clickText(page, 'タイトル');
+  await page.waitForFunction(() => KIT.s.screen === 'title');
+  await clickText(page, 'CG鑑賞');
+  const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), img: b.querySelector('img') ? b.querySelector('img').getAttribute('src') : '' })));
+  check('CG 鑑賞は3項目で、壊れた項目・削除した画像への参照がない', cards.length === 3 && !cards.some((c) => REMOVED.some((id) => c.img.includes(id))), JSON.stringify(cards));
+  await clickText(page, '閉じる');
+
+  section('既読SKIP（' + size + '）');
+  await clickText(page, 'つづきから');
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  for (const [from, until] of [['c10-013', 'c10-022'], ['c13-019', 'c13-025']]) {
+    await goTo(from);
+    await clickText(page, '既読SKIP');
+    await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
+    if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+    await settled(page); await page.waitForTimeout(150);
+    const rec = await page.evaluate(() => window.__rec);
+    const end = await lineNow();
+    const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+    check('既読SKIP で ' + from + ' から ' + until + ' より先まで送り抜けても、一枚絵が一瞬も出ず、背景が空（黒）にならない', order.indexOf(end) >= order.indexOf(until) && !rec.applied.some((x) => x.split('|')[1]) && rec.bad.length === 0, end + ' ' + rec.bad.slice(0, 2).join(' / '));
+  }
+  check('削除した4枚の画像への読み込み要求が一度もない', requested.length === 0, requested.slice(0, 3).join(' '));
   await ctx.close();
 }
 
@@ -1988,7 +2029,7 @@ async function main() {
     await expressionsInPlay(browser, SMALL_LANDSCAPE, '667×375');
     await expressionsInPlay(browser, DESKTOP, '1280×720');
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
-    for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await kawamotoCgFlow(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await removedCgFlow(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
