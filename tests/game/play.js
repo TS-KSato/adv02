@@ -736,7 +736,7 @@ async function batch4InPlay(browser, viewport, label) {
   const noPortraits = async () => (await portraitNow(page)).length === 0;
   const spans = [
     // [前の行, 前の背景, 入口, 途中, 終わりの行, 終わりの背景, 新しい背景, 名前]
-    ['c02e-017', 'hosho-field-afternoon', 'c02e-018', 'c02e-019', 'c03-001', 'hosho-field-afternoon', 'school-station-road-evening', '5-2 駅までの道'],
+    ['c02e-017', 'hosho-field-sunset', 'c02e-018', 'c02e-019', 'c03-001', 'hosho-field-afternoon', 'school-station-road-evening', '5-2 駅までの道'],
     ['cblank-010', 'hosho-clubroom', 'cblank-011', 'cblank-012', 'c21-001', 'hosho-field-afternoon', 'hirano-room', '幕間「空いた一行」平野の部屋'],
     ['c21-016', 'hospital-exam-room', 'c21-017', 'c21-017', 'c21-018', 'hosho-field-afternoon', 'hospital-corridor', '5-21 病院の廊下'],
   ];
@@ -891,8 +891,7 @@ async function expressionsInPlay(browser, viewport, label) {
   check('c08-021 で中田の激怒に切り替わり、美空は一時的に出ない', (await files()) === 'right:nakata-practice-rage.webp' && l.loaded, await files());
   check('激怒：身体の切り口（画像の下端）が画面の下へ抜け、画面内に出ない', l && l.bottom >= l.vh - 0.5, JSON.stringify(l));
   check('激怒：湯気の残る頭と吠える顔（元画像の上から約320pxまで）が本文枠の上にある', l && at(l, 430, 60).y >= -40 && at(l, 430, 320).y <= l.dialogueTop, JSON.stringify(l));
-  check(small ? '激怒：潰れた硬球を握る拳（元画像の上から約750px）は画面内（高さの小さい画面では本文枠の上端あたり）' : '激怒：潰れた硬球を握る拳（元画像の上から約750px）まで本文枠の上にある',
-    l && (small ? at(l, 450, 750).y < l.vh - 40 : at(l, 450, 750).y <= l.dialogueTop + 2), JSON.stringify(l));
+  check('激怒（新版）：あごの横の潰れた硬球（元画像の約 300,320）と、握った拳の下端（約480px）が本文枠の上にある', l && at(l, 300, 320).y <= l.dialogueTop && at(l, 300, 480).y <= l.dialogueTop + 2 && at(l, 300, 320).y > 0, JSON.stringify(l));
   check('激怒：通常の全身立ち絵より大きい寄り（画面の高さ以上）で、画面の中央に置く', l && l.height >= l.vh && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2, JSON.stringify(l));
   await advance(page);
   await resumeHere(page);
@@ -947,7 +946,7 @@ async function expressionsInPlay(browser, viewport, label) {
   check('動揺デフォルメ：屋根の上などに浮かせず、足元は本文枠の後ろか画面の下', c && at(c, 430, 1160).y >= c.dialogueTop - 2, JSON.stringify(c));
   await advanceTo(page, 'c07-006a'); await waitPortraitLoaded(page);
   m = await one('misora-game-uniform-normal.webp');
-  check('c07-006a で美空は通常の顔に戻り、通常の美空と同じ右の位置にいる', (await files()) === 'right:misora-game-uniform-normal.webp' && c && m && Math.abs((c.left + c.right) / 2 - (m.left + m.right) / 2) < c.vw * 0.15, await files());
+  check('c07-006a で美空は通常の顔に戻り、通常の美空と同じ右の位置にいる（左は中田の突進）', (await files()) === 'left:nakata-practice-confronting.webp,right:misora-game-uniform-normal.webp' && c && m && Math.abs((c.left + c.right) / 2 - (m.left + m.right) / 2) < c.vw * 0.15, await files());
   await advance(page); await waitPortraitLoaded(page);
   check('c07-007 で中田が平野の前まで来て、左に出る（右の美空はそのまま）', (await show(page)).lineId === 'c07-007' && (await files()) === 'left:nakata-practice-normal.webp,right:misora-game-uniform-normal.webp', await files());
   await resumeAt('c07-013');
@@ -1263,7 +1262,7 @@ async function mountCheck(origin) {
   check('ルート直下の index.html は配信されない（404）', rootIndex.status === 404, String(rootIndex.status));
   const rootGame = await fetch(origin + '/game.js');
   check('ルート直下の game.js は配信されない（404）', rootGame.status === 404, String(rootGame.status));
-  for (const p of ['index.html', 'game.js', 'kit/releases/0.1.0/kit.js', 'kit/releases/0.1.0/kit.css']) {
+  for (const p of ['index.html', 'game.js', 'kit/releases/0.1.0/kit.js', 'kit/releases/0.1.0/kit.css', 'game-title.js', 'assets/title/title-screen.webp']) {
     const res = await fetch(BASE + p);
     await res.arrayBuffer();
     check('/adv02/ の下で ' + p + ' が 200', res.status === 200, String(res.status));
@@ -1275,7 +1274,7 @@ async function mountCheck(origin) {
     const type = res.headers.get('content-type') || '';
     if (res.status !== 200 || !type.startsWith(file.endsWith('.webp') ? 'image/webp' : 'image/png')) missingBg.push(file + ' ' + res.status + ' ' + type);
   }
-  check('/adv02/ の下で、登録した背景31枚がすべて 200（image/webp）', missingBg.length === 0, missingBg.join(' | '));
+  check('/adv02/ の下で、登録した背景32枚と挿絵2枚がすべて 200（image/webp）', missingBg.length === 0, missingBg.join(' | '));
 }
 
 // 人物の一貫性の調整：青岳戦・決勝の3経路（事前準備／当日の確認／どちらもしない）を実際に選んで進め、
@@ -1749,7 +1748,7 @@ async function portraitAuditInPlay(browser, viewport) {
     }
   }
   const cutAssets = Object.entries(bboxes).filter(([, b]) => b.bottom >= b.h - 2).map(([f]) => f);
-  check('元画像の下端で絵が切れている素材は ' + cutAssets.join('、') + ' だけ（ほかは全身）', cutAssets.join() === 'nakata-practice-rage.webp', cutAssets.join());
+  check('元画像の下端で絵が切れている素材は ' + cutAssets.join('、') + ' だけ（ほかは全身）', cutAssets.join() === 'nakata-practice-rage.webp,misora-game-uniform-hush.webp', cutAssets.join());
   check('立ち絵が切り替わる ' + starts.length + ' 行（表示 ' + shown + ' 件）で、切り抜き・切り口の露出・浮き・頭の欠けがない', bad.length === 0, bad.slice(0, 6).join(' | '));
   await ctx.close();
 }
@@ -1816,6 +1815,129 @@ async function kawamotoCgFlow(browser, viewport) {
   await ctx.close();
 }
 
+// 第3便と表情第2便（docs/title-and-inserts.md、docs/portrait-staging.md）：タイトル画面、挿絵2区間、夕景、美空の口止めと中田の突進。
+async function batch03InPlay(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  section('タイトル画面（' + size + '）');
+  await page.waitForFunction(() => { const t = document.querySelector('.kit-title'); return t && !t.hidden; });
+  const tg = await page.evaluate(() => {
+    const R = (e) => { const r = e.getBoundingClientRect(); return { l: r.left, t: r.top, r: r.right, b: r.bottom, h: r.height, w: r.width }; };
+    const h1 = document.querySelector('.kit-title h1');
+    const bg = getComputedStyle(document.querySelector('.kit-title')).backgroundImage;
+    return { title: h1.textContent, lines: [...h1.children].map((c) => c.textContent), h1: R(h1), main: parseFloat(getComputedStyle(h1.querySelector('.game-title-main')).fontSize),
+      menu: R(document.querySelector('.game-title-menu')), btns: [...document.querySelectorAll('.game-title-menu .kit-btn')].map((b) => ({ text: b.textContent, disabled: b.disabled, ...R(b) })), bg, vw: innerWidth, vh: innerHeight };
+  });
+  check('題名は「きみのための」「甲子園」の2行で、正式題名のまま', tg.title === 'きみのための甲子園' && tg.lines.join('|') === 'きみのための|甲子園', JSON.stringify(tg.lines));
+  check('題名は左上の青空（左から約7%、上から約12%）にあり、「甲子園」の文字は32〜64px', tg.h1.l > tg.vw * 0.05 && tg.h1.l < tg.vw * 0.09 && tg.h1.t > tg.vh * 0.08 && tg.h1.t < tg.vh * 0.16 && tg.main >= 32 && tg.main <= 64, JSON.stringify(tg.h1) + ' ' + tg.main);
+  check('メニュー5項目（はじめから・つづきから・セーブ・読込・CG鑑賞・設定）が右下に縦並びで、すべて画面内・高さ44px以上', tg.btns.map((b) => b.text).join('|') === 'はじめから|つづきから|セーブ・読込|CG鑑賞|設定' && tg.btns.every((b) => b.h >= 44 && b.l >= 0 && b.r <= tg.vw && b.t >= 0 && b.b <= tg.vh) && tg.menu.l > tg.vw / 2 && tg.menu.b > tg.vh * 0.85, JSON.stringify(tg.btns.map((b) => [b.text, Math.round(b.t), Math.round(b.b)])));
+  check('メニューの幅は横向きスマホで170〜200px程度、PCで220〜260px程度', tg.vh <= 500 ? (tg.menu.w >= 168 && tg.menu.w <= 205) : (tg.menu.w >= 220 && tg.menu.w <= 260), String(tg.menu.w));
+  check('題名とメニューは重ならない', tg.h1.r < tg.menu.l || tg.h1.b < tg.menu.t);
+  check('保存がない最初は「つづきから」が無効', tg.btns[1].disabled);
+  check('タイトル画像は title-screen.webp で、CG 鑑賞に登録しない', /title-screen\.webp/.test(tg.bg) && !(await page.evaluate(() => Object.values(KIT_GAME.assets.cgs).some((c) => /title-screen/.test(c.src)))));
+  for (const [label, name] of [['セーブ・読込', 'セーブ・読込'], ['CG鑑賞', 'CG鑑賞'], ['設定', '設定']]) {
+    await clickText(page, name);
+    const open = await page.evaluate(() => document.querySelector('.kit-modal').open);
+    check('タイトルの「' + label + '」が開く', open);
+    await clickText(page, '閉じる');
+  }
+  await clickText(page, 'はじめから');
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  const leak = await page.evaluate(() => ({ title: !document.querySelector('.kit-title').hidden, bg: document.querySelector('.kit-bg').style.backgroundImage }));
+  check('はじめからで作品画面に入ると、タイトルの画像と配置は残らない', !leak.title && !/title-screen/.test(leak.bg), JSON.stringify(leak));
+  await advance(page);
+  await clickText(page, 'タイトル');
+  await page.waitForFunction(() => KIT.s.screen === 'title');
+  check('タイトルへ戻ると「つづきから」が有効になる', !(await page.getByRole('button', { name: 'つづきから', exact: true }).isDisabled()));
+  await clickText(page, 'つづきから');
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  check('「つづきから」で作品画面に戻る', (await show(page)).lineId === 'c01-002');
+  await snap(page, 'title-' + viewport.width);
+
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+  };
+  const state = () => settled(page).then(() => page.evaluate(() => ({
+    line: KIT.s.lineId,
+    bg: ((/url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage) || [])[1] || '').split('/').pop(),
+    cg: !document.querySelector('.kit-cg').hidden,
+    ports: [...document.querySelectorAll('.kit-portrait img')].map((i) => (i.closest('.kit-portrait-left') ? 'L:' : 'R:') + i.getAttribute('src').split('/').pop().replace('.webp', '')).join(','),
+  })));
+  const gallery = () => page.evaluate(() => Object.keys(KIT.s.gallery).sort().join(','));
+
+  section('挿絵と夕景（' + size + '）');
+  for (const [before, at, after, file, back] of [['c03-040', 'c03-040-p1', 'c03-041', 'insert-pitch-grip.webp', 'hosho-field-bench.webp'], ['c27-001', 'c27-002', 'c27-003', 'insert-cleats-dirt.webp', 'hosho-field-bench.webp']]) {
+    await goTo(before);
+    const s0 = await state();
+    const g0 = await gallery();
+    await advance(page);
+    const s1 = await state();
+    check(file + '：挿絵の行へ進んでも CG 鑑賞の解放は増えない', (await gallery()) === g0);
+    await advance(page);
+    const s2 = await state();
+    check(file + '：直前（' + before + '）は通常画面、' + at + ' だけで挿絵、' + after + ' でこの行の背景（' + back + '）に戻る',
+      s0.bg !== file && s1.line === at && s1.bg === file && !s1.cg && s1.ports === '' && s2.line === after && s2.bg === back && s2.ports === s0.ports, JSON.stringify([s0, s1, s2]));
+    await goTo(at);
+    check(file + '：' + at + ' の保存から「つづきから」で挿絵が戻る', (await state()).bg === file);
+  }
+  for (const [branchEnd, pick] of [['c02i-022', 0], ['c02o-020', 1]]) {
+    await goTo(branchEnd);
+    await advance(page);
+    const seen = [];
+    for (let i = 0; i < 60; i++) { const st = await state(); seen.push(st.line + '=' + st.bg); if (st.line === 'c02e-018') break; await advance(page); }
+    const bgOf = (id) => (seen.find((x) => x.startsWith(id + '=')) || '').split('=')[1];
+    check('夕景：' + (pick === 0 ? '内野' : '外野') + 'の分岐から合流し、c02e-011 まで昼、c02e-012〜c02e-017 は夕方、c02e-018 で駅までの道',
+      bgOf('c02e-011') === 'hosho-field-afternoon.webp' && ['c02e-012', 'c02e-015', 'c02e-017'].every((id) => bgOf(id) === 'hosho-field-sunset.webp') && bgOf('c02e-018') === 'school-station-road-evening.webp', seen.join(' '));
+  }
+  await goTo('c02e-014');
+  check('夕景：c02e-014 の保存から「つづきから」で夕方の背景', (await state()).bg === 'hosho-field-sunset.webp');
+
+  section('美空の口止めと中田の突進（' + size + '）');
+  await goTo('c06e-009');
+  const expected = {
+    'c06e-009': '', 'c06e-010': 'R:misora-game-uniform-hush', 'c07-001': 'R:misora-game-uniform-hush', 'c07-004': 'R:misora-game-uniform-hush',
+    'c07-005': 'R:misora-game-uniform-flustered-chibi', 'c07-006': 'L:nakata-practice-confronting,R:misora-game-uniform-flustered-chibi',
+    'c07-006a': 'L:nakata-practice-confronting,R:misora-game-uniform-normal', 'c07-007': 'L:nakata-practice-normal,R:misora-game-uniform-normal',
+    'c07-016': 'L:nakata-practice-normal,R:misora-game-uniform-flustered-chibi', 'c07-017': 'L:nakata-practice-bashful', 'c07-018': 'L:nakata-practice-bashful',
+  };
+  const got = {};
+  const bgs = new Set();
+  for (let i = 0; i < 30; i++) { const st = await state(); got[st.line] = st.ports; bgs.add(st.bg); if (st.line === 'c07-018') break; await advance(page); }
+  const wrong = Object.entries(expected).filter(([id, want]) => got[id] !== want).map(([id]) => id + '=' + got[id]);
+  check('c06e-009〜c07-018 を送ると、口止め（場面をまたいで続く）→ 動揺 → 突進（c07-006〜006a）→ 到着後の通常 → 照れ笑いの順に切り替わる', wrong.length === 0, wrong.join(' '));
+  check('c06e-010〜c07-004 は同じベンチの背景のまま（暗転や別の背景を挟まない）', [...bgs].join() === 'hosho-field-bench.webp', [...bgs].join());
+  await goTo('c07-001');
+  let h = (await layoutNow(page)).find((x) => x.file === 'misora-game-uniform-hush.webp');
+  const imgsOk = () => page.evaluate(() => [...document.querySelectorAll('.kit-portrait img')].every((i) => i.complete && i.naturalWidth > 0));
+  check('口止め：c07-001 の保存から「つづきから」で同じ差分が戻る', !!h && await imgsOk());
+  check('口止め：画面の中央に置き、身体の切り口（画像の下端）は画面の下へ出る', h && Math.abs((h.left + h.right) / 2 - h.vw / 2) < 2 && h.bottom >= h.vh - 0.5, JSON.stringify(h));
+  check('口止め：目・汗・唇と、唇の前の人差し指（元画像の上から約400pxまで）が本文枠の上', h && h.top + 400 / 1280 * h.height <= h.dialogueTop + 2 && h.top + 40 / 1280 * h.height >= 0, JSON.stringify(h));
+  await goTo('c07-006');
+  const c = (await layoutNow(page)).find((x) => x.file === 'nakata-practice-confronting.webp');
+  const m = (await layoutNow(page)).find((x) => x.slot === 'right');
+  check('突進：c07-006 の保存から「つづきから」で同じ差分が戻り、左に置く', c && c.slot === 'left' && await imgsOk());
+  check('突進：目と叫ぶ口（元画像の上から約430pxまで）が本文枠の上', c && c.top + 430 / 1280 * c.height <= c.dialogueTop + 2 && c.top + 60 / 1280 * c.height >= 0, JSON.stringify(c));
+  check('突進：右の美空の顔に重ねない（突進の画像の右端が、美空の画像の中央より左）', c && m && c.right < (m.left + m.right) / 2, JSON.stringify({ c: c && c.right, m: m && [m.left, m.right] }));
+  // 既読SKIP：読んだ c06e-009〜c07-018 を送り抜けても、同じ差分になり、残らない
+  await goTo('c06e-009');
+  await page.evaluate(() => {
+    window.__prec = {};
+    const tick = () => { if (window.KIT && KIT.s.screen === 'play' && !KIT_STAGE.pending) { window.__prec[KIT.s.lineId] = [...document.querySelectorAll('.kit-portrait img')].map((i) => (i.closest('.kit-portrait-left') ? 'L:' : 'R:') + i.getAttribute('src').split('/').pop().replace('.webp', '')).join(','); } requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  });
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 30000 }).catch(() => {});
+  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+  await settled(page); await page.waitForTimeout(150);
+  const prec = await page.evaluate(() => window.__prec);
+  const wrongSkip = Object.entries(prec).filter(([id, v]) => id in expected && v !== expected[id]).map(([id, v]) => id + '=' + v);
+  check('既読SKIP で送り抜けても、記録できた各行の差分は送りのときと同じ（残留しない）', wrongSkip.length === 0 && Object.keys(prec).length > 3, wrongSkip.join(' ') + ' / ' + Object.keys(prec).length);
+  await snap(page, 'batch03-' + viewport.width);
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -1863,6 +1985,7 @@ async function main() {
     await expressionsInPlay(browser, DESKTOP, '1280×720');
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await kawamotoCgFlow(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
     await cgBatch02InPlay(browser, SMALL_LANDSCAPE, '667×375', 0);
