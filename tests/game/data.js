@@ -965,7 +965,8 @@ check('驚きは c08-041〜c08-043 だけで、左の枠に出る', JSON.stringi
   ['c08-041', 'c08-042', 'c08-043'].every((id) => V.stateAt(G, id).portraits.left.expr === 'practice-shock'));
 check('激怒の区間は美空を出さず、c08-024 で美空に戻る', ['c08-021', 'c08-022', 'c08-023'].every((id) => !shownAt(id).includes('misora')) && shownAt('c08-024') === 'misora/game-uniform-normal');
 const lineText = (id) => allLines.find((l) => l.id === id).text;
-check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022').replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
+check('c08-021〜c08-023 は作者決定の確定文（形状の説明はせず、質問を引っ込める）', lineText('c08-021') === 'いつからお父さんに聞いてるんですか、と言いかけた。\n給水台の中田先輩と、目が合った。' && lineText('c08-022') === '……聞くのは、今度にしよう。' && lineText('c08-023') === '次は50周じゃ済まない気がした。');
+check('激怒の区間の本文に、硬球の形状や表情を説明し直す文がない', ['c08-021', 'c08-022', 'c08-023'].every((id) => !/ひしゃげ|縫い目|鬼の形相/.test(lineText(id))));
 check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをカゴに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
   (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock|confronting)|misora-game-uniform-(?:flustered-chibi|hush)|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));

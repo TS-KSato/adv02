@@ -648,8 +648,8 @@ window.KIT_GAME = {
         { id: 'c08-018', speaker: 'hirano', text: "……はい。" },
         { id: 'c08-019', text: "監督は「2塁」とだけ書いた紙を指で押さえた。" },
         { id: 'c08-020', speaker: 'misora', text: "こっちの続きは書いて。" },
-        { id: 'c08-021', text: "いつからお父さんに聞いてるんですか、と言いかけた。\n給水台で鬼の形相をした中田先輩と目が合って、やめた。" },
-        { id: 'c08-022', text: "だって、中田先輩の手の中で、硬球が平たくひしゃげていた。\n裂けた赤い縫い目から、中身がのぞいていた。" },
+        { id: 'c08-021', text: "いつからお父さんに聞いてるんですか、と言いかけた。\n給水台の中田先輩と、目が合った。" },
+        { id: 'c08-022', text: "……聞くのは、今度にしよう。" },
         { id: 'c08-023', text: "次は50周じゃ済まない気がした。" },
         { id: 'c08-024', text: "質問の続きを急いで書いて、紙を渡した。\n書いたところを監督に見せるつもりで持ち上げたら、\nもう端をつまんで取られていた。" },
         { id: 'c08-025', speaker: 'hirano', text: "じゃ、失礼します。" },
@@ -2762,7 +2762,7 @@ window.KIT_GAME = {
     { at: 'c07-031', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 引き返す途中で中田の横を通る
     { at: 'c08-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（便利な部員、特別な相手）：左を明示して消す
     { at: 'c08-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 5-8：ベンチの端で紙を引き寄せる監督
-    { at: 'c08-021', portrait: { slot: 'right', char: 'nakata', expr: 'practice-rage' } }, // 給水台で鬼の形相の中田と目が合う。美空を一時的に隠し、中田の寄りを出す（game.css）
+    { at: 'c08-021', portrait: { slot: 'right', char: 'nakata', expr: 'practice-rage' } }, // 給水台の中田と目が合う（怒りは立ち絵で見せる）。美空を一時的に隠し、中田の寄りを出す（game.css）
     { at: 'c08-024', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 質問の続きを書く：監督との通常の会話画面へ戻す
     { at: 'c08-027', portrait: { slot: 'right', clear: true } }, // 翌日、紙が戻る
     { at: 'c08-030', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 監督に読んだか聞く
