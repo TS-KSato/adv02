@@ -795,14 +795,14 @@ const portraitCsv = read('assets/portraits/portraits-list.csv').replace(/^﻿/, 
 check('素材一覧の見出しは ファイル名・人物・衣装・差分・使用予定場面', portraitCsv[0] === 'ファイル名,人物,衣装,差分,使用予定場面', portraitCsv[0]);
 const listedPortraits = portraitCsv.slice(1).map((row) => row.split(',')[0]);
 const portraitFiles = fs.readdirSync(path.join(ROOT, 'assets', 'portraits')).filter((f) => f !== 'portraits-list.csv').sort();
-check('素材一覧は47件（通常35＋表情差分12）で、重複がない', listedPortraits.length === 47 && new Set(listedPortraits).size === 47, String(listedPortraits.length));
+check('素材一覧は48件（通常35＋表情差分13）で、重複がない', listedPortraits.length === 48 && new Set(listedPortraits).size === 48, String(listedPortraits.length));
 check('素材一覧に Magnific の管理IDを書かない', !/magnific/i.test(read('assets/portraits/portraits-list.csv')));
 check('素材一覧と assets/portraits の実ファイルが1対1で一致する（一覧以外のファイルがない）',
   JSON.stringify([...listedPortraits].sort()) === JSON.stringify(portraitFiles),
   portraitFiles.filter((f) => !listedPortraits.includes(f)).concat(listedPortraits.filter((f) => !portraitFiles.includes(f))).join(','));
 const registered = Object.entries(G.assets.portraits).flatMap(([char, exprs]) => Object.entries(exprs).map(([expr, file]) => ({ char, expr, file })));
-check('47枚すべてが assets.portraits に一度ずつ登録されている',
-  registered.length === 47 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
+check('48枚すべてが assets.portraits に一度ずつ登録されている',
+  registered.length === 48 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
 check('登録のキーは「人物-衣装と差分.webp」のファイル名から作り、人物のキーは話者と同じ',
   registered.every((r) => r.file === 'assets/portraits/' + r.char + '-' + r.expr + '.webp' && Object.prototype.hasOwnProperty.call(G.speakers, r.char)),
   registered.filter((r) => r.file !== 'assets/portraits/' + r.char + '-' + r.expr + '.webp' || !G.speakers[r.char]).map((r) => r.file).join(','));
@@ -945,7 +945,7 @@ check('使う立ち絵（衣装・差分）は次のとおり。部屋着のデ�
     'komiya/game-uniform-normal', 'komiya/practice-normal', 'misora/game-uniform-angry', 'misora/game-uniform-flustered-chibi', 'misora/game-uniform-hush', 'misora/game-uniform-normal', 'misora/game-uniform-pale',
     'misora/outing-normal', 'misora/pantsuit-first-day', 'misora/windbreaker-normal', 'muto/game-uniform-normal', 'nakata/game-uniform-normal', 'nakata/practice-bashful', 'nakata/practice-confronting', 'nakata/practice-normal',
     'nakata/practice-rage', 'nakata/practice-shock', 'nohara/game-uniform-normal', 'oyama/game-uniform-normal', 'oyama/practice-angry', 'oyama/practice-frustrated', 'oyama/practice-normal', 'oyama/school-summer-injured',
-    'oyama/school-winter-normal', 'sasaki/game-uniform-normal', 'sasaki/practice-normal', 'shinjo/game-uniform-normal', 'tahara/game-uniform-normal', 'tahara/practice-normal', 'tsuyoshi/formal-suit-normal'].sort().join(','), [...usedPortraits].sort().join(','));
+    'oyama/school-winter-normal', 'sasaki/game-uniform-daydream', 'sasaki/game-uniform-normal', 'sasaki/practice-normal', 'shinjo/game-uniform-normal', 'tahara/game-uniform-normal', 'tahara/practice-normal', 'tsuyoshi/formal-suit-normal'].sort().join(','), [...usedPortraits].sort().join(','));
 check('美空の部屋着（デフォルメ）は使わない（家の場面は厳だけを出す）', ![...usedPortraits].some((x) => /loungewear/.test(x)) &&
   ['c17-007', 'c17-020', 'c23-005', 'c23-016', 'c27-018', 'c27-021'].every((id) => shownAt(id) === 'gen/casual-normal'));
 const sceneLines = (...keys) => keys.flatMap((k) => G.scenes[k].lines.map((l) => l.id));
@@ -963,7 +963,10 @@ check('試合中の中田は試合用ユニフォーム（北陵戦・龍成戦�
 check('名簿に佐々木の名前を見つける行（csummer-016〜019）では、佐々木本人を出さない', ['csummer-016', 'csummer-017', 'csummer-018', 'csummer-019'].every((id) => shownAt(id) === '-'));
 check('回想の廊下（c15-008〜c15-013）は美空だけで、現在の佐々木を残さない', ['c15-008', 'c15-013'].every((id) => shownAt(id) === 'misora/game-uniform-normal'));
 check('北陵ベンチ・龍成ベンチへの転換で、鳳翔の人物を残さない（北陵監督は立ち絵なし）', ['c15-017', 'c15-023', 'c16-017', 'c16-018'].every((id) => shownAt(id) === '-') && ['c19-013', 'c20-005g', 'c29h-006'].every((id) => shownAt(id) === 'nohara/game-uniform-normal'));
-check('佐々木の陶酔の差分は制作待ち：c16-002〜c16-005 は立ち絵を出さず、未納品の画像を登録・参照しない', ['c16-002', 'c16-004', 'c16-004a', 'c16-005'].every((id) => shownAt(id) === '-') && !/sasaki-game-uniform-daydream/.test(read('game.js')));
+check('佐々木の陶酔の差分は c16-004a の1行だけで右に出し、c16-002（心の声）・c16-004（一枚絵）・c16-005 以降には出さない。ほかの人物は出さない',
+  JSON.stringify(allIds.filter((id) => shownAt(id).includes('sasaki/game-uniform-daydream'))) === JSON.stringify(['c16-004a']) && shownAt('c16-004a') === 'sasaki/game-uniform-daydream' &&
+  V.stateAt(G, 'c16-004a').portraits.right?.expr === 'game-uniform-daydream' && ['c16-002', 'c16-004', 'c16-005', 'c16-006'].every((id) => shownAt(id) === '-'));
+check('陶酔の差分は通常の佐々木と同じ寸法・同じ描画範囲で、game.css に専用の大きさ・位置の指定がない（急に拡大しない）', !/sasaki-game-uniform-daydream/.test(read('game.css')));
 check('新聞の一枚絵の区間は立ち絵を重ねず、大山は cnews-014 で部室を出たあと残らない', ['cnews-010', 'cnews-011c'].every((id) => shownAt(id) === '-') && shownAt('cnews-014') === 'oyama/practice-normal' && shownAt('cnews-015') === '-');
 check('負傷姿（松葉杖）は病院の診察のあと（c18-020〜）と敗戦後の柵（c20-007〜008）だけで、復帰後のグラウンドには出さない',
   allIds.filter((id) => shownAt(id).includes('school-summer-injured')).every((id) => /^c18-0(2[0-8])$|^c20-00[78]$/.test(id)) && shownAt('c21-002').includes('oyama/practice-normal') && ['c18-018', 'c18-019'].every((id) => !shownAt(id).includes('oyama')));
@@ -1079,13 +1082,14 @@ for (const [expr, expected] of Object.entries(addedSpans)) {
 }
 const cgKey = 'cnews-oyama-tears-newspaper';
 const CG_BATCH02 = {
+  'c16-sasaki-daydream-bride': { lines: ['c16-004'], release: 'c16-004a', bg: 'regional-stadium-field' },
   'hirano-field-visit-vision': { lines: ['c01-009', 'c01-010', 'c01-011'], release: 'c01-012', bg: 'hosho-field-fence-morning' },
   'cbus-oyama-daydream-bride': { lines: ['cbus-003a'], release: 'cbus-004', bg: 'bus-interior' },
 };
 const cgIds = Object.keys(G.assets.cgs);
-check('一枚絵は3枚（新聞・平野の朝練見学・大山の白無垢）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
+check('一枚絵は4枚（新聞・平野の朝練見学・佐々木の花嫁・大山の白無垢）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
 check('一枚絵の ID はファイル名と同じで、assets/cg/ に実ファイルがある', cgIds.every((id) => G.assets.cgs[id].src === 'assets/cg/' + id + '.webp' && fs.existsSync(path.join(ROOT, G.assets.cgs[id].src))));
-check('assets/cg には登録した3枚だけがある（削除した4枚・CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
+check('assets/cg には登録した4枚だけがある（削除した4枚・CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
 const badCg = cgIds.filter((id) => { const b = fs.readFileSync(path.join(ROOT, G.assets.cgs[id].src));
   return !(b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' && (b.readUInt16LE(26) & 0x3fff) === 1920 && (b.readUInt16LE(28) & 0x3fff) === 1080); });
 check('一枚絵はすべて不透明な WebP で、1920×1080px', badCg.length === 0, badCg.join(','));

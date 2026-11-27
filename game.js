@@ -1,6 +1,6 @@
 // 『きみのための甲子園』の作品データ。冒頭から優勝エンド「本当の約束」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
-// 背景32枚と挿絵2枚、立ち絵47枚、一枚絵3枚。音素材は未登録。
+// 背景32枚と挿絵2枚、立ち絵48枚、一枚絵4枚。音素材は未登録。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
@@ -91,6 +91,7 @@ window.KIT_GAME = {
       sasaki: {
         'practice-normal': 'assets/portraits/sasaki-practice-normal.webp',
         'game-uniform-normal': 'assets/portraits/sasaki-game-uniform-normal.webp',
+        'game-uniform-daydream': 'assets/portraits/sasaki-game-uniform-daydream.webp', // 5-16 c16-004a だけ：顔の内側だけを美化した陶酔の差分（CG 鑑賞には登録しない）
       },
       tahara: {
         'practice-normal': 'assets/portraits/tahara-practice-normal.webp',
@@ -141,6 +142,7 @@ window.KIT_GAME = {
       'cnews-oyama-tears-newspaper': { src: 'assets/cg/cnews-oyama-tears-newspaper.webp', title: '新聞と記録' },
       // 第2便
       'hirano-field-visit-vision': { src: 'assets/cg/hirano-field-visit-vision.webp', title: '春のグラウンド' },
+      'c16-sasaki-daydream-bride': { src: 'assets/cg/c16-sasaki-daydream-bride.webp', title: '一度だけの本塁打' },
       'cbus-oyama-daydream-bride': { src: 'assets/cg/cbus-oyama-daydream-bride.webp', title: '行きのバス' },
     },
     bgm: {},
@@ -2854,8 +2856,10 @@ window.KIT_GAME = {
     { at: 'c15-017', portrait: { slot: 'right', clear: true } }, // 北陵ベンチへ転換：鳳翔の人物を残さない（北陵監督は立ち絵なし）
     { at: 'c15-024', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 鳳翔ベンチ：平野の隣に戻った監督
     { at: 'c15-028', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // 白線の手前で振り返る佐々木
-    { at: 'c16-001', portrait: { slot: 'left', clear: true } }, // 5-16 打席：ベンチの監督と打席の佐々木は並べない。陶酔の差分は制作待ち（c16-002〜c16-004a）
+    { at: 'c16-001', portrait: { slot: 'left', clear: true } }, // 5-16 打席：ベンチの監督と打席の佐々木は並べない（c16-002 の心の声も立ち絵なし）
     { at: 'c16-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c16-004a', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-daydream' } }, // 一枚絵（c16-004）のあと、打席の佐々木の陶酔：美化の差分をこの1行だけ
+    { at: 'c16-005', portrait: { slot: 'right', clear: true } }, // 打席の土をならし、投手を見る：プレーを追う通常画面へ
     { at: 'c16-015', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // 生還してベンチに戻り、監督を探す佐々木
     { at: 'c16-017', portrait: { slot: 'right', clear: true } }, // 北陵ベンチへ転換
     { at: 'c16-022', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 試合後の通路：記者に呼び止められる監督
@@ -3105,6 +3109,7 @@ window.KIT_GAME = {
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
     // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
     { at: 'c01-009', cg: { id: 'hirano-field-visit-vision', until: 'c01-011' } }, // 5-1：朝練を見る平野の主観（c01-012 で解除）
+    { at: 'c16-004', cg: { id: 'c16-sasaki-daydream-bride' } }, // 5-16：佐々木の妄想（この1行だけ。c16-004a で打席の通常画面へ）
     { at: 'cbus-003a', cg: { id: 'cbus-oyama-daydream-bride' } }, // 行きのバス：大山（この1行だけ。cbus-004 で解除）
   ],
 
