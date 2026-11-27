@@ -577,7 +577,8 @@ section('時間経過・関係性・対戦相手の補強');
   // 冬の章間
   const win = G.scenes['winter-records'];
   check('冬の章間（12月の記録）が 5-25 と翌春の「二冊目」のあいだにある', win && G.scenes['parents-and-press'].next === 'winter-records' && win.next === 'second-scorebook' && /^12月/.test(win.lines[0].text));
-  check('冬の章間は部室（翌日の投内連係はグラウンド）で、立ち絵・一枚絵を出さない', win.lines.every((l) => { const st = V.stateAt(G, l.id); return st.bg === (Number(l.id.slice(-3)) >= 21 ? 'hosho-field-afternoon' : 'hosho-clubroom') && !st.cg && !st.portraits.left && !st.portraits.right; }));
+  check('冬の章間は部室（翌日の投内連係はグラウンド）。部室では日和（ジャージ）と、入ってきた大山（cwinter-007〜018）だけを出し、投内連係は背景で進める（一枚絵なし）', win.lines.every((l) => { const st = V.stateAt(G, l.id); const n = Number(l.id.slice(-3)); const p = st.portraits;
+    return st.bg === (n >= 21 ? 'hosho-field-afternoon' : 'hosho-clubroom') && !st.cg && (n >= 21 ? !p.left && !p.right : p.left?.char === 'hiyori' && p.left.expr === 'jersey-normal' && (n >= 7 && n <= 18 ? p.right?.char === 'oyama' : !p.right)); }));
   check('冬の章間：大山は礼を言わず、平野の守る日を把握し、平野はグラブを持って練習へ戻る',
     !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.find((l) => l.id === 'cwinter-019').text + win.lines.find((l) => l.id === 'cwinter-020').text));
   // 追加行は一枚絵の区間に入れない
@@ -912,7 +913,7 @@ check('挿絵は指定の2行だけに出る（c03-040-p1：投手の手元、c2
 check('5-26の帝嶺との練習試合（c26e-001〜c26e-010）は鳳翔のグラウンドで開催：ベンチ（hosho-field-bench）',
   G.scenes['rookies-teirei'].lines.every((l) => bgAt(l.id) === 'hosho-field-bench'));
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
-section('立ち絵の演出（5-2〜5-12）');
+section('立ち絵の演出（全編）');
 const portraitCues = G.cues.filter((c) => c.portrait !== undefined);
 const has = (cue) => portraitCues.some((c) => JSON.stringify(c) === JSON.stringify(cue));
 check('冒頭の大山と5-4の美空の既存演出（4つ）を維持している', [
@@ -939,21 +940,38 @@ check('全' + allIds.length + '行で、復元される立ち絵がその場面�
   leakedPortraits.length === 0, leakedPortraits.slice(0, 5).join(','));
 const shownAt = (id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map((x) => x.char + '/' + x.expr).join(',') || '-'; };
 const usedPortraits = new Set(allIds.flatMap((id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map(charOf); }));
-check('使う衣装は練習・私服・就任初日・試合ユニフォーム（作者決定の動揺デフォルメを含む）',
-  [...usedPortraits].sort().join(',') === ['hiyori/jersey-normal', 'kawamoto/casual-normal', 'kawamoto/casual-shock', 'kawamoto/casual-angry', 'misora/game-uniform-normal', 'misora/game-uniform-pale', 'misora/game-uniform-angry', 'misora/game-uniform-flustered-chibi', 'misora/game-uniform-hush', 'misora/pantsuit-first-day',
-    'nakata/practice-normal', 'nakata/practice-rage', 'nakata/practice-bashful', 'nakata/practice-shock', 'nakata/practice-confronting',
-    'oyama/practice-normal', 'oyama/practice-angry', 'oyama/practice-frustrated', 'oyama/school-winter-normal', 'sasaki/practice-normal'].sort().join(','), [...usedPortraits].join(','));
+check('使う立ち絵（衣装・差分）は次のとおり。部屋着のデフォルメ、ベンチコート、パンツスーツ、日和の体操服・冬服、新庄の制服は、合う場面がないので使わない',
+  [...usedPortraits].sort().join(',') === ['gen/casual-normal', 'hiyori/jersey-normal', 'hiyori/school-summer-bench', 'hiyori/school-summer-normal', 'kawamoto/casual-angry', 'kawamoto/casual-normal', 'kawamoto/casual-shock',
+    'komiya/game-uniform-normal', 'komiya/practice-normal', 'misora/game-uniform-angry', 'misora/game-uniform-flustered-chibi', 'misora/game-uniform-hush', 'misora/game-uniform-normal', 'misora/game-uniform-pale',
+    'misora/outing-normal', 'misora/pantsuit-first-day', 'misora/windbreaker-normal', 'muto/game-uniform-normal', 'nakata/game-uniform-normal', 'nakata/practice-bashful', 'nakata/practice-confronting', 'nakata/practice-normal',
+    'nakata/practice-rage', 'nakata/practice-shock', 'nohara/game-uniform-normal', 'oyama/game-uniform-normal', 'oyama/practice-angry', 'oyama/practice-frustrated', 'oyama/practice-normal', 'oyama/school-summer-injured',
+    'oyama/school-winter-normal', 'sasaki/game-uniform-normal', 'sasaki/practice-normal', 'shinjo/game-uniform-normal', 'tahara/game-uniform-normal', 'tahara/practice-normal', 'tsuyoshi/formal-suit-normal'].sort().join(','), [...usedPortraits].sort().join(','));
+check('美空の部屋着（デフォルメ）は使わない（家の場面は厳だけを出す）', ![...usedPortraits].some((x) => /loungewear/.test(x)) &&
+  ['c17-007', 'c17-020', 'c23-005', 'c23-016', 'c27-018', 'c27-021'].every((id) => shownAt(id) === 'gen/casual-normal'));
 const sceneLines = (...keys) => keys.flatMap((k) => G.scenes[k].lines.map((l) => l.id));
 const firstDayLines = allIds.filter((id) => shownAt(id).includes('misora/pantsuit-first-day'));
 check('就任初日のスーツは5-11の回想（testimony-memory）の中だけ', firstDayLines.length > 0 && firstDayLines.every((id) => sceneOfLine.get(id) === 'testimony-memory'));
 const kawamotoPortraitLines = allIds.filter((id) => shownAt(id).includes('kawamoto/'));
-check('河本（私服）は現在の場面（5-10〜5-12）だけで、回想には出さない', kawamotoPortraitLines.length > 0 &&
-  kawamotoPortraitLines.every((id) => ['kawamoto-visit', 'testimony-start', 'testimony-present', 'testimony-ask', 'testimony-wait', 'testimony-end', 'kawamoto-results'].includes(sceneOfLine.get(id))));
+check('河本（私服）は現在の場面（5-10〜5-12、決勝のスタンド c33d-001j〜k）だけで、回想には出さない', kawamotoPortraitLines.length > 0 &&
+  kawamotoPortraitLines.every((id) => ['kawamoto-visit', 'testimony-start', 'testimony-present', 'testimony-ask', 'testimony-wait', 'testimony-end', 'kawamoto-results'].includes(sceneOfLine.get(id)) || ['c33d-001j', 'c33d-001k'].includes(id)));
 check('名前のない先輩・1年生だけの場面（5-2・5-3、5-5の先輩に聞く分岐）では立ち絵を出さない',
   sceneLines('practice-start', 'practice-infield', 'practice-outfield', 'practice-end', 'scorer-first', 'marriage-senpai').every((id) => shownAt(id) === '-'));
-const lastPortraitScene = 'kawamoto-results';
-check('立ち絵は冒頭と5-4〜5-12にだけ出て、5-13以降には残らない',
-  allIds.filter((id) => shownAt(id) !== '-').every((id) => /^c01-/.test(id) || scenes.indexOf(sceneOfLine.get(id)) >= scenes.indexOf('coach-arrival') && scenes.indexOf(sceneOfLine.get(id)) <= scenes.indexOf(lastPortraitScene)));
+// 5-13以降（全編の配置。docs/portrait-staging.md）
+const at = (id) => V.stateAt(G, id).portraits;
+check('卒業後の中田（応援席 c34-005、c35-014〜c35-015）と、引退後の家の場面には試合姿を出さない', ['c34-005', 'c35-014', 'c35-015'].every((id) => !shownAt(id).includes('nakata')));
+check('試合中の中田は試合用ユニフォーム（北陵戦・龍成戦・清峰戦）', allIds.filter((id) => /^c1[4-9]-(?!pre-)/.test(id) && shownAt(id).includes('nakata/')).every((id) => shownAt(id).includes('nakata/game-uniform-normal')) && shownAt('c14-002-p1').includes('nakata/game-uniform-normal'));
+check('名簿に佐々木の名前を見つける行（csummer-016〜019）では、佐々木本人を出さない', ['csummer-016', 'csummer-017', 'csummer-018', 'csummer-019'].every((id) => shownAt(id) === '-'));
+check('回想の廊下（c15-008〜c15-013）は美空だけで、現在の佐々木を残さない', ['c15-008', 'c15-013'].every((id) => shownAt(id) === 'misora/game-uniform-normal'));
+check('北陵ベンチ・龍成ベンチへの転換で、鳳翔の人物を残さない（北陵監督は立ち絵なし）', ['c15-017', 'c15-023', 'c16-017', 'c16-018'].every((id) => shownAt(id) === '-') && ['c19-013', 'c20-005g', 'c29h-006'].every((id) => shownAt(id) === 'nohara/game-uniform-normal'));
+check('佐々木の陶酔の差分は制作待ち：c16-002〜c16-005 は立ち絵を出さず、未納品の画像を登録・参照しない', ['c16-002', 'c16-004', 'c16-004a', 'c16-005'].every((id) => shownAt(id) === '-') && !/sasaki-game-uniform-daydream/.test(read('game.js')));
+check('新聞の一枚絵の区間は立ち絵を重ねず、大山は cnews-014 で部室を出たあと残らない', ['cnews-010', 'cnews-011c'].every((id) => shownAt(id) === '-') && shownAt('cnews-014') === 'oyama/practice-normal' && shownAt('cnews-015') === '-');
+check('負傷姿（松葉杖）は病院の診察のあと（c18-020〜）と敗戦後の柵（c20-007〜008）だけで、復帰後のグラウンドには出さない',
+  allIds.filter((id) => shownAt(id).includes('school-summer-injured')).every((id) => /^c18-0(2[0-8])$|^c20-00[78]$/.test(id)) && shownAt('c21-002').includes('oyama/practice-normal') && ['c18-018', 'c18-019'].every((id) => !shownAt(id).includes('oyama')));
+check('100m離れたバス停の大山を、美空・剛と同じ並びで見せない（c24-008〜c24-013-3 は立ち絵なし）', ['c24-008', 'c24-011', 'c24-013-3'].every((id) => shownAt(id) === '-'));
+check('田原・小宮の分岐：美空は通り過ぎるまで（c26a-007〜009、c26b-006〜008a）で、そのあと残さない', !shownAt('c26a-009a').includes('misora') && !shownAt('c26b-009').includes('misora') && shownAt('c26a-008').includes('misora/windbreaker-normal') && shownAt('c26b-008').includes('misora/windbreaker-normal'));
+check('前日の映像確認（c26e-001-p1〜p30）では、映像の中の新庄を出さない', sceneLines('rookies-teirei').filter((id) => /^c26e-001-p/.test(id)).every((id) => !shownAt(id).includes('shinjo')) && shownAt('c26e-004') === 'komiya/game-uniform-normal,shinjo/game-uniform-normal');
+check('美空の大きな笑顔・喜び（c35-019〜c36-020）は合う差分がないので出さない', allIds.filter((id) => /^c3(5-(019|02[01])|6-)/.test(id)).every((id) => !shownAt(id).includes('misora')));
+check('名前のない人物・龍成選手・北陵監督・記者・保護者・インタビュアーは別人の素材で代用しない（使う人物は登録した12人だけ）', [...usedPortraits].every((x) => ['oyama', 'hiyori', 'nakata', 'sasaki', 'tahara', 'komiya', 'shinjo', 'muto', 'nohara', 'tsuyoshi', 'kawamoto', 'gen', 'misora'].includes(x.split('/')[0])));
 const portraitSpans = [
   ['c01-013', '-'], ['c01-014', 'oyama/school-winter-normal'], ['c01-020', 'oyama/school-winter-normal'], ['c01-021', '-'], ['c01-023', '-'],
   ['c04-004', '-'], ['c04-005', 'misora/game-uniform-normal'], ['c04-034', 'misora/game-uniform-normal'],
@@ -975,7 +993,40 @@ const portraitSpans = [
   ['c11m-021', '-'], ['c11m-029', 'misora/pantsuit-first-day'], ['c11p-001', 'kawamoto/casual-normal'], ['c11a-001', 'kawamoto/casual-normal'],
   ['c11w-001', 'oyama/practice-normal,kawamoto/casual-normal'], ['c11w-006', 'oyama/practice-frustrated,kawamoto/casual-normal'], ['c11e-001', 'kawamoto/casual-normal'], ['c11e-002', '-'],
   ['c12-001', 'misora/game-uniform-normal'], ['c12-002', 'misora/game-uniform-normal,kawamoto/casual-normal'], ['c12-016', 'misora/game-uniform-normal'],
-  ['c12-020', 'misora/game-uniform-normal'], ['c13-001', '-'], ['c36-021', '-'],
+  ['c12-020', 'misora/game-uniform-normal'], ['c13-001', '-'], ['c13-013', '-'],
+  ['c13-014', 'oyama/game-uniform-normal,shinjo/game-uniform-normal'], ['c13-020', 'misora/game-uniform-normal,shinjo/game-uniform-normal'], ['c13-027', 'misora/game-uniform-normal,shinjo/game-uniform-normal'],
+  ['c13-028', 'misora/game-uniform-normal,hiyori/jersey-normal'], ['c13-033', 'oyama/game-uniform-normal,shinjo/game-uniform-normal'], ['c13-037', 'oyama/game-uniform-normal,shinjo/game-uniform-normal'],
+  ['csummer-001', 'hiyori/school-summer-normal'], ['csummer-009', 'hiyori/school-summer-normal,oyama/practice-normal'], ['csummer-010', 'sasaki/practice-normal'], ['csummer-014', 'misora/game-uniform-normal'],
+  ['c14-001', '-'], ['c14-002-p1', 'hiyori/school-summer-bench,nakata/game-uniform-normal'], ['c14-002-p11', '-'], ['c14-005', 'nakata/game-uniform-normal'], ['c14-010', 'hiyori/school-summer-bench,nakata/game-uniform-normal'],
+  ['c14-011-p1', '-'], ['c14-011-p6', 'misora/game-uniform-normal'], ['c14-011-p10', '-'],
+  ['c15-002', 'misora/game-uniform-normal'], ['c15-005', 'misora/game-uniform-normal,sasaki/game-uniform-normal'], ['c15-007', '-'], ['c15-014', 'sasaki/game-uniform-normal'], ['c15-016a', 'sasaki/game-uniform-normal'],
+  ['c15-025', 'misora/game-uniform-normal'], ['c15-029', 'misora/game-uniform-normal,sasaki/game-uniform-normal'], ['c16-001', '-'], ['c16-015', 'sasaki/game-uniform-normal'], ['c16-016', 'sasaki/game-uniform-normal'],
+  ['c16-023', 'misora/game-uniform-normal'], ['cnews-001', '-'], ['cnews-005', 'oyama/practice-normal'], ['cnews-012', 'oyama/practice-normal'],
+  ['c17-002', 'misora/game-uniform-normal'], ['c17-005', '-'], ['c17-024', '-'], ['c18-pre-c', 'nakata/practice-normal,oyama/practice-normal'], ['c18-pre-f', '-'], ['c18-001-p4', 'nakata/game-uniform-normal'],
+  ['c18-001-p7', 'oyama/game-uniform-normal'], ['c18-012', '-'], ['c18-017', 'hiyori/school-summer-bench'], ['c18-027', 'hiyori/school-summer-bench,oyama/school-summer-injured'],
+  ['c19-001', '-'], ['c19-004', 'misora/game-uniform-normal'], ['c19-010', 'nakata/game-uniform-normal,misora/game-uniform-normal'], ['c19-014', 'nohara/game-uniform-normal'], ['c19-019', 'muto/game-uniform-normal'], ['c19-022', '-'],
+  ['c19-025', 'nakata/game-uniform-normal,misora/game-uniform-normal'], ['c20-004', '-'], ['c20-005h', 'nohara/game-uniform-normal'], ['c20-008', 'oyama/school-summer-injured'], ['c20-010', '-'], ['c20-014', '-'],
+  ['cblank-006', 'hiyori/school-summer-normal'], ['cblank-012', '-'], ['c21-005', 'oyama/practice-normal'], ['c21-022a', 'oyama/practice-normal'],
+  ['c22-009', 'nakata/practice-normal'], ['c22-016', 'hiyori/school-summer-normal'], ['c23-001', 'misora/windbreaker-normal'], ['c23-012', 'gen/casual-normal'],
+  ['c24-003', 'misora/outing-normal,tsuyoshi/formal-suit-normal'], ['c24a-002', '-'], ['c24a-007a', 'tsuyoshi/formal-suit-normal'], ['c24b-003', 'misora/outing-normal,tsuyoshi/formal-suit-normal'], ['c24b-006', '-'], ['c24e-001', '-'],
+  ['c25-014', 'misora/windbreaker-normal'], ['cwinter-010', 'hiyori/jersey-normal,oyama/practice-normal'], ['cwinter-030', '-'], ['csecond-003', 'hiyori/jersey-normal'], ['csecond-012', 'oyama/practice-normal'],
+  ['c26-003', 'oyama/practice-normal,tahara/practice-normal'], ['c26-006', 'komiya/practice-normal'], ['c26-009', '-'],
+  ['c26a-002', 'oyama/practice-normal,tahara/practice-normal'], ['c26a-008', 'misora/windbreaker-normal,tahara/practice-normal'], ['c26a-009b', 'oyama/practice-angry,tahara/practice-normal'], ['c26a-010', 'tahara/practice-normal'],
+  ['c26b-002', 'oyama/practice-normal,komiya/practice-normal'], ['c26b-008', 'misora/windbreaker-normal,komiya/practice-normal'], ['c26b-009', 'komiya/practice-normal'],
+  ['c26e-001-p2', 'hiyori/jersey-normal'], ['c26e-001', '-'], ['c26e-005', 'komiya/game-uniform-normal,shinjo/game-uniform-normal'], ['c26e-009', 'komiya/game-uniform-normal'], ['c26e-010', '-'],
+  ['c27-005', 'komiya/practice-normal'], ['c27-009', 'hiyori/school-summer-bench,misora/game-uniform-normal'], ['c27-016', 'komiya/practice-normal'], ['c27-025', 'gen/casual-normal'], ['c28-015', 'nohara/game-uniform-normal'],
+  ['c29a-003', 'hiyori/school-summer-bench'], ['c29b-001', '-'], ['c29c-001', '-'], ['c29d-005', 'muto/game-uniform-normal,nohara/game-uniform-normal'], ['c29d-008-p2', 'oyama/game-uniform-normal'],
+  ['c29f-002', 'tahara/game-uniform-normal'], ['c29g-001', 'tahara/game-uniform-normal'], ['c29h-003', 'misora/game-uniform-normal'], ['c29h-007', 'nohara/game-uniform-normal'], ['c29h-012', 'misora/game-uniform-normal'],
+  ['c29i-003', 'oyama/game-uniform-normal'], ['c29j-001', '-'], ['c29k-003', 'oyama/game-uniform-normal,misora/game-uniform-normal'], ['c29k-004', '-'],
+  ['cbus-001', 'hiyori/school-summer-normal'], ['cbus-003a', '-'], ['cbus-008', '-'], ['c30-001-p2', 'hiyori/school-summer-bench'], ['c30-004', 'komiya/game-uniform-normal'], ['c30-015', 'oyama/game-uniform-normal'],
+  ['c30-025-p4', 'hiyori/jersey-normal'], ['c31a-004', '-'], ['c31a-007', 'hiyori/jersey-normal'], ['c31d-002', 'hiyori/school-summer-bench'], ['c31h-001', '-'], ['c31k-003', '-'],
+  ['c32b-005', 'hiyori/school-summer-bench'], ['c32c-002', 'hiyori/jersey-normal'], ['c32d-001', 'hiyori/jersey-normal'], ['c32e-001-p4', 'tahara/game-uniform-normal'], ['c32e-002c', 'oyama/game-uniform-normal'],
+  ['c32g-002', 'tahara/game-uniform-normal'], ['c32h-003', '-'], ['c32i-004', 'oyama/game-uniform-normal,tahara/game-uniform-normal'], ['c32l-001', '-'], ['c32m-003', '-'],
+  ['c33a-001-p6', 'hiyori/school-summer-bench,komiya/game-uniform-normal'], ['c33a-001-p11', 'hiyori/school-summer-bench,oyama/game-uniform-normal'], ['c33c-001', 'hiyori/school-summer-bench'],
+  ['c33d-001i', 'gen/casual-normal'], ['c33d-001k', 'kawamoto/casual-normal'], ['c33d-001n', 'hiyori/school-summer-bench'], ['c33d-001r', '-'], ['c33f-002', 'hiyori/school-summer-bench,tahara/game-uniform-normal'],
+  ['c33i-004', 'tahara/game-uniform-normal'], ['c33k-001n', '-'], ['c33l-002', 'misora/game-uniform-normal,shinjo/game-uniform-normal'], ['c33l-005', 'shinjo/game-uniform-normal'], ['c33l-008', 'oyama/game-uniform-normal'],
+  ['clastout-002', '-'], ['clastout-005', 'hiyori/school-summer-bench'], ['c34-003', '-'], ['c34-014', 'hiyori/school-summer-bench'], ['c35-009', 'misora/game-uniform-normal,oyama/game-uniform-normal'],
+  ['c35-017', 'shinjo/game-uniform-normal'], ['c35-020', 'oyama/game-uniform-normal'], ['c36-001', 'oyama/game-uniform-normal'], ['c36-002', '-'], ['c36-015', 'gen/casual-normal'], ['c36-021', 'hiyori/school-summer-bench'],
 ];
 check('行ごとの立ち絵（左,右）：登場・退場・分岐・回想の主な行',
   portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.filter(([id, want]) => shownAt(id) !== want).map(([id]) => id + '=' + shownAt(id)).join(' '));
@@ -1020,7 +1071,7 @@ const addedSpans = {
  'misora/game-uniform-flustered-chibi': ['c07-005','c07-006','c07-016'],
  'kawamoto/casual-shock': ['c10-020','c10-021','c10-022'],
  'kawamoto/casual-angry': ['c10-029','c10-030'],
- 'oyama/practice-angry': ['c10-022','c10-023','c10-024','c10-025','c10-026','c10-027'],
+ 'oyama/practice-angry': ['c10-022','c10-023','c10-024','c10-025','c10-026','c10-027','c26a-009a','c26a-009b','c26a-009c','c26a-009d','c26a-009e'],
  'oyama/practice-frustrated': ['c11w-006','c11w-007'],
 };
 for (const [expr, expected] of Object.entries(addedSpans)) {
