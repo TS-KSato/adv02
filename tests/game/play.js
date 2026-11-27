@@ -2353,6 +2353,108 @@ async function revealLoadFailure(browser) {
   await ctx.close();
 }
 
+// スマートフォン表示のダブルタップ拡大の抑制（game.css の .kit-root { touch-action: manipulation }）。
+// タッチ入力を有効にしたモバイル環境（isMobile・hasTouch）で、実際のタップ（touchscreen.tap）を短い間隔で続けて送る。
+// ・ブラウザの拡大：visualViewport.scale を記録する（このエミュレーションでは、ピンチを含めてブラウザ側の拡大は起きないので、
+//   拡大を止める設定がタップするすべての領域に効いていることを、要素とその祖先の touch-action で確かめる）
+// ・連続タップの処理：1回のタップが1回の送りになること（取りこぼし・重複がない）、本文枠を隠した一枚絵の画面で、
+//   1回目で本文枠を戻し、2回目で次の行へ進むこと。強制の待ち時間は足していない。
+async function doubleTapGuard(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  section('ダブルタップ拡大の抑制（タッチ入力・' + size + '）');
+  const ctx = await browser.newContext({ viewport, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  const page = await openGame(ctx, { speedZero: true });
+  const meta = await page.evaluate(() => document.querySelector('meta[name=viewport]').getAttribute('content'));
+  check('viewport でピンチ拡大を禁止していない（user-scalable=no・maximum-scale を使わない）', !/user-scalable\s*=\s*(no|0)|maximum-scale/i.test(meta), meta);
+  check('作品の CSS で拡大の全面禁止（touch-action: none）をしていない', !/touch-action\s*:\s*none/.test(fs.readFileSync(path.join(ROOT, 'game.css'), 'utf8')));
+  // 拡大を止める設定が、タップする要素の祖先にあるか（touch-action は祖先との共通部分で決まる）
+  const guarded = (pts) => page.evaluate((pts) => pts.map(([x, y, what]) => {
+    const t = document.elementFromPoint(x, y);
+    let e = t, ok = false, none = false;
+    while (e && e !== document.documentElement) { const ta = getComputedStyle(e).touchAction; if (ta === 'manipulation') ok = true; if (ta === 'none') none = true; e = e.parentElement; }
+    return { what, ok: ok && !none, tag: t ? (t.className || t.tagName) : '' };
+  }), pts);
+  const W = viewport.width, H = viewport.height;
+  let g = await guarded([[W / 2, H * 0.3, 'タイトルの絵'], [W - 60, H - 40, 'タイトルのメニュー']]);
+  check('タイトル画面：絵とメニューのどこをタップしても、ダブルタップ拡大を止める設定が効く', g.every((x) => x.ok), JSON.stringify(g));
+  await page.getByRole('button', { name: 'はじめから', exact: true }).tap();
+  await page.waitForFunction(() => KIT.s.screen === 'play');
+  await page.evaluate(() => { KIT.s.speed = 0; window.__c = 0; document.addEventListener('click', () => window.__c++, true); });
+  const box = await page.locator('.kit-dialogue').boundingBox();
+  const dx = Math.round(box.x + box.width / 2), dy = Math.round(box.y + box.height / 2);
+  const bar = await page.locator('.kit-bar').boundingBox();
+  g = await guarded([[dx, dy, '本文枠'], [W / 2, 30, '画面の上（背景・立ち絵）'], [bar.x + 20, bar.y + bar.height / 2, 'ページ表示'], [bar.x + bar.width - 20, bar.y + bar.height / 2, '操作ボタン']]);
+  check('作品画面：本文枠・背景・操作ボタンのどこをタップしても、ダブルタップ拡大を止める設定が効く', g.every((x) => x.ok), JSON.stringify(g));
+  const st = () => page.evaluate(() => ({ line: KIT.s.lineId, scale: +visualViewport.scale.toFixed(3), phase: GAME_REVEAL.phase, clicks: window.__c, prose: document.querySelector('.kit-prose').textContent }));
+  const goTo = (id) => page.evaluate((id) => { KIT.goLine(id, { jump: true }); }, id).then(() => settled(page));
+  const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+  // 本文枠の連続タップ：60ms 間隔で4回 → 4行進み、倍率は変わらない
+  await goTo('c01-005');
+  await page.evaluate(() => { window.__c = 0; });
+  for (let i = 0; i < 4; i++) { await page.touchscreen.tap(dx, dy); await page.waitForTimeout(60); }
+  await settled(page);
+  let k = await st();
+  check('本文枠を60ms 間隔で4回タップすると、ちょうど4行進む（取りこぼし・重複なし）', k.line === order[order.indexOf('c01-005') + 4] && k.clicks === 4, JSON.stringify(k));
+  check('連続タップのあとも、ブラウザの表示倍率は1のまま', k.scale === 1, String(k.scale));
+  // 文字の表示中のタップは即時表示、次のタップで送る
+  await page.evaluate(() => { KIT.s.speed = 40; });
+  await goTo('c01-002');
+  await page.touchscreen.tap(dx, dy); await page.waitForTimeout(60);
+  await page.touchscreen.tap(dx, dy); await page.waitForTimeout(60);
+  await settled(page);
+  await page.evaluate(() => { KIT.s.speed = 0; });
+  k = await st();
+  const full = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines).find((l) => l.id === 'c01-003').text);
+  check('文字の表示中に連続でタップすると、1回目で全文を出し、2回目で次の行へ進む', k.line === 'c01-003', JSON.stringify(k));
+  await page.waitForFunction((t) => document.querySelector('.kit-prose').textContent.length > 0, full).catch(() => {});
+  // 本文枠を隠した一枚絵の画面（c20-004）：絵を2回続けてタップ → 1回目で本文枠を戻し、2回目で次の行へ（重複して2行進まない）
+  await goTo('c20-003');
+  await page.touchscreen.tap(dx, dy);
+  await page.waitForFunction(() => GAME_REVEAL.phase === 'hidden', null, { timeout: 10000 }).catch(() => {});
+  g = await guarded([[W / 2, H * 0.3, '一枚絵の上'], [dx, dy, '隠した本文枠の位置']]);
+  check('本文枠を隠した一枚絵の画面：絵と、隠した本文枠の位置のどちらをタップしても、ダブルタップ拡大を止める設定が効く', g.every((x) => x.ok), JSON.stringify(g));
+  await page.evaluate(() => { window.__c = 0; });
+  await page.touchscreen.tap(W / 2, Math.round(H * 0.3)); await page.waitForTimeout(60);
+  k = await st();
+  check('隠した画面の1回目のタップ：同じ行（c20-004）の本文枠を戻すだけで、次の行へ進まない', k.line === 'c20-004' && k.phase === 'none' && k.prose.length > 0, JSON.stringify(k));
+  await page.touchscreen.tap(dx, dy); await page.waitForTimeout(60);
+  await settled(page);
+  k = await st();
+  check('続けて2回目のタップ：次の行（c20-005）へ1行だけ進む（本文枠を戻した入力が重複して送られない）', k.line === 'c20-005' && k.clicks === 2 && k.scale === 1, JSON.stringify(k));
+  // 隠した画面を、本文枠の位置で素早く2回タップ（60ms）しても、本文枠を戻す → 次の行 の順
+  await goTo('c29h-011');
+  await page.touchscreen.tap(dx, dy);
+  await page.waitForFunction(() => GAME_REVEAL.phase === 'hidden', null, { timeout: 10000 }).catch(() => {});
+  await page.touchscreen.tap(dx, dy); await page.waitForTimeout(60); await page.touchscreen.tap(dx, dy);
+  await settled(page); await page.waitForTimeout(100);
+  k = await st();
+  check('隠した画面を素早く2回タップ：本文枠を戻してから1行だけ進む（c29h-013）。倍率は1のまま', k.line === 'c29h-013' && k.phase === 'none' && k.scale === 1, JSON.stringify(k));
+  // 送りキー・選択肢・セーブ・タイトル
+  await goTo('c01-005');
+  await page.keyboard.press('Space');
+  await settled(page);
+  check('送りキー（Space）で1行進む', (await st()).line === order[order.indexOf('c01-005') + 1]);
+  await goTo(G.scenes['practice-start'].lines.at(-1).id);
+  await page.touchscreen.tap(dx, dy);
+  await page.waitForFunction(() => KIT.s.choicesVisible, null, { timeout: 5000 }).catch(() => {});
+  await page.waitForTimeout(80);
+  await page.locator('.kit-choice').first().tap();
+  await settled(page);
+  check('選択肢をタップで選べる（選んだ先の最初の行へ進む）', (await st()).line === G.scenes[G.scenes['practice-start'].choices[0].to].lines[0].id, (await st()).line);
+  await page.getByRole('button', { name: 'セーブ', exact: true }).tap();
+  check('セーブをタップで開ける', await page.evaluate(() => document.querySelector('.kit-modal').open));
+  g = await guarded([[W / 2, H / 2, 'セーブ画面']]);
+  check('セーブ画面にも、ダブルタップ拡大を止める設定が効く', g.every((x) => x.ok), JSON.stringify(g));
+  await page.getByRole('button', { name: '閉じる', exact: true }).tap();
+  await page.getByRole('button', { name: 'AUTO', exact: true }).tap();
+  check('AUTO をタップで入れられる', await page.evaluate(() => KIT.s.auto_on));
+  await page.getByRole('button', { name: 'AUTO', exact: true }).tap();
+  await page.getByRole('button', { name: 'タイトル', exact: true }).tap();
+  await page.waitForFunction(() => KIT.s.screen === 'title', null, { timeout: 5000 }).catch(() => {});
+  check('タイトルへタップで戻れ、倍率は1のまま', (await page.evaluate(() => KIT.s.screen)) === 'title' && (await st()).scale === 1);
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -2404,6 +2506,7 @@ async function main() {
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await sasakiDaydreamFlow(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await revealFlow(browser, vp);
     await revealLoadFailure(browser);
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE]) await doubleTapGuard(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');

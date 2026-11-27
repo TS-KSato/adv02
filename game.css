@@ -174,3 +174,9 @@
    visibility で隠すので、本文枠・場面名の札が占める領域は詰めず、位置・大きさ・不透明度・操作ボタンの配置は変わらない。 */
 .kit-play.game-reveal-hidden .kit-dialogue,
 .kit-play.game-reveal-hidden .kit-scene { visibility: hidden; }
+
+/* ダブルタップ（スマートフォン表示でのマウスのダブルクリックを含む）でブラウザが拡大しないようにする。
+   ゲームの操作領域（タイトル・本文枠・一枚絵を表示中に本文枠を隠した画面・操作ボタン・選択肢・モーダル）は、すべて .kit-root の中にある。
+   touch-action: manipulation は、ダブルタップによる拡大だけを止め、ピンチによる拡大とスクロールは残す（拡大の全面禁止はしない。
+   viewport の user-scalable / maximum-scale は変えない）。タップ・クリックのイベントはそのまま届くので、送り・選択肢・ボタンは変わらない。 */
+.kit-root { touch-action: manipulation; }
