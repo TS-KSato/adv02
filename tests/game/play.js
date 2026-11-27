@@ -783,7 +783,9 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
   await advance(page);
   let r = await bgIs(page, 'hosho-field-bench');
   check('合流（' + G.scenes['rookies-teirei'].lines[0].id + '）で鳳翔のベンチに切り替わる', (await show(page)).lineId === G.scenes['rookies-teirei'].lines[0].id && r.ok, JSON.stringify(r.got));
-  check('合流の練習試合では立ち絵を出さない（既存の演出のまま）', (await portraitNow(page)).length === 0);
+  await waitPortraitLoaded(page);
+  const merged = (await portraitNow(page)).map((p) => p.file || p).join(',');
+  check('合流（前日の映像確認）では日和（ジャージ）だけを出し、分岐の大山・田原・小宮・美空を残さない', /hiyori-jersey-normal/.test(merged) && (await portraitNow(page)).length === 1 && !/oyama|tahara|komiya|misora/.test(merged), merged);
   await advanceToPicking(page, 'c26e-006', pick);
   await resumeHere(page);
   r = await bgIs(page, 'hosho-field-bench');
@@ -1983,6 +1985,85 @@ async function batch03InPlay(browser, viewport) {
   await ctx.close();
 }
 
+// 全編の立ち絵配置（docs/portrait-staging.md）：5-13以降の会話・場面転換・回想・分岐と合流を実際に送り、
+// 各行の背景と立ち絵が指定どおりで、毎フレーム黒（背景が空）を挟まないことを確かめる。再開と既読SKIP も確かめる。
+async function placementFlowInPlay(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  await settled(page);
+  await installRecorder(page);
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+    await installRecorder(page);
+  };
+  const shownState = () => page.evaluate(() => {
+    const m = /url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage);
+    const cg = document.querySelector('.kit-cg');
+    return (m ? m[1].split('/').pop() : '') + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + [...document.querySelectorAll('.kit-portrait img')].map((p) => p.getAttribute('src').split('/').pop()).join('+');
+  });
+  const walk = async (from, to, pick) => {
+    await goTo(from);
+    const seen = []; const wrong = [];
+    for (let i = 0; i < 160; i++) {
+      await settled(page); await waitPortraitLoaded(page);
+      const id = (await show(page)).lineId;
+      seen.push(id);
+      const exp = await expectedShown(page, id);
+      const got = await shownState();
+      if (got !== exp) wrong.push(id + ' ' + got + ' ≠ ' + exp);
+      if (id === to) break;
+      if ((await show(page)).choices) await page.locator('.kit-choice').nth(pick || 0).click(); else await advance(page);
+    }
+    const rec = await page.evaluate(() => window.__rec);
+    return { seen, wrong, bad: rec.bad };
+  };
+  const ranges = [
+    ['c13-013', 'csummer-016', 0, '5-13 新庄との接触 → 夏の名簿'],
+    ['c14-011-p4', 'c15-029', 0, '北陵戦のベンチ → 佐々木の指名（廊下の回想・北陵ベンチ・鳳翔ベンチ）'],
+    ['c16-013', 'cnews-016', 0, '本塁打のあとのベンチ・通路 → 新聞の章間（一枚絵の前後）'],
+    ['c17-001', 'c17-024', 0, '北陵戦の回想 → 神条家の居間'],
+    ['c18-pre-a', 'c19-016', 0, '大山の負傷（練習・家・試合・病院）→ 龍成戦の朝'],
+    ['c20-005e', 'c20-010', 0, '敗戦後：鳳翔ベンチ・龍成ベンチ・松葉杖の大山'],
+    ['c22-013', 'c23-006', 0, '中田の退場と日和 → 秋の部室 → 神条家'],
+    ['c24-007d', 'c24e-002', 0, '剛の目撃（剛に話す分岐）と合流'],
+    ['c24-007d', 'c24e-002', 1, '剛の目撃（紙袋を返す分岐）と合流'],
+    ['csecond-008', 'c26e-001-p3', 0, '田原と小宮の登場（田原の分岐）と合流'],
+    ['csecond-008', 'c26e-001-p3', 1, '田原と小宮の登場（小宮の分岐）と合流'],
+    ['c26e-001-p29', 'c27-009', 0, '前日の映像確認 → 翌日の練習試合 → 小宮と新庄の挨拶 → 5-27'],
+    ['c33d-001g', 'c33d-001n', 0, '決勝：スタンドの厳・河本 → 鳳翔ベンチの日和'],
+    ['c35-012', 'c36-021', 0, '公開求婚 → 本当の約束（ベンチ・応援席の転換）'],
+  ];
+  for (const [from, to, pick, name] of ranges) {
+    section('全編の立ち絵配置：' + name + '（' + size + '）');
+    const w = await walk(from, to, pick);
+    check(name + '：' + from + ' から ' + to + ' まで送って、各行の背景と立ち絵が指定どおり（残らない・消えない）', w.seen.includes(to) && w.wrong.length === 0, (w.seen.includes(to) ? '' : '未到達 ' + w.seen.at(-1) + ' ') + w.wrong.slice(0, 3).join(' / '));
+    check(name + '：送りの全フレームで、背景が空（黒）にならず、未読込の画像を出さない', w.bad.length === 0, w.bad.slice(0, 3).join(' / '));
+  }
+  section('全編の立ち絵配置：途中からの再開（' + size + '）');
+  for (const id of ['c13-024', 'csummer-012', 'c15-010', 'c15-014', 'c18-021', 'c20-008', 'c24-005', 'c26a-008', 'c26b-008', 'c26e-005', 'c29d-005', 'c33d-001k', 'c33l-003', 'c36-013']) {
+    await goTo(id); await settled(page); await waitPortraitLoaded(page);
+    check(id + ' の保存から「つづきから」で、同じ人物・衣装・配置になる', (await shownState()) === (await expectedShown(page, id)), await shownState());
+  }
+  section('全編の立ち絵配置：既読SKIP（' + size + '）');
+  for (const [from, until] of [['c13-013', 'csummer-016'], ['c14-011-p4', 'c15-029']]) {
+    await goTo(from);
+    await clickText(page, '既読SKIP');
+    await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 60000 }).catch(() => {});
+    if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+    await settled(page); await waitPortraitLoaded(page); await page.waitForTimeout(150);
+    const rec = await page.evaluate(() => window.__rec);
+    const end = (await show(page)).lineId;
+    const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+    check('既読SKIP で ' + from + ' から ' + until + ' より先まで送り抜け、止まった行の表示が指定どおりで、途中で黒を挟まない',
+      order.indexOf(end) >= order.indexOf(until) && (await shownState()) === (await expectedShown(page, end)) && rec.bad.length === 0, end + ' ' + rec.bad.slice(0, 2).join(' / '));
+  }
+  await snap(page, 'placement-' + viewport.width);
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -2030,6 +2111,7 @@ async function main() {
     await expressionsInPlay(browser, DESKTOP, '1280×720');
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await removedCgFlow(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await placementFlowInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');

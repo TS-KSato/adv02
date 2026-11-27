@@ -2819,6 +2819,288 @@ window.KIT_GAME = {
     { at: 'c12-016', portrait: { slot: 'right', clear: true } }, // 河本がベンチを出たあと
     { at: 'c13-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（新庄との接触）：左を明示して消す
     { at: 'c13-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（新庄との接触）：右を明示して消す
+    { at: 'c13-014', portrait: { slot: 'left', char: 'oyama', expr: 'game-uniform-normal' } }, // 5-13 試合後：ベンチで靴ひもを解く大山（練習試合のユニフォーム）
+    { at: 'c13-014', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // ネットの脇まで来た新庄
+    { at: 'c13-020', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 奥から出てきた監督。新庄は言葉を失い、道を空けて挨拶する
+    { at: 'c13-028', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // 少し離れたところで、監督が日和に声をかける（新庄は画面から外す）
+    { at: 'c13-033', portrait: { slot: 'left', char: 'oyama', expr: 'game-uniform-normal' } }, // 監督が校門へ去ったあと、新庄と大山へ焦点が戻る
+    { at: 'c13-033', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // （同じ）
+    { at: 'csummer-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-normal' } }, // 章間「夏の名簿」：部室で組み合わせ表を貼る日和
+    { at: 'csummer-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり：右を明示して消す
+    { at: 'csummer-002', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 背後から腕を伸ばす大山（グラブを取って練習へ出る）
+    { at: 'csummer-010', portrait: { slot: 'left', clear: true } }, // グラウンドへ転換：部室の2人を残さない
+    { at: 'csummer-010', portrait: { slot: 'right', char: 'sasaki', expr: 'practice-normal' } }, // 打撃ケージの後ろで球を拾う佐々木
+    { at: 'csummer-014', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 部室の戸を少し開けて名簿を差し入れる監督（佐々木は残さない）
+    { at: 'csummer-016', portrait: { slot: 'right', clear: true } }, // 名簿を読む平野。名簿の「佐々木」は本人を出さない
+    { at: 'c14-001', portrait: { slot: 'left', clear: true } }, // 5-14 北陵戦の朝：場面の始まり
+    { at: 'c14-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c14-002-p1', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 試合前：北陵の結果を広げる日和
+    { at: 'c14-002-p1', portrait: { slot: 'right', char: 'nakata', expr: 'game-uniform-normal' } }, // のぞき込む中田（試合用ユニフォーム）
+    { at: 'c14-002-p11', portrait: { slot: 'left', clear: true } }, // 中田が素振りの場所へ離れる
+    { at: 'c14-002-p11', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c14-005', portrait: { slot: 'right', char: 'nakata', expr: 'game-uniform-normal' } }, // 打球を捕られてベンチへ戻った中田
+    { at: 'c14-009', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 水を渡す日和（中田の問いは日和へ）
+    { at: 'c14-011-p1', portrait: { slot: 'left', clear: true } }, // 中田は守備へ出る（ベンチに残さない）
+    { at: 'c14-011-p1', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c14-011-p5', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 打順表を持って平野へ体を寄せる監督
+    { at: 'c14-011-p10', portrait: { slot: 'right', clear: true } }, // 段の上の先輩へ焦点が移る（名前のない先輩は出さない）
+    { at: 'c15-001', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 5-15 代打を告げる監督
+    { at: 'c15-004', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // ベンチの奥でヘルメットを抱える佐々木
+    { at: 'c15-007', portrait: { slot: 'left', clear: true } }, // 回想へ入る直前：現在の2人を消す
+    { at: 'c15-007', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c15-008', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 回想：廊下で名簿を確かめる監督（現在の佐々木は出さない）
+    { at: 'c15-014', portrait: { slot: 'left', clear: true } }, // 現在へ戻る
+    { at: 'c15-014', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // ヘルメットをかぶる佐々木
+    { at: 'c15-017', portrait: { slot: 'right', clear: true } }, // 北陵ベンチへ転換：鳳翔の人物を残さない（北陵監督は立ち絵なし）
+    { at: 'c15-024', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 鳳翔ベンチ：平野の隣に戻った監督
+    { at: 'c15-028', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // 白線の手前で振り返る佐々木
+    { at: 'c16-001', portrait: { slot: 'left', clear: true } }, // 5-16 打席：ベンチの監督と打席の佐々木は並べない。陶酔の差分は制作待ち（c16-002〜c16-004a）
+    { at: 'c16-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c16-015', portrait: { slot: 'right', char: 'sasaki', expr: 'game-uniform-normal' } }, // 生還してベンチに戻り、監督を探す佐々木
+    { at: 'c16-017', portrait: { slot: 'right', clear: true } }, // 北陵ベンチへ転換
+    { at: 'c16-022', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 試合後の通路：記者に呼び止められる監督
+    { at: 'cnews-001', portrait: { slot: 'right', clear: true } }, // 章間「新聞と記録」：場面の始まり
+    { at: 'cnews-005', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 新聞をのぞき込む大山（朝の部室）
+    { at: 'cnews-010', portrait: { slot: 'right', clear: true } }, // 新聞の一枚絵の区間は立ち絵を重ねない
+    { at: 'cnews-012', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 一枚絵のあと：次の映像を聞く大山
+    { at: 'cnews-015', portrait: { slot: 'right', clear: true } }, // 大山が部室を出たあと
+    { at: 'c17-002', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 回想：北陵戦のベンチの監督
+    { at: 'c17-005', portrait: { slot: 'right', clear: true } }, // 内野へ声を張る場面（中田は守備中。並べない）
+    { at: 'c17-007', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 神条家の居間：厳（美空は部屋着の通常の立ち絵がないので出さない）
+    { at: 'c17-024', portrait: { slot: 'left', clear: true } }, // 厳が居間を出たあと
+    { at: 'c18-pre-b', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 出口で声を張る中田
+    { at: 'c18-pre-b', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 走り続ける大山
+    { at: 'c18-pre-f', portrait: { slot: 'left', clear: true } }, // 大山の家の前：私服の立ち絵がないので出さない
+    { at: 'c18-pre-f', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c18-001-p4', portrait: { slot: 'right', char: 'nakata', expr: 'game-uniform-normal' } }, // 準決勝：アウトを数えろと言う中田
+    { at: 'c18-001-p6', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // センターの先輩を呼び止める大山
+    { at: 'c18-001-p8', portrait: { slot: 'right', clear: true } }, // 大山がライトへ走る。以降の守備・負傷・担架は背景で進める
+    { at: 'c18-017', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 病院の待合室：大山の帽子を膝に置く日和（ベンチから来た服装）
+    { at: 'c18-020', portrait: { slot: 'right', char: 'oyama', expr: 'school-summer-injured' } }, // 診察のあと：足首を固定した大山（診察中は出さない）
+    { at: 'c19-001', portrait: { slot: 'left', clear: true } }, // 決勝の朝：病院の人物を残さない
+    { at: 'c19-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c19-003', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // ライトの先輩を見る監督
+    { at: 'c19-010', portrait: { slot: 'left', char: 'nakata', expr: 'game-uniform-normal' } }, // 塁に出ろと返す中田
+    { at: 'c19-013', portrait: { slot: 'left', clear: true } }, // 龍成ベンチへ転換
+    { at: 'c19-013', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 鳳翔の記録を見比べる野原
+    { at: 'c19-017', portrait: { slot: 'right', clear: true } }, // 試合の経過
+    { at: 'c19-019', portrait: { slot: 'right', char: 'muto', expr: 'game-uniform-normal' } }, // 4番として呼ばれ、打席に立つ武藤
+    { at: 'c19-021', portrait: { slot: 'right', clear: true } }, // 打球を追う（背景で進める）
+    { at: 'c19-024', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 掲示板を見上げる監督
+    { at: 'c19-025', portrait: { slot: 'left', char: 'nakata', expr: 'game-uniform-normal' } }, // 取り返すと叫ぶ中田
+    { at: 'c19-027', portrait: { slot: 'left', clear: true } }, // 9回裏の攻撃（背景で進める）
+    { at: 'c19-027', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c20-005g', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 龍成ベンチ：帰り支度の手を止めた野原
+    { at: 'c20-006', portrait: { slot: 'right', clear: true } }, // 鳳翔側へ戻る。泣く監督・中田は合う差分がないので出さない
+    { at: 'c20-007', portrait: { slot: 'right', char: 'oyama', expr: 'school-summer-injured' } }, // 柵をつかむ松葉杖の大山
+    { at: 'c20-009', portrait: { slot: 'right', clear: true } }, // 泣く中田へ焦点が移る
+    { at: 'cblank-001', portrait: { slot: 'left', clear: true } }, // 章間「空いた一行」：場面の始まり
+    { at: 'cblank-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'cblank-005', portrait: { slot: 'right', char: 'hiyori', expr: 'school-summer-normal' } }, // 机の向かいでボトルを片づける日和
+    { at: 'cblank-009', portrait: { slot: 'right', clear: true } }, // 部室を出る
+    { at: 'c21-001', portrait: { slot: 'left', clear: true } }, // 5-21：場面の始まり
+    { at: 'c21-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c21-002', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 松葉杖なしで歩いてくる大山（練習着。負傷姿は使わない）
+    { at: 'c22-001', portrait: { slot: 'left', clear: true } }, // 5-22：場面の始まり
+    { at: 'c22-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c22-002', portrait: { slot: 'right', char: 'nakata', expr: 'practice-normal' } }, // ファイルを開く中田（引退後。制服の立ち絵がないので練習着）
+    { at: 'c22-015', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-normal' } }, // 中田が出ていったあと、ファイルを出す日和
+    { at: 'c22-015', portrait: { slot: 'right', clear: true } }, // 中田の退場
+    { at: 'c23-001', portrait: { slot: 'left', clear: true } }, // 5-23 秋の部室
+    { at: 'c23-001', portrait: { slot: 'right', char: 'misora', expr: 'windbreaker-normal' } }, // ファイルを持ち上げる監督（秋の練習着の上着）
+    { at: 'c23-005', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 神条家の居間：厳（美空は部屋着の通常の立ち絵がないので出さない）
+    { at: 'c23-005', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c24-001', portrait: { slot: 'left', char: 'misora', expr: 'outing-normal' } }, // 駅前の広場：外出着の美空
+    { at: 'c24-001', portrait: { slot: 'right', char: 'tsuyoshi', expr: 'formal-suit-normal' } }, // 結婚式帰りのスーツの剛
+    { at: 'c24-008', portrait: { slot: 'left', clear: true } }, // 100m離れたバス停の大山へ視点が移る。並べないので消す（休日の大山の私服がないので大山も出さない）
+    { at: 'c24-008', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c24a-001', portrait: { slot: 'left', clear: true } }, // 分岐：剛に話す（大山と先輩は立ち絵なし）
+    { at: 'c24a-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c24a-007', portrait: { slot: 'right', char: 'tsuyoshi', expr: 'formal-suit-normal' } }, // 紙袋を取りに引き返してきた剛
+    { at: 'c24b-001', portrait: { slot: 'left', char: 'misora', expr: 'outing-normal' } }, // 分岐：駅の入口で美空と剛に追いつく
+    { at: 'c24b-001', portrait: { slot: 'right', char: 'tsuyoshi', expr: 'formal-suit-normal' } }, // （同じ）
+    { at: 'c24b-005', portrait: { slot: 'left', clear: true } }, // 2人が駅へ入る
+    { at: 'c24b-005', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c24e-001', portrait: { slot: 'left', clear: true } }, // 合流：遠ざかる2人の背中
+    { at: 'c24e-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c25-001', portrait: { slot: 'left', clear: true } }, // 5-25 秋の練習試合の通路
+    { at: 'c25-001', portrait: { slot: 'right', char: 'misora', expr: 'windbreaker-normal' } }, // 記者につかまった監督（保護者・男・記者は出さない）
+    { at: 'cwinter-001', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 12月の部室：組分けの紙を広げる日和
+    { at: 'cwinter-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり
+    { at: 'cwinter-007', portrait: { slot: 'right', char: 'oyama', expr: 'practice-normal' } }, // 冷えた空気と入ってきた大山
+    { at: 'cwinter-019', portrait: { slot: 'right', clear: true } }, // 大山が出ていったあと
+    { at: 'cwinter-021', portrait: { slot: 'left', clear: true } }, // 翌日の投内連係：背景で進める
+    { at: 'csecond-001', portrait: { slot: 'left', clear: true } }, // 4月の部室：場面の始まり
+    { at: 'csecond-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'csecond-002', portrait: { slot: 'right', char: 'hiyori', expr: 'jersey-normal' } }, // ボールを数える日和
+    { at: 'csecond-009', portrait: { slot: 'right', clear: true } }, // 日和がグラウンドへ出たあと。入口の2人は背中だけなので出さない
+    { at: 'csecond-011', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 平野の隣に並ぶ大山
+    { at: 'c26-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 新入生の前で足を止める大山
+    { at: 'c26-001', portrait: { slot: 'right', char: 'tahara', expr: 'practice-normal' } }, // ミットを拾って顔を上げる田原
+    { at: 'c26-005', portrait: { slot: 'left', clear: true } }, // 大山と田原はグラウンドへ
+    { at: 'c26-005', portrait: { slot: 'right', char: 'komiya', expr: 'practice-normal' } }, // 帽子を取る小宮
+    { at: 'c26-009', portrait: { slot: 'right', clear: true } }, // 小宮が大山を追って走る
+    { at: 'c26a-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 分岐（田原）：ブルペンの大山
+    { at: 'c26a-001', portrait: { slot: 'right', char: 'tahara', expr: 'practice-normal' } }, // 球を受ける田原
+    { at: 'c26a-007', portrait: { slot: 'left', char: 'misora', expr: 'windbreaker-normal' } }, // 通路を通る監督（上着）
+    { at: 'c26a-009a', portrait: { slot: 'left', char: 'oyama', expr: 'practice-angry' } }, // 監督は角を曲がった。「死ね」と投げる大山
+    { at: 'c26a-010', portrait: { slot: 'left', clear: true } }, // 通路にはもう誰もいない
+    { at: 'c26b-001', portrait: { slot: 'left', char: 'oyama', expr: 'practice-normal' } }, // 分岐（小宮）：バットを手に取る大山
+    { at: 'c26b-001', portrait: { slot: 'right', char: 'komiya', expr: 'practice-normal' } }, // 球を拾い集める小宮
+    { at: 'c26b-006', portrait: { slot: 'left', char: 'misora', expr: 'windbreaker-normal' } }, // 足元に転がった球で立ち止まる監督
+    { at: 'c26b-009', portrait: { slot: 'left', clear: true } }, // 監督が歩いていったあと（小宮は残る）
+    { at: 'c26e-001-p1', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 合流：前日の練習後、映像を探す日和（映像の新庄は出さない）
+    { at: 'c26e-001-p1', portrait: { slot: 'right', clear: true } }, // 場面の始まり
+    { at: 'c26e-001', portrait: { slot: 'left', clear: true } }, // 翌日の練習試合（試合の経過は背景で進める）
+    { at: 'c26e-003', portrait: { slot: 'left', char: 'komiya', expr: 'game-uniform-normal' } }, // 試合後：新庄に挨拶する小宮
+    { at: 'c26e-003', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // （同じ）
+    { at: 'c26e-009', portrait: { slot: 'right', clear: true } }, // 新庄が道具を取りに行く
+    { at: 'c26e-010', portrait: { slot: 'left', clear: true } }, // 記録を書く平野
+    { at: 'c27-004', portrait: { slot: 'right', char: 'komiya', expr: 'practice-normal' } }, // 「もうちょっと、でしたね」と返す小宮
+    { at: 'c27-007', portrait: { slot: 'right', clear: true } }, // 平野の振り返り
+    { at: 'c27-008', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // ベンチでボールのカゴを引き寄せる日和
+    { at: 'c27-008', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 組み合わせ表を広げる監督
+    { at: 'c27-015', portrait: { slot: 'left', clear: true } }, // 1塁の先輩と小宮の話へ
+    { at: 'c27-015', portrait: { slot: 'right', char: 'komiya', expr: 'practice-normal' } }, // （同じ）
+    { at: 'c27-017', portrait: { slot: 'right', clear: true } }, // 平野が走者に入る
+    { at: 'c27-018', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 神条家の居間：記録を並べる厳（美空は部屋着の通常の立ち絵がないので出さない）
+    { at: 'c28-001', portrait: { slot: 'left', clear: true } }, // 龍成の部室：場面の始まり
+    { at: 'c28-001', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 映像を見返す野原（龍成選手は立ち絵なし）
+    { at: 'c29a-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 決勝の日の通路：長机の日和
+    { at: 'c29a-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり
+    { at: 'c29b-001', portrait: { slot: 'left', clear: true } }, // 分岐：ファイルを開く平野
+    { at: 'c29c-001', portrait: { slot: 'left', clear: true } }, // 分岐：ベンチへ（ベンチの奥の先輩は出さない）
+    { at: 'c29c-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c29d-000-p1', portrait: { slot: 'left', clear: true } }, // 合流：試合の経過
+    { at: 'c29d-000-p1', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c29d-004', portrait: { slot: 'left', char: 'muto', expr: 'game-uniform-normal' } }, // 龍成ベンチ：バットを立てかける武藤
+    { at: 'c29d-004', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 武藤に指示する野原
+    { at: 'c29d-008', portrait: { slot: 'left', clear: true } }, // 鳳翔ベンチへ戻る
+    { at: 'c29d-008', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c29d-008-p1', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 初球の欄を指でたたく大山
+    { at: 'c29e-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // ベンチの端で水を飲む田原
+    { at: 'c29f-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 分岐：初球の記録を見る田原
+    { at: 'c29g-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 分岐：自分の打順を確かめる田原
+    { at: 'c29h-001', portrait: { slot: 'right', clear: true } }, // 合流：8回表の経過
+    { at: 'c29h-002', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 鞄から予約控えを出す監督
+    { at: 'c29h-006', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 龍成ベンチ：監督を見比べる野原
+    { at: 'c29h-008', portrait: { slot: 'right', clear: true } }, // 試合の経過
+    { at: 'c29h-009', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 伝令を止める野原
+    { at: 'c29h-011', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 鳳翔ベンチ：予約控えをしまう監督
+    { at: 'c29h-013', portrait: { slot: 'right', char: 'nohara', expr: 'game-uniform-normal' } }, // 龍成ベンチ：野原の読み
+    { at: 'c29i-001', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 勝利の経路：打順表を受け取る大山
+    { at: 'c29i-004', portrait: { slot: 'right', clear: true } }, // 打球を追う（背景で進める）
+    { at: 'c29j-001', portrait: { slot: 'right', clear: true } }, // 敗戦の経路：場面の始まり（勝利の経路の人物を残さない）
+    { at: 'c29k-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 整列のあと、ベンチで鞄を開ける監督
+    { at: 'c29k-003', portrait: { slot: 'left', char: 'oyama', expr: 'game-uniform-normal' } }, // 「俺が、ふがいないばっかりに」の大山
+    { at: 'c29k-004', portrait: { slot: 'left', clear: true } }, // 翌日の部室
+    { at: 'c29k-004', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'cbus-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-normal' } }, // 行きのバス：入口で名簿に印をつける日和（移動中の服装は制服）
+    { at: 'cbus-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（敗戦の経路の人物を残さない）
+    { at: 'cbus-002', portrait: { slot: 'left', clear: true } }, // 車内：大山・美空は移動中の服装の立ち絵がないので出さない
+    { at: 'c30-001', portrait: { slot: 'left', clear: true } }, // 甲子園のベンチ：場面の始まり
+    { at: 'c30-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c30-001-p1', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 星浜の打順表を貼る日和
+    { at: 'c30-002', portrait: { slot: 'left', clear: true } }, // 1回表のあと
+    { at: 'c30-002', portrait: { slot: 'right', char: 'komiya', expr: 'game-uniform-normal' } }, // 先輩に聞かれる小宮
+    { at: 'c30-006', portrait: { slot: 'right', clear: true } }, // 試合の経過
+    { at: 'c30-013', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 本塁打のあとベンチに戻った大山
+    { at: 'c30-016', portrait: { slot: 'right', clear: true } }, // 試合の経過
+    { at: 'c30-025-p1', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 宿の食堂：港南の資料を出す日和（宿ではジャージ）
+    { at: 'c31a-001', portrait: { slot: 'left', clear: true } }, // 宿の廊下：記者（監督は宿での服装の立ち絵がないので出さない）
+    { at: 'c31a-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c31a-006', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 食堂からタブレットを持って出てくる日和
+    { at: 'c31b-001', portrait: { slot: 'left', clear: true } }, // 分岐：食堂の端で映像を見直す（日和は記者の対応中）
+    { at: 'c31c-001', portrait: { slot: 'left', clear: true } }, // 分岐：廊下で質問に答える
+    { at: 'c31d-001', portrait: { slot: 'left', clear: true } }, // 試合当日の通路
+    { at: 'c31d-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c31d-002', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 面会の案内を申し出る日和
+    { at: 'c31e-001', portrait: { slot: 'left', clear: true } }, // 分岐：グラウンドへ出る
+    { at: 'c31f-001', portrait: { slot: 'left', clear: true } }, // 分岐：面会の案内
+    { at: 'c31g-001', portrait: { slot: 'left', clear: true } }, // 3塁コーチへの伝達（名前のない先輩は出さない）
+    { at: 'c31h-001', portrait: { slot: 'left', clear: true } }, // 合流：試合の経過
+    { at: 'c31h-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c31i-001', portrait: { slot: 'left', clear: true } }, // 勝利の経路
+    { at: 'c31j-001', portrait: { slot: 'left', clear: true } }, // 敗戦の経路（勝利の経路の人物を残さない）
+    { at: 'c31k-001', portrait: { slot: 'left', clear: true } }, // 帰りのバス：大山・美空は移動中の服装の立ち絵がないので出さない
+    { at: 'c31k-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c32a-001', portrait: { slot: 'left', clear: true } }, // 3回戦：場面の始まり（敗戦の経路の人物を残さない）
+    { at: 'c32a-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c32b-003', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 先輩捕手に答える日和
+    { at: 'c32b-007', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 宿の食堂：映像を出す日和
+    { at: 'c32c-001', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 分岐：映像を止めてくれる日和
+    { at: 'c32d-001', portrait: { slot: 'left', char: 'hiyori', expr: 'jersey-normal' } }, // 分岐：映像を閉じる日和
+    { at: 'c32e-001', portrait: { slot: 'left', clear: true } }, // 準決勝：場面の始まり
+    { at: 'c32e-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c32e-001-p3', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // マスクを外して戻ってきた田原
+    { at: 'c32e-001-p6', portrait: { slot: 'right', clear: true } }, // 守備へ出る（大山と先輩のやりとりは背景で）
+    { at: 'c32e-001-p10', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // ミットをはめ直す田原を呼ぶ
+    { at: 'c32e-002', portrait: { slot: 'right', clear: true } }, // 2巡目の経過
+    { at: 'c32e-002a', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // ベンチの前まで戻ってきた大山
+    { at: 'c32e-002f', portrait: { slot: 'right', clear: true } }, // 投球を追う
+    { at: 'c32e-004', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // ベンチで水を飲み、グラブを膝に置く大山
+    { at: 'c32f-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 隣に座る田原
+    { at: 'c32g-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 分岐：田原と記録を見る
+    { at: 'c32h-001', portrait: { slot: 'right', clear: true } }, // 分岐：田原はベンチの奥へ（奥からの声は出さない）
+    { at: 'c32i-001', portrait: { slot: 'left', char: 'oyama', expr: 'game-uniform-normal' } }, // 呼び止めた大山
+    { at: 'c32i-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 呼び止めた田原
+    { at: 'c32j-001', portrait: { slot: 'left', clear: true } }, // 8回表の経過
+    { at: 'c32j-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c32k-001', portrait: { slot: 'left', clear: true } }, // 勝利の経路
+    { at: 'c32l-001', portrait: { slot: 'left', clear: true } }, // 敗戦の経路
+    { at: 'c32m-001', portrait: { slot: 'left', clear: true } }, // 決勝の日のスタンド（監督の服装は分からないので出さない）
+    { at: 'c33a-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 決勝の朝：通路の長机でタブレットを開く日和
+    { at: 'c33a-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（敗戦の経路の人物を残さない）
+    { at: 'c33a-001-p5', portrait: { slot: 'right', char: 'komiya', expr: 'game-uniform-normal' } }, // 春の2番を覚えている小宮
+    { at: 'c33a-001-p7', portrait: { slot: 'right', clear: true } }, // 先輩が画面を見る
+    { at: 'c33a-001-p10', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 通りかかる大山
+    { at: 'c33a-002', portrait: { slot: 'right', clear: true } }, // 大山と田原が通路を出たあと
+    { at: 'c33b-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 分岐：映像を見比べる（日和は隣）
+    { at: 'c33c-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 分岐：投手の資料を分ける
+    { at: 'c33d-001', portrait: { slot: 'left', clear: true } }, // 決勝：試合の経過
+    { at: 'c33d-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c33d-001h', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // スタンド：少し離れた席の厳
+    { at: 'c33d-001j', portrait: { slot: 'left', clear: true } }, // 別の列へ視点が移る（厳と河本は並べない）
+    { at: 'c33d-001j', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 身を乗り出す河本
+    { at: 'c33d-001l', portrait: { slot: 'right', clear: true } }, // 鳳翔ベンチへ戻る
+    { at: 'c33d-001m', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // ホームを見る日和
+    { at: 'c33d-001p', portrait: { slot: 'left', clear: true } }, // 8回裏の経過
+    { at: 'c33e-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 9回に回りそうな走者を確かめる日和
+    { at: 'c33e-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // 隣で水を飲む田原
+    { at: 'c33f-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 分岐：田原と話す
+    { at: 'c33f-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // （同じ）
+    { at: 'c33g-001', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 分岐：日和と代走を確かめ、田原に声をかける
+    { at: 'c33g-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // （同じ）
+    { at: 'c33h-001', portrait: { slot: 'left', clear: true } }, // 9回表の経過
+    { at: 'c33h-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c33i-001', portrait: { slot: 'right', char: 'tahara', expr: 'game-uniform-normal' } }, // ベンチの前まで来た田原を呼び止める
+    { at: 'c33i-005', portrait: { slot: 'right', clear: true } }, // 田原がマウンドへ
+    { at: 'c33j-001', portrait: { slot: 'right', clear: true } }, // 勝利の経路
+    { at: 'c33k-001', portrait: { slot: 'right', clear: true } }, // 敗戦の経路
+    { at: 'c33l-001', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 表彰のあとの通路：声をかけられる美空
+    { at: 'c33l-001', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // 美空に声をかける新庄
+    { at: 'c33l-004', portrait: { slot: 'left', clear: true } }, // 美空が振り向いて去る
+    { at: 'c33l-008', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // 少し先で待っていた大山
+    { at: 'c33l-009', portrait: { slot: 'right', clear: true } }, // 帰りのバス
+    { at: 'clastout-001', portrait: { slot: 'left', clear: true } }, // 最後のアウト：場面の始まり（敗戦の経路の人物を残さない）
+    { at: 'clastout-001', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'clastout-005', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 平野の袖をつかむ日和
+    { at: 'c34-001', portrait: { slot: 'left', clear: true } }, // マウンドとグラウンドの歓喜（大山の笑顔の差分がないので背景で進める）
+    { at: 'c34-006', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // 袖を離す日和
+    { at: 'c34-015', portrait: { slot: 'left', clear: true } }, // 優勝校の放送
+    { at: 'c35-001', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // ベンチ前に呼ばれた大山
+    { at: 'c35-002', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 少し先でインタビューを待つ監督
+    { at: 'c35-014', portrait: { slot: 'left', clear: true } }, // 応援席の中田（卒業後の私服の立ち絵がないので出さない）
+    { at: 'c35-014', portrait: { slot: 'right', clear: true } }, // （同じ）
+    { at: 'c35-016', portrait: { slot: 'right', char: 'shinjo', expr: 'game-uniform-normal' } }, // 帝嶺のベンチ前の新庄
+    { at: 'c35-018', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // マイクを返し、美空のほうへ顎をしゃくる大山（美空の満面の笑みは差分がないので出さない）
+    { at: 'c36-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（本当の約束）：左を明示して消す
+    { at: 'c36-001', portrait: { slot: 'right', char: 'oyama', expr: 'game-uniform-normal' } }, // マイクを持つ監督へ一歩出る大山（前の場面から続けて明示）
+    { at: 'c36-002', portrait: { slot: 'right', clear: true } }, // 美空の宣言（大きな喜びの差分がないので出さない）
+    { at: 'c36-010', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 応援席の厳
+    { at: 'c36-012', portrait: { slot: 'left', clear: true } }, // ベンチへ戻る（大山の驚きは差分がないので出さない）
+    { at: 'c36-013', portrait: { slot: 'left', char: 'gen', expr: 'casual-normal' } }, // 応援席の厳（言葉に詰まる。厳の差分は通常のみ）
+    { at: 'c36-019', portrait: { slot: 'left', char: 'hiyori', expr: 'school-summer-bench' } }, // ベンチの出口で平野のほうを向く日和
     // 章間「新聞と記録」：一枚絵は区間内だけ表示する。
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
     // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
