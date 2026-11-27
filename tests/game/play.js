@@ -166,6 +166,12 @@ async function practicePlaythrough(browser, choiceIndex) {
       const lines = G.scenes[sceneKey].lines;
       const issues = [];
       for (const [index, line] of lines.entries()) {
+        // 一枚絵の導入で本文枠を隠している行（game-reveal.js）は、プレイヤーと同じく1回の入力で本文枠を戻してから読む
+        await page.waitForFunction(() => !window.GAME_REVEAL || GAME_REVEAL.phase !== 'waiting', null, { timeout: 10000 }).catch(() => {});
+        if (await page.evaluate(() => !!window.GAME_REVEAL && GAME_REVEAL.phase === 'hidden')) {
+          if ((await page.evaluate(() => KIT.s.lineId)) !== line.id || (await page.evaluate(() => document.querySelector('.kit-prose').textContent)) === line.text) issues.push(line.id + ' 本文枠を隠している間に本文が出ている');
+          await page.evaluate(() => KIT.next());
+        }
         const s = await show(page);
         const speaker = line.speaker ? G.speakers[line.speaker] : '';
         if (s.scene !== sceneKey || s.lineId !== line.id || s.prose !== line.text || s.speaker !== speaker) issues.push(line.id + ' 本文');
