@@ -783,7 +783,9 @@ async function rookiesHomeGround(browser, viewport, label, pick) {
   await advance(page);
   let r = await bgIs(page, 'hosho-field-bench');
   check('合流（' + G.scenes['rookies-teirei'].lines[0].id + '）で鳳翔のベンチに切り替わる', (await show(page)).lineId === G.scenes['rookies-teirei'].lines[0].id && r.ok, JSON.stringify(r.got));
-  check('合流の練習試合では立ち絵を出さない（既存の演出のまま）', (await portraitNow(page)).length === 0);
+  await waitPortraitLoaded(page);
+  const merged = (await portraitNow(page)).map((p) => p.file || p).join(',');
+  check('合流（前日の映像確認）では日和（ジャージ）だけを出し、分岐の大山・田原・小宮・美空を残さない', /hiyori-jersey-normal/.test(merged) && (await portraitNow(page)).length === 1 && !/oyama|tahara|komiya|misora/.test(merged), merged);
   await advanceToPicking(page, 'c26e-006', pick);
   await resumeHere(page);
   r = await bgIs(page, 'hosho-field-bench');
