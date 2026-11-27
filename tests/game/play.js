@@ -889,6 +889,7 @@ async function expressionsInPlay(browser, viewport, label) {
   await advance(page); await waitPortraitLoaded(page);
   let l = await one('nakata-practice-rage.webp');
   check('c08-021 で中田の激怒に切り替わり、美空は一時的に出ない', (await files()) === 'right:nakata-practice-rage.webp' && l.loaded, await files());
+  check('c08-021 の本文は確定文（言いかけて、給水台の中田と目が合う）', (await show(page)).lineId === 'c08-021' && (await show(page)).prose.replace(/\n/g, '') === 'いつからお父さんに聞いてるんですか、と言いかけた。給水台の中田先輩と、目が合った。', (await show(page)).prose);
   check('激怒：身体の切り口（画像の下端）が画面の下へ抜け、画面内に出ない', l && l.bottom >= l.vh - 0.5, JSON.stringify(l));
   check('激怒：湯気の残る頭と吠える顔（元画像の上から約320pxまで）が本文枠の上にある', l && at(l, 430, 60).y >= -40 && at(l, 430, 320).y <= l.dialogueTop, JSON.stringify(l));
   check('激怒（新版）：あごの横の潰れた硬球（元画像の約 300,320）と、握った拳の下端（約480px）が本文枠の上にある', l && at(l, 300, 320).y <= l.dialogueTop && at(l, 300, 480).y <= l.dialogueTop + 2 && at(l, 300, 320).y > 0, JSON.stringify(l));
@@ -897,8 +898,11 @@ async function expressionsInPlay(browser, viewport, label) {
   await resumeHere(page);
   l = await one('nakata-practice-rage.webp');
   check('c08-022 でリロードし、つづきからで激怒の画像と寄りの配置が戻る（切り口は画面外のまま）', (await show(page)).lineId === 'c08-022' && l && l.loaded && Math.abs((l.left + l.right) / 2 - l.vw / 2) < 2 && l.bottom >= l.vh - 0.5, JSON.stringify(l));
-  check('c08-022 の本文は硬球の確定文', (await show(page)).prose.replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
-  await advance(page); await advance(page); await waitPortraitLoaded(page);
+  check('c08-022 の本文は確定文（質問を引っ込める）', (await show(page)).prose.replace(/\n/g, '') === '……聞くのは、今度にしよう。');
+  await advance(page);
+  check('c08-023 は激怒のまま「次は50周じゃ済まない気がした。」', (await show(page)).lineId === 'c08-023' && (await show(page)).prose === '次は50周じゃ済まない気がした。' && (await files()) === 'right:nakata-practice-rage.webp', await files());
+  await advance(page); await waitPortraitLoaded(page);
+  check('c08-024 で質問をやめた平野の行動（質問の続きを書いて紙を渡す）へつながる', /^質問の続きを急いで書いて、紙を渡した。/.test((await show(page)).prose));
   l = await one('misora-game-uniform-normal.webp');
   check('c08-024 で美空との通常の会話画面に戻り、寄りの配置は解除される', (await show(page)).lineId === 'c08-024' && (await files()) === 'right:misora-game-uniform-normal.webp' && l.right >= l.vw - 1, await files());
 
