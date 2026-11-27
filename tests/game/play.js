@@ -1081,7 +1081,7 @@ async function cgBatch02InPlay(browser, viewport, label, pick) {
   await clickText(page, 'CG鑑賞');
   const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), text: b.textContent })));
   const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
-  check('CG 鑑賞の項目は残す3枚だけで、削除した4枚の項目は出ない', cards.length === 3 && JSON.stringify(ids.slice().sort()) === JSON.stringify(['cbus-oyama-daydream-bride', 'cnews-oyama-tears-newspaper', 'hirano-field-visit-vision']), JSON.stringify(cards));
+  check('CG 鑑賞の項目は4枚（佐々木の花嫁を含む）だけで、削除した4枚の項目は出ない', cards.length === 4 && JSON.stringify(ids.slice().sort()) === JSON.stringify(['c16-sasaki-daydream-bride', 'cbus-oyama-daydream-bride', 'cnews-oyama-tears-newspaper', 'hirano-field-visit-vision']), JSON.stringify(cards));
   check('通った場面の一枚絵（平野の朝練見学・大山の白無垢）は解放されている', ALL.every((id) => cards[ids.indexOf(id)] && cards[ids.indexOf(id)].open), JSON.stringify(cards));
   await snap(page, 'cg-batch02-' + viewport.width + '-' + pick);
   // 新聞の一枚絵（表情第1便）も、縮小・余白なしで画面全体を覆う
@@ -1841,7 +1841,7 @@ async function removedCgFlow(browser, viewport) {
   await page.waitForFunction(() => KIT.s.screen === 'title');
   await clickText(page, 'CG鑑賞');
   const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), img: b.querySelector('img') ? b.querySelector('img').getAttribute('src') : '' })));
-  check('CG 鑑賞は3項目で、壊れた項目・削除した画像への参照がない', cards.length === 3 && !cards.some((c) => REMOVED.some((id) => c.img.includes(id))), JSON.stringify(cards));
+  check('CG 鑑賞は4項目で、壊れた項目・削除した画像への参照がない', cards.length === 4 && !cards.some((c) => REMOVED.some((id) => c.img.includes(id))), JSON.stringify(cards));
   await clickText(page, '閉じる');
 
   section('既読SKIP（' + size + '）');
@@ -2064,6 +2064,103 @@ async function placementFlowInPlay(browser, viewport) {
   await ctx.close();
 }
 
+// 第4便（docs/cg-staging.md、docs/portrait-staging.md）：5-15 の指名から 5-16 の本塁打までを実際に送り、
+// c16-004 だけ佐々木の花嫁の一枚絵、c16-004a だけ陶酔の差分、c16-005 で解除されることを確かめる。再開・既読SKIP・CG 鑑賞の解放も確かめる。
+async function sasakiDaydreamFlow(browser, viewport) {
+  const size = viewport.width + '×' + viewport.height;
+  const ctx = await browser.newContext({ viewport });
+  const page = await openGame(ctx, { speedZero: true });
+  await clickText(page, 'はじめから');
+  await settled(page);
+  await installRecorder(page);
+  const goTo = async (id) => {
+    await page.evaluate(([key, at]) => { const raw = JSON.parse(localStorage.getItem(key)); raw.auto.at = at; localStorage.setItem(key, JSON.stringify(raw)); }, [SAVE_KEY, id]);
+    await resumeHere(page);
+    await installRecorder(page);
+  };
+  const shownState = () => page.evaluate(() => {
+    const m = /url\("?([^"]+)"?\)/.exec(document.querySelector('.kit-bg').style.backgroundImage);
+    const cg = document.querySelector('.kit-cg');
+    return (m ? m[1].split('/').pop() : '') + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + [...document.querySelectorAll('.kit-portrait img')].map((p) => p.getAttribute('src').split('/').pop()).join('+');
+  });
+  const gallery = () => page.evaluate(() => !!KIT.s.gallery['c16-sasaki-daydream-bride']);
+  section('佐々木の花嫁の一枚絵と陶酔の差分（' + size + '）');
+  await goTo('c15-001');
+  check('指名の前（c15-001）では、佐々木の一枚絵は CG 鑑賞に解放されていない', !(await gallery()));
+  const seen = []; const wrong = [];
+  for (let i = 0; i < 80; i++) {
+    await settled(page); await waitPortraitLoaded(page);
+    const id = (await show(page)).lineId;
+    seen.push(id);
+    const got = await shownState();
+    if (got !== (await expectedShown(page, id))) wrong.push(id + ' ' + got);
+    if (id === 'c16-003' || id === 'c16-002') check('c16-002（佐々木の心の声）では一枚絵・陶酔の差分を出さず、まだ解放しない', got.split('|')[1] === '' && got.split('|')[2] === '' && !(await gallery()), got);
+    if (id === 'c16-004') {
+      const c = await cgNow(page);
+      check('c16-004 で一枚絵（c16-sasaki-daydream-bride）を画面いっぱい（cover・縮小なし）に出し、立ち絵を重ねない', c && c.file === 'c16-sasaki-daydream-bride.webp' && c.loaded && c.full && got.split('|')[2] === '', JSON.stringify(c && { file: c.file, full: c.full }) + ' ' + got);
+      check('c16-004 への到達で CG 鑑賞に解放される', await gallery());
+      for (const [fx, fy, what, must] of [[0.53, 0.28, '美空の顔', true], [0.69, 0.17, '佐々木の顔', true], [0.73, 0.33, '佐々木の首に回した美空の腕', true], [0.6, 0.45, '抱き上げられた美空の胴とドレス', false], [0.5, 0.59, '背中を支える手袋の手', false], [0.68, 0.67, '膝を抱える手袋の手', false]]) {
+        const pt = cgPoint(c, fx, fy);
+        if (must) check('一枚絵：' + what + 'が本文枠・操作ボタンに隠れない', cgVisible(c, pt), JSON.stringify(pt));
+        else check('一枚絵：' + what + 'は画面内にある（半透明の本文枠に重なるのは許容し、記録する）', pt.x > 0 && pt.x < c.vw && pt.y > 0 && pt.y < c.vh);
+        if (!cgVisible(c, pt)) CG_HIDDEN.add(size + ' 佐々木の花嫁：' + what);
+      }
+    }
+    if (id === 'c16-004a') {
+      const l = (await layoutNow(page)).find((x) => x.file === 'sasaki-game-uniform-daydream.webp');
+      check('c16-004a で一枚絵を終え、球場（regional-stadium-field）の通常画面に陶酔の差分だけを出す', got === 'regional-stadium-field.webp||sasaki-game-uniform-daydream.webp', got);
+      check('陶酔の差分の顔（元画像の上から約250pxまで）が本文枠の上にある', l && l.top + 250 / 1280 * l.height <= l.dialogueTop && l.top + 40 / 1280 * l.height >= 0, JSON.stringify(l));
+      await goTo('c16-015'); await settled(page); await waitPortraitLoaded(page);
+      const n = (await layoutNow(page)).find((x) => x.file === 'sasaki-game-uniform-normal.webp');
+      check('陶酔の差分は、通常の佐々木（c16-015、同じ右の枠）と同じ位置・大きさ（急に拡大しない）', l && n && ['left', 'top', 'width', 'height'].every((k) => Math.abs(l[k] - n[k]) < 1), JSON.stringify({ d: l && [l.left, l.top, l.width, l.height], n: n && [n.left, n.top, n.width, n.height] }));
+      await goTo('c16-004a');
+    }
+    if (id === 'c16-005') check('c16-005 で陶酔の差分を消し、プレーを追う通常画面へ戻る（一枚絵も残らない）', got === 'regional-stadium-field.webp||', got);
+    if (id === 'c16-007') break;
+    await advance(page);
+  }
+  check('c15-001 から c16-007 まで送って、各行の背景・一枚絵・立ち絵が指定どおり（佐々木の指名・回想・北陵ベンチを含む）', seen.includes('c16-007') && wrong.length === 0, wrong.slice(0, 3).join(' / '));
+  const rec = await page.evaluate(() => window.__rec);
+  check('送りの全フレームで、黒（背景が空）を挟まず、一枚絵に立ち絵を重ねない', rec.bad.length === 0, rec.bad.slice(0, 3).join(' / '));
+  for (const [id, want] of [['c16-004', 'regional-stadium-field.webp|c16-sasaki-daydream-bride.webp|'], ['c16-004a', 'regional-stadium-field.webp||sasaki-game-uniform-daydream.webp'], ['c16-005', 'regional-stadium-field.webp||'], ['c16-006', 'regional-stadium-field.webp||']]) {
+    await goTo(id); await settled(page); await waitPortraitLoaded(page);
+    check(id + ' の保存から「つづきから」で同じ表示に戻る', (await shownState()) === want, await shownState());
+  }
+  // 既読SKIP：読んだ c15-024〜c16-007 を送り抜けても、一枚絵は c16-004、差分は c16-004a の間だけで、後の行に残らない
+  await goTo('c15-024');
+  await page.evaluate(() => {
+    window.__sk = [];
+    const tick = () => {
+      if (window.KIT && KIT.s.screen === 'play' && !KIT_STAGE.pending) {
+        const cg = document.querySelector('.kit-cg');
+        const k = KIT.s.lineId + '|' + (cg.hidden ? '' : cg.getAttribute('src').split('/').pop()) + '|' + [...document.querySelectorAll('.kit-portrait img')].map((p) => p.getAttribute('src').split('/').pop()).join('+');
+        if (window.__sk.at(-1) !== k) window.__sk.push(k);
+      }
+      if (window.__skOn !== false) requestAnimationFrame(tick);
+    };
+    window.__skOn = true; requestAnimationFrame(tick);
+  });
+  await clickText(page, '既読SKIP');
+  await page.waitForFunction(() => !KIT.s.skip_on, null, { timeout: 60000 }).catch(() => {});
+  if (await page.evaluate(() => KIT.s.skip_on)) await clickText(page, '既読SKIP');
+  await settled(page); await page.waitForTimeout(150);
+  const sk = await page.evaluate(() => window.__sk);
+  const end = (await show(page)).lineId;
+  const order = await page.evaluate(() => Object.values(KIT_GAME.scenes).flatMap((s) => s.lines.map((l) => l.id)));
+  const leak = sk.filter((k) => { const [id, cg, ports] = k.split('|'); return (cg.includes('c16-sasaki') && id !== 'c16-004') || (ports.includes('daydream') && id !== 'c16-004a'); });
+  check('既読SKIP で c16-007 より先まで送り抜けても、一枚絵・陶酔の差分が後の行に残らない', order.indexOf(end) >= order.indexOf('c16-007') && leak.length === 0 && !(await shownState()).includes('daydream') && !(await shownState()).includes('c16-sasaki'), end + ' ' + leak.slice(0, 3).join(' / '));
+  // CG 鑑賞：4枚。佐々木の花嫁は「一度だけの本塁打」として解放され、陶酔の差分は登録しない
+  await clickText(page, 'タイトル');
+  await page.waitForFunction(() => KIT.s.screen === 'title');
+  await clickText(page, 'CG鑑賞');
+  const cards = await page.evaluate(() => [...document.querySelectorAll('.kit-cg-card')].map((b) => ({ open: !b.classList.contains('locked'), text: b.getAttribute('aria-label') || '' })));
+  const ids = await page.evaluate(() => Object.keys(KIT_GAME.assets.cgs));
+  const i16 = ids.indexOf('c16-sasaki-daydream-bride');
+  check('CG 鑑賞は4項目で、佐々木の花嫁は「一度だけの本塁打」として解放済み。陶酔の差分は項目にない', cards.length === 4 && i16 >= 0 && cards[i16].open && /一度だけの本塁打/.test(cards[i16].text) && !ids.some((x) => /daydream$/.test(x) && /sasaki-game/.test(x)), JSON.stringify(cards));
+  await clickText(page, '閉じる');
+  await ctx.close();
+}
+
 async function main() {
   const server = await serve(ROOT, 0, PREFIX);
   const origin = 'http://127.0.0.1:' + server.address().port;
@@ -2112,6 +2209,7 @@ async function main() {
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await portraitAuditInPlay(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await removedCgFlow(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, DESKTOP]) await placementFlowInPlay(browser, vp);
+    for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await sasakiDaydreamFlow(browser, vp);
     for (const vp of [SMALL_LANDSCAPE, LANDSCAPE, WIDE_LANDSCAPE, DESKTOP]) await batch03InPlay(browser, vp);
     await expressionsInPlay(browser, LANDSCAPE, '844×390');
     await expressionsInPlay(browser, WIDE_LANDSCAPE, '956×440');
