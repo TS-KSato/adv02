@@ -771,30 +771,34 @@ const portraitCsv = read('assets/portraits/portraits-list.csv').replace(/^﻿/, 
 check('素材一覧の見出しは ファイル名・人物・衣装・差分・使用予定場面', portraitCsv[0] === 'ファイル名,人物,衣装,差分,使用予定場面', portraitCsv[0]);
 const listedPortraits = portraitCsv.slice(1).map((row) => row.split(',')[0]);
 const portraitFiles = fs.readdirSync(path.join(ROOT, 'assets', 'portraits')).filter((f) => f !== 'portraits-list.csv').sort();
-check('素材一覧は45件（通常35＋表情差分10）で、重複がない', listedPortraits.length === 45 && new Set(listedPortraits).size === 45, String(listedPortraits.length));
+check('素材一覧は47件（通常35＋表情差分12）で、重複がない', listedPortraits.length === 47 && new Set(listedPortraits).size === 47, String(listedPortraits.length));
 check('素材一覧に Magnific の管理IDを書かない', !/magnific/i.test(read('assets/portraits/portraits-list.csv')));
 check('素材一覧と assets/portraits の実ファイルが1対1で一致する（一覧以外のファイルがない）',
   JSON.stringify([...listedPortraits].sort()) === JSON.stringify(portraitFiles),
   portraitFiles.filter((f) => !listedPortraits.includes(f)).concat(listedPortraits.filter((f) => !portraitFiles.includes(f))).join(','));
 const registered = Object.entries(G.assets.portraits).flatMap(([char, exprs]) => Object.entries(exprs).map(([expr, file]) => ({ char, expr, file })));
-check('45枚すべてが assets.portraits に一度ずつ登録されている',
-  registered.length === 45 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
+check('47枚すべてが assets.portraits に一度ずつ登録されている',
+  registered.length === 47 && JSON.stringify(registered.map((r) => r.file).sort()) === JSON.stringify(listedPortraits.map((f) => 'assets/portraits/' + f).sort()));
 check('登録のキーは「人物-衣装と差分.webp」のファイル名から作り、人物のキーは話者と同じ',
   registered.every((r) => r.file === 'assets/portraits/' + r.char + '-' + r.expr + '.webp' && Object.prototype.hasOwnProperty.call(G.speakers, r.char)),
   registered.filter((r) => r.file !== 'assets/portraits/' + r.char + '-' + r.expr + '.webp' || !G.speakers[r.char]).map((r) => r.file).join(','));
+// 表情第2便の2枚は、納品の幅のまま（口止め 674px、突進 1008px）。ほかは 859px
+const PORTRAIT_WIDTH = { 'misora-game-uniform-hush.webp': 674, 'nakata-practice-confronting.webp': 1008 };
 const badWebp = [];
 for (const f of portraitFiles) {
   const b = fs.readFileSync(path.join(ROOT, 'assets', 'portraits', f));
   const ok = b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8X' && (b[20] & 0x10) !== 0 &&
-    1 + b.readUIntLE(24, 3) === 859 && 1 + b.readUIntLE(27, 3) === 1280;
+    1 + b.readUIntLE(24, 3) === (PORTRAIT_WIDTH[f] || 859) && 1 + b.readUIntLE(27, 3) === 1280;
   if (!ok) badWebp.push(f);
 }
-check('立ち絵はすべて透過付きの WebP で、859×1,280px', badWebp.length === 0, badWebp.join(','));
+check('立ち絵はすべて透過付きの WebP で、高さ1,280px（幅は859px、表情第2便の口止め674px・突進1008px）', badWebp.length === 0, badWebp.join(','));
 check('PNG の原本や元画像の ZIP をリポジトリに入れていない', !portraitFiles.some((f) => /\.(png|zip)$/i.test(f)) && !fs.existsSync(path.join(ROOT, 'adv02-portraits-source-png.zip')));
 section('背景（assets/backgrounds）');
 const bgs = G.assets.backgrounds;
-check('背景のパスはすべて作品基準の相対パスで、実ファイルがある',
-  Object.values(bgs).every((f) => f.startsWith('assets/backgrounds/') && fs.existsSync(path.join(ROOT, f))),
+// 挿絵（assets/inserts）は、CG 鑑賞に登録しないため背景として登録して表示する（docs/title-and-inserts.md）
+const INSERTS = ['insert-pitch-grip', 'insert-cleats-dirt'];
+check('背景のパスはすべて作品基準の相対パスで、実ファイルがある（挿絵は assets/inserts）',
+  Object.entries(bgs).every(([k, f]) => f.startsWith(INSERTS.includes(k) ? 'assets/inserts/' : 'assets/backgrounds/') && fs.existsSync(path.join(ROOT, f))),
   Object.values(bgs).filter((f) => !fs.existsSync(path.join(ROOT, f))).join(','));
 const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afternoon', 'hosho-field-bench', 'hosho-clubroom',
   'regional-stadium-field', 'regional-stadium-dugout', 'regional-stadium-dugout-sunset', 'regional-stadium-concourse',
@@ -805,16 +809,19 @@ const DELIVERED_BACKGROUNDS = ['hosho-field-fence-morning', 'hosho-field-afterno
   // 第3便（教室・自販機・校舎外周・廊下・大山家の前・病院の待合室・校門前のバス）
   'hosho-classroom', 'hosho-vending-area', 'hosho-school-exterior', 'hosho-school-corridor', 'oyama-home-exterior-night', 'hospital-waiting-room', 'hosho-gate-bus-morning',
   // 第4便（駅までの道・平野の部屋・病院の廊下）
-  'school-station-road-evening', 'hirano-room', 'hospital-corridor'];
-check('納品の背景は31枚（第1便17枚＋第2便4枚＋第3便7枚＋第4便3枚）', DELIVERED_BACKGROUNDS.length === 31 && new Set(DELIVERED_BACKGROUNDS).size === 31);
-check('背景の登録は、納品の31枚だけ（無地の仮背景 unassigned は使い終えて削除）',
-  JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS].sort()), Object.keys(bgs).join(','));
+  'school-station-road-evening', 'hirano-room', 'hospital-corridor',
+  // 第5便（5-2 の夕方の差分）
+  'hosho-field-sunset'];
+check('納品の背景は32枚（第1便17枚＋第2便4枚＋第3便7枚＋第4便3枚＋第5便1枚）', DELIVERED_BACKGROUNDS.length === 32 && new Set(DELIVERED_BACKGROUNDS).size === 32);
+check('背景の登録は、納品の32枚と挿絵2枚だけ（無地の仮背景 unassigned は使い終えて削除。白球の挿絵は保留で登録しない）',
+  JSON.stringify(Object.keys(bgs).sort()) === JSON.stringify([...DELIVERED_BACKGROUNDS, ...INSERTS].sort()) && !/insert-ball-sky/.test(read('game.js')), Object.keys(bgs).join(','));
+check('挿絵は「assets/inserts/キー.webp」で、保留の白球の挿絵はリポジトリに置かない', INSERTS.every((k) => bgs[k] === 'assets/inserts/' + k + '.webp') && !fs.existsSync(path.join(ROOT, 'assets', 'inserts', 'insert-ball-sky.webp')) && JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'inserts')).sort()) === JSON.stringify(INSERTS.map((k) => k + '.webp').sort()));
 check('納品の背景は「キー.webp」', DELIVERED_BACKGROUNDS.every((k) => bgs[k] === 'assets/backgrounds/' + k + '.webp'));
 const bgFiles = fs.readdirSync(path.join(ROOT, 'assets', 'backgrounds')).sort();
-check('assets/backgrounds には登録した31ファイルだけがある（無地の unassigned.png・CSV・PNG原本を置かない）',
-  JSON.stringify(bgFiles) === JSON.stringify(Object.values(bgs).map((f) => path.basename(f)).sort()), bgFiles.join(','));
+check('assets/backgrounds には登録した32ファイルだけがある（無地の unassigned.png・CSV・PNG原本を置かない）',
+  JSON.stringify(bgFiles) === JSON.stringify(DELIVERED_BACKGROUNDS.map((k) => path.basename(bgs[k])).sort()), bgFiles.join(','));
 const badBg = [];
-for (const k of DELIVERED_BACKGROUNDS) {
+for (const k of [...DELIVERED_BACKGROUNDS, ...INSERTS]) {
   const b = fs.readFileSync(path.join(ROOT, bgs[k]));
   // 不透明な WebP（VP8）。フレームの開始コードの後ろに幅と高さがある
   const ok = b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' &&
@@ -853,11 +860,12 @@ const bgSpans = [
   ['c18-pre-e', 'hosho-field-afternoon'], ['c18-pre-f', 'oyama-home-exterior-night'], ['c18-pre-j', 'oyama-home-exterior-night'], ['c18-pre-k', 'oyama-home-entry'],
   ['c18-016', 'regional-stadium-dugout'], ['c18-017', 'hospital-waiting-room'],
   ['c29k-004', 'hosho-clubroom'], ['cbus-001', 'hosho-gate-bus-morning'], ['cbus-002', 'bus-interior'],
-  ['c02e-017', 'hosho-field-afternoon'], ['c02e-018', 'school-station-road-evening'], ['c02e-019', 'school-station-road-evening'], ['c03-001', 'hosho-field-afternoon'],
+  ['c02e-018', 'school-station-road-evening'], ['c02e-019', 'school-station-road-evening'], ['c03-001', 'hosho-field-afternoon'],
   ['cblank-010', 'hosho-clubroom'], ['cblank-011', 'hirano-room'], ['cblank-013', 'hirano-room'], ['c21-001', 'hosho-field-afternoon'],
   ['c21-016', 'hospital-exam-room'], ['c21-017', 'hospital-corridor'], ['c21-018', 'hosho-field-afternoon'],
   ['c26a-010', 'hosho-field-afternoon'], ['c26b-009', 'hosho-field-afternoon'], ['c26e-001', 'hosho-field-bench'], ['c26e-010', 'hosho-field-bench'], ['c27-001', 'hosho-field-bench'],
-  ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'],
+  ['c02i-001', 'hosho-field-afternoon'], ['c02o-001', 'hosho-field-afternoon'], ['c02e-001', 'hosho-field-afternoon'], ['c02e-011', 'hosho-field-afternoon'], ['c02e-012', 'hosho-field-sunset'], ['c02e-017', 'hosho-field-sunset'], ['c02e-018', 'school-station-road-evening'],
+  ['c03-040', 'hosho-field-bench'], ['c03-040-p1', 'insert-pitch-grip'], ['c03-041', 'hosho-field-bench'], ['c27-001', 'hosho-field-bench'], ['c27-002', 'insert-cleats-dirt'], ['c27-003', 'hosho-field-bench'],
   ['c04-005', 'hosho-field-bench'], ['c08b-001', 'hosho-clubroom'],
   ['c18-pre-a', 'hosho-field-afternoon'], ['c18-pre-k', 'oyama-home-entry'], ['c18-003', 'regional-stadium-field'], ['c18-018', 'hospital-exam-room'],
   ['c19-032', 'regional-stadium-dugout'], ['c20-001', 'regional-stadium-dugout-sunset'], ['c20-018', 'regional-stadium-dugout-sunset'],
@@ -876,7 +884,8 @@ check('平野の部屋（cblank-011〜cblank-013）では、机が隠れない�
   JSON.stringify(roomLines) === JSON.stringify(['cblank-011', 'cblank-012', 'cblank-013']) &&
   roomLines.every((id) => { const p = V.stateAt(G, id).portraits; return !p.left && !p.right; }), roomLines.join(','));
 check('背景の未割り当ては0：全1,410行に納品の背景があり、無地の仮背景を使う行がない',
-  allIds.every((id) => DELIVERED_BACKGROUNDS.includes(bgAt(id))) && !/unassigned/.test(read('game.js')), allIds.filter((id) => !DELIVERED_BACKGROUNDS.includes(bgAt(id))).join(','));
+  allIds.every((id) => DELIVERED_BACKGROUNDS.includes(bgAt(id)) || ['c03-040-p1', 'c27-002'].includes(id)) && !/unassigned/.test(read('game.js')), allIds.filter((id) => !DELIVERED_BACKGROUNDS.includes(bgAt(id))).join(','));
+check('挿絵は指定の2行だけに出る（c03-040-p1：投手の手元、c27-002：走り出すスパイク）', JSON.stringify(allIds.filter((id) => INSERTS.includes(bgAt(id)))) === JSON.stringify(['c03-040-p1', 'c27-002']));
 check('5-26の帝嶺との練習試合（c26e-001〜c26e-010）は鳳翔のグラウンドで開催：ベンチ（hosho-field-bench）',
   G.scenes['rookies-teirei'].lines.every((l) => bgAt(l.id) === 'hosho-field-bench'));
 check('E3（明日のない球場）は無人の球場にせず、観客席から決勝を見る行で koshien-field', bgAt('c32m-002') === 'koshien-field' && sceneOfLine.get('c32m-002') === 'aotake-no-tomorrow');
@@ -908,8 +917,8 @@ check('全' + allIds.length + '行で、復元される立ち絵がその場面�
 const shownAt = (id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map((x) => x.char + '/' + x.expr).join(',') || '-'; };
 const usedPortraits = new Set(allIds.flatMap((id) => { const p = V.stateAt(G, id).portraits; return [p.left, p.right].filter(Boolean).map(charOf); }));
 check('使う衣装は練習・私服・就任初日・試合ユニフォーム（作者決定の動揺デフォルメを含む）',
-  [...usedPortraits].sort().join(',') === ['hiyori/jersey-normal', 'kawamoto/casual-normal', 'kawamoto/casual-shock', 'kawamoto/casual-angry', 'misora/game-uniform-normal', 'misora/game-uniform-pale', 'misora/game-uniform-angry', 'misora/game-uniform-flustered-chibi', 'misora/pantsuit-first-day',
-    'nakata/practice-normal', 'nakata/practice-rage', 'nakata/practice-bashful', 'nakata/practice-shock',
+  [...usedPortraits].sort().join(',') === ['hiyori/jersey-normal', 'kawamoto/casual-normal', 'kawamoto/casual-shock', 'kawamoto/casual-angry', 'misora/game-uniform-normal', 'misora/game-uniform-pale', 'misora/game-uniform-angry', 'misora/game-uniform-flustered-chibi', 'misora/game-uniform-hush', 'misora/pantsuit-first-day',
+    'nakata/practice-normal', 'nakata/practice-rage', 'nakata/practice-bashful', 'nakata/practice-shock', 'nakata/practice-confronting',
     'oyama/practice-normal', 'oyama/practice-angry', 'oyama/practice-frustrated', 'oyama/school-winter-normal', 'sasaki/practice-normal'].sort().join(','), [...usedPortraits].join(','));
 const sceneLines = (...keys) => keys.flatMap((k) => G.scenes[k].lines.map((l) => l.id));
 const firstDayLines = allIds.filter((id) => shownAt(id).includes('misora/pantsuit-first-day'));
@@ -928,8 +937,8 @@ const portraitSpans = [
   ['c04-035', 'nakata/practice-normal,misora/game-uniform-normal'], ['c04-037', 'oyama/practice-normal,misora/game-uniform-normal'], ['c05-001', '-'],
   ['c05-003', '-'], ['c05-004', 'oyama/practice-normal'], ['c05-027', 'oyama/practice-normal'], ['c05o-001', 'oyama/practice-normal'], ['c05s-001', '-'],
   ['c05e-011', 'oyama/practice-normal'], ['c05e-012', '-'], ['c05b-001', 'oyama/practice-normal'],
-  ['c06-008', '-'], ['c06-009', 'misora/game-uniform-normal'], ['c06b-001', '-'], ['c06e-004', 'misora/game-uniform-normal'], ['c06e-004a', 'misora/game-uniform-pale'], ['c06e-010', '-'],
-  ['c07-001', '-'], ['c07-006a', 'misora/game-uniform-normal'], ['c07-008', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
+  ['c06-008', '-'], ['c06-009', 'misora/game-uniform-normal'], ['c06b-001', '-'], ['c06e-004', 'misora/game-uniform-normal'], ['c06e-004a', 'misora/game-uniform-pale'], ['c06e-009', '-'], ['c06e-010', 'misora/game-uniform-hush'],
+  ['c07-001', 'misora/game-uniform-hush'], ['c07-004', 'misora/game-uniform-hush'], ['c07-005', 'misora/game-uniform-flustered-chibi'], ['c07-006', 'nakata/practice-confronting,misora/game-uniform-flustered-chibi'], ['c07-006a', 'nakata/practice-confronting,misora/game-uniform-normal'], ['c07-007', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-008', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
   ['c07-033', 'nakata/practice-normal,misora/game-uniform-normal'], ['c08-001', 'misora/game-uniform-normal'], ['c08-020', 'misora/game-uniform-normal'], ['c08-021', 'nakata/practice-rage'], ['c08-023', 'nakata/practice-rage'], ['c08-024', 'misora/game-uniform-normal'],
   ['c08-040', 'misora/game-uniform-normal'], ['c08-041', 'nakata/practice-shock,misora/game-uniform-normal'], ['c08-043', 'nakata/practice-shock,misora/game-uniform-normal'],
   ['c04-019', 'misora/game-uniform-normal'], ['c04-022', 'nakata/practice-bashful,misora/game-uniform-normal'], ['c04-023', 'misora/game-uniform-normal'],
@@ -959,7 +968,7 @@ const lineText = (id) => allLines.find((l) => l.id === id).text;
 check('c08-022 は作者決定の確定文（ボトルから硬球へ）', lineText('c08-022').replace(/\n/g, '') === 'だって、中田先輩の手の中で、硬球が平たくひしゃげていた。裂けた赤い縫い目から、中身がのぞいていた。');
 check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをカゴに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
-  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock)|misora-game-uniform-flustered-chibi|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
+  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock|confronting)|misora-game-uniform-(?:flustered-chibi|hush)|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
 check('game.css の一枚絵の調整は、第2便の5枚だけを対象にする（新聞と新庄の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|c13-shinjo-daydream-dinner/.test(read('game.css')));
 
 section('相対パス（公開先 /adv02/ の下で動く）');

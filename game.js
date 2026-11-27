@@ -23,6 +23,9 @@ window.KIT_GAME = {
     backgrounds: {
       'hosho-field-fence-morning': 'assets/backgrounds/hosho-field-fence-morning.webp',
       'hosho-field-afternoon': 'assets/backgrounds/hosho-field-afternoon.webp',
+      'hosho-field-sunset': 'assets/backgrounds/hosho-field-sunset.webp', // 5-2 初日の練習の終わり（夕方の差分）
+      'insert-pitch-grip': 'assets/inserts/insert-pitch-grip.webp', // 挿絵：投げる前の手元（5-3。CG鑑賞に登録しない）
+      'insert-cleats-dirt': 'assets/inserts/insert-cleats-dirt.webp', // 挿絵：走り出すスパイクと土（5-27。CG鑑賞に登録しない）
       'hosho-field-bench': 'assets/backgrounds/hosho-field-bench.webp',
       'hosho-clubroom': 'assets/backgrounds/hosho-clubroom.webp',
       'regional-stadium-field': 'assets/backgrounds/regional-stadium-field.webp',
@@ -83,6 +86,7 @@ window.KIT_GAME = {
         'practice-rage': 'assets/portraits/nakata-practice-rage.webp',
         'practice-bashful': 'assets/portraits/nakata-practice-bashful.webp',
         'practice-shock': 'assets/portraits/nakata-practice-shock.webp',
+        'practice-confronting': 'assets/portraits/nakata-practice-confronting.webp',
       },
       sasaki: {
         'practice-normal': 'assets/portraits/sasaki-practice-normal.webp',
@@ -121,6 +125,7 @@ window.KIT_GAME = {
         'game-uniform-pale': 'assets/portraits/misora-game-uniform-pale.webp',
         'game-uniform-angry': 'assets/portraits/misora-game-uniform-angry.webp',
         'game-uniform-flustered-chibi': 'assets/portraits/misora-game-uniform-flustered-chibi.webp',
+        'game-uniform-hush': 'assets/portraits/misora-game-uniform-hush.webp',
         'windbreaker-normal': 'assets/portraits/misora-windbreaker-normal.webp',
         'game-uniform-normal': 'assets/portraits/misora-game-uniform-normal.webp',
         'bench-coat-normal': 'assets/portraits/misora-bench-coat-normal.webp',
@@ -2521,9 +2526,12 @@ window.KIT_GAME = {
     { at: 'c02i-001', bg: 'hosho-field-afternoon' }, // 分岐：内野
     { at: 'c02o-001', bg: 'hosho-field-afternoon' }, // 分岐：外野
     { at: 'c02e-001', bg: 'hosho-field-afternoon' }, // 合流：給水台・球拾い
+    { at: 'c02e-012', bg: 'hosho-field-sunset' }, // 日が傾いて球拾い（〜c02e-017）。夕方の差分
     { at: 'c02e-018', bg: 'school-station-road-evening' }, // 駅までの道を歩く（〜c02e-019）。c03-001 で翌日のグラウンドへ
     { at: 'c03-001', bg: 'hosho-field-afternoon' }, // 5-3：翌日の練習
     { at: 'c03-012', bg: 'hosho-field-bench' }, // ベンチでスコアブックを任される
+    { at: 'c03-040-p1', bg: 'insert-pitch-grip' }, // 挿絵：大山がマウンドに上がり、投げる前の手元
+    { at: 'c03-041', bg: 'hosho-field-bench' }, // 挿絵の解除：この行に本来ある背景（c03-012 からのベンチ）へ戻す
     { at: 'c04-001', bg: 'hosho-field-bench' }, // 5-4：ベンチで記録を埋めている
     { at: 'c05-001', bg: 'hosho-field-bench' }, // 5-5：練習後のベンチ
     { at: 'c05o-001', bg: 'hosho-field-bench' }, // 分岐：大山に聞く
@@ -2611,6 +2619,8 @@ window.KIT_GAME = {
     { at: 'c26b-001', bg: 'hosho-field-afternoon' }, // 分岐：内野のノック
     { at: 'c26e-001-p1', bg: 'hosho-field-bench' }, // 合流：5月の帝嶺との練習試合。鳳翔のグラウンドで開催（ベンチで記録し、試合後に片づける）
     { at: 'c27-001', bg: 'hosho-field-bench' }, // 5-27：練習の終わり、ベンチの前
+    { at: 'c27-002', bg: 'insert-cleats-dirt' }, // 挿絵：1塁の先輩がスタートを切る瞬間
+    { at: 'c27-003', bg: 'hosho-field-bench' }, // 挿絵の解除：ベンチの前へ戻す
     { at: 'c27-018', bg: 'kamijo-living-room-night' }, // その晩、神条家の居間
     { at: 'c28-001', bg: 'ryusei-clubroom-night' }, // 5-28：夜の龍成の部室で記録と映像を見直す（場面全体）
     { at: 'c29a-001', bg: 'regional-stadium-concourse' }, // 5-29：スタンド下の通路の長机
@@ -2735,9 +2745,11 @@ window.KIT_GAME = {
     { at: 'c06e-004a', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-pale' } },
     { at: 'c06e-006', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-angry' } },
     { at: 'c06e-008', portrait: { slot: 'right', clear: true } },
+    { at: 'c06e-010', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-hush' } }, // 口止め（中央の寄り）。c07-004 まで、場面をまたいで続く
     { at: 'c07-001', portrait: { slot: 'left', clear: true } }, // 場面の始まり（外周50周）：左を明示して消す
-    { at: 'c07-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（外周50周）：右を明示して消す
+    { at: 'c07-001', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-hush' } }, // 場面の始まり（外周50周）：c06e-010 からの口止めを明示して続ける
     { at: 'c07-005', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },
+    { at: 'c07-006', portrait: { slot: 'left', char: 'nakata', expr: 'practice-confronting' } }, // 給水台から突っ込んでくる中田（〜c07-006a）
     { at: 'c07-006a', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-normal' } }, // 手を引いた監督は、取り繕った通常の顔に戻る（その場にいる）
     { at: 'c07-007', portrait: { slot: 'left', char: 'nakata', expr: 'practice-normal' } }, // 中田が平野の前まで来て、2人のあいだに立つ（しかめ面）
     { at: 'c07-016', portrait: { slot: 'right', char: 'misora', expr: 'game-uniform-flustered-chibi' } },

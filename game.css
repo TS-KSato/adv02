@@ -114,3 +114,56 @@
 @media (max-height: 500px) {
   .kit-portrait-img[src$="oyama-practice-angry.webp"] { height: 120%; max-width: none; margin-top: -8vh; }
 }
+
+/* タイトル画面（docs/title-and-inserts.md）。画像は縦横比を保って画面を埋め、題名は左上の青空、メニューは右下の地面側に縦並び。
+   すべて .kit-title の中だけに効かせ、作品画面や各メニュー（モーダル）へは持ち込まない。 */
+.kit-title {
+  display: block;
+  background: #0d0d12 url("assets/title/title-screen.webp") 50% 50% / cover no-repeat;
+  --title-size: clamp(32px, 8.6vh, 64px);
+}
+.kit-title .game-title {
+  position: absolute; left: 7%; top: 12%; margin: 0;
+  color: #fffdf6; font-weight: 800; line-height: 1.12; letter-spacing: 0.04em;
+  text-shadow: 0 2px 4px rgba(10, 30, 70, 0.75), 0 0 18px rgba(10, 30, 70, 0.55);
+}
+.kit-title .game-title-sub { display: block; font-size: calc(var(--title-size) * 0.6); }
+.kit-title .game-title-main { display: block; font-size: var(--title-size); }
+.kit-title .game-title-menu {
+  position: absolute; right: 5%; bottom: 6%;
+  display: flex; flex-direction: column; gap: 8px;
+  width: clamp(170px, 20vw, 250px); box-sizing: border-box; padding: 10px;
+  background: rgba(12, 12, 18, 0.55); border-radius: 10px;
+}
+.kit-title .game-title-menu .kit-btn {
+  min-width: 0; width: 100%; min-height: 44px;
+  background: rgba(12, 12, 18, 0.85); border-color: rgba(255, 255, 255, 0.35); font-size: 15px;
+}
+.kit-title .game-title-menu .kit-btn:focus-visible { outline: 2px solid var(--kit-accent); outline-offset: 2px; }
+.kit-title .game-title-menu .kit-btn:disabled { opacity: 1; color: rgba(242, 239, 232, 0.45); border-color: rgba(255, 255, 255, 0.15); }
+.kit-title .game-title-menu .kit-note { margin: 0 0 2px; font-size: 12px; line-height: 1.5; color: #f2efe8; }
+@media (max-height: 500px) {
+  .kit-title .game-title-menu { gap: 6px; padding: 8px; bottom: 4%; }
+}
+
+/* 挿絵（docs/title-and-inserts.md）。背景として画面全体に表示し、CG 鑑賞には登録しない。
+   高さの小さい画面では本文枠が画面の下半分近くを覆うので、縦横比を保ったまま少し拡大し、下側を見せる位置にして
+   握った球（投手の手元）・踏み込むスパイク（走り出す足）を本文枠の上へ寄せる（縮小はしない）。 */
+@media (max-height: 500px) {
+  .kit-bg[style*="insert-pitch-grip"] { background-size: 140%; background-position: 50% 100%; }
+  .kit-bg[style*="insert-cleats-dirt"] { background-size: 140%; background-position: 20% 100%; }
+}
+
+/* 美空の口止め（misora-game-uniform-hush.webp）。太ももの途中で終わる上半身の寄りの素材。右の枠を画面の中央に寄せ、
+   画像の下端（切り口）が画面の下へ出る大きさ（画面の高さの130%）で上端にそろえる。目・汗・唇の前の人差し指
+   （元画像の上から約420pxまで）は本文枠の上に入る。 */
+.kit-portrait-right:has(.kit-portrait-img[src$="misora-game-uniform-hush.webp"]) { justify-content: center; }
+.kit-portrait-img[src$="misora-game-uniform-hush.webp"] { align-self: flex-start; margin-top: 0; height: 130%; max-width: none; }
+
+/* 中田の突進（nakata-practice-confronting.webp、5-7 c07-006〜c07-006a）。強い遠近の全身で、通常の立ち絵と尺度は合わせない。
+   左の枠に置く。高さのある画面は画面の高さいっぱい（下端そろえ）で、顔と前へ出た拳を本文枠の上に出す。
+   高さの小さい画面は 120% で上端にそろえ、顔と口を本文枠の上に出す（拳・脚・土は本文枠の後ろ）。右の美空の顔には重ねない。 */
+.kit-portrait-img[src$="nakata-practice-confronting.webp"] { height: 100%; max-width: none; }
+@media (max-height: 500px) {
+  .kit-portrait-img[src$="nakata-practice-confronting.webp"] { height: 120%; }
+}
