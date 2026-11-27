@@ -1,10 +1,10 @@
 // 『きみのための甲子園』の作品データ。冒頭から優勝エンド「本当の約束」までの初稿。
 // 本文は docs/ の各場面の本文 と一致させる（tests/game/data.js で確かめる）。
-// 背景31枚、立ち絵45枚、一枚絵1枚。音素材は未登録。
+// 背景32枚と挿絵2枚、立ち絵47枚、一枚絵3枚。音素材は未登録。
 window.KIT_GAME = {
   id: 'novelgame02-koshien',
   title: 'きみのための甲子園',
-  dataVersion: '2026.11-4',   // 帝嶺学院戦の準備・回収フラグを追加
+  dataVersion: '2026.11-5',   // 河本の一枚絵のための行 c10-015-p1 を削除（保存位置は c10-016 へ移す）
   kit: '0.1.0',               // 使うキットの版（kit/releases/0.1.0）
 
   start: { scene: 'opening-ground', line: 'c01-001' },
@@ -141,11 +141,7 @@ window.KIT_GAME = {
       'cnews-oyama-tears-newspaper': { src: 'assets/cg/cnews-oyama-tears-newspaper.webp', title: '新聞と記録' },
       // 第2便
       'hirano-field-visit-vision': { src: 'assets/cg/hirano-field-visit-vision.webp', title: '春のグラウンド' },
-      'c10-kawamoto-daydream-embrace': { src: 'assets/cg/c10-kawamoto-daydream-embrace.webp', title: '河本の来校' },
-      'c13-shinjo-daydream-dinner': { src: 'assets/cg/c13-shinjo-daydream-dinner.webp', title: '新庄との接触' },
       'cbus-oyama-daydream-bride': { src: 'assets/cg/cbus-oyama-daydream-bride.webp', title: '行きのバス' },
-      'c26a-tahara-daydream-home': { src: 'assets/cg/c26a-tahara-daydream-home.webp', title: '田原と小宮' },
-      'c26b-komiya-daydream-hand': { src: 'assets/cg/c26b-komiya-daydream-hand.webp', title: '田原と小宮' },
     },
     bgm: {},
     ambience: {},
@@ -773,7 +769,6 @@ window.KIT_GAME = {
         { id: 'c10-013', text: "マウンドに立つ河本さんの写真が載っていた。\n折り目は、写真の外を通っていた。" },
         { id: 'c10-014', text: "監督は持っていた紙を机に置き、切り抜きを受け取った。" },
         { id: 'c10-015', speaker: 'misora', text: "そう。おめでとう。" },
-        { id: 'c10-015-p1', text: "河本の耳には、その一言が、試合のあとの球場で、\n自分だけに向けられた声に聞こえていた。" },
         { id: 'c10-016', text: "切り抜きは練習メニューのいちばん下に入った。紙の束の角をまた揃える。" },
         { id: 'c10-017', text: "河本さんは口元を緩めた。\nまだ帰らず、監督がもう一度こっちを向くのを待っていた。" },
         { id: 'c10-018', speaker: 'kawamoto', text: "俺がここにいたときは――" },
@@ -2792,9 +2787,7 @@ window.KIT_GAME = {
     { at: 'c10-001', portrait: { slot: 'right', clear: true } }, // 場面の始まり（河本の来校）：右を明示して消す
     { at: 'c10-002', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } }, // 5-10：グラウンドの入口に立つ河本
     { at: 'c10-008', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 机の端で紙を揃える監督
-    { at: 'c10-015-p1', portrait: { slot: 'left', clear: true } }, // 河本の一枚絵（c10-015-p1）の間は立ち絵を重ねない
-    { at: 'c10-015-p1', portrait: { slot: 'right', clear: true } },
-    { at: 'c10-016', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 現実へ戻る：切り抜きを練習メニューの下へ入れる監督と、河本
+    { at: 'c10-016', portrait: { slot: 'left', char: 'misora', expr: 'game-uniform-normal' } }, // 切り抜きを練習メニューの下へ入れる監督と、河本（c10-015 から同じ2人のまま）
     { at: 'c10-016', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-normal' } },
     { at: 'c10-020', portrait: { slot: 'right', char: 'kawamoto', expr: 'casual-shock' } },
     { at: 'c10-021', portrait: { slot: 'left', clear: true } }, // 大山が割って入る。美空を外し、次の台詞から大山の怒りを出す
@@ -2830,11 +2823,7 @@ window.KIT_GAME = {
     { at: 'cnews-010', cg: { id: 'cnews-oyama-tears-newspaper', until: 'cnews-011c' } },
     // 一枚絵第2便。人物の心理・主観の絵。区間の次の行で、その行の背景と立ち絵に戻る
     { at: 'c01-009', cg: { id: 'hirano-field-visit-vision', until: 'c01-011' } }, // 5-1：朝練を見る平野の主観（c01-012 で解除）
-    { at: 'c10-015-p1', cg: { id: 'c10-kawamoto-daydream-embrace', until: 'c10-015-p1' } }, // 5-10：河本の受け取り方（c10-016 で現実へ戻る）
-    { at: 'c13-021', cg: { id: 'c13-shinjo-daydream-dinner', until: 'c13-022' } }, // 5-13：新庄（c13-023 で解除）
     { at: 'cbus-003a', cg: { id: 'cbus-oyama-daydream-bride' } }, // 行きのバス：大山（この1行だけ。cbus-004 で解除）
-    { at: 'c26a-008', cg: { id: 'c26a-tahara-daydream-home' } }, // 5-26 田原の分岐：田原（この1行だけ。c26a-009 で解除）
-    { at: 'c26b-008', cg: { id: 'c26b-komiya-daydream-hand' } }, // 5-26 小宮の分岐：小宮（この1行だけ。c26b-008a で解除）
   ],
 
   // 既存の行IDは維持し、追加した試合の判定を初期値で補う。
@@ -2845,3 +2834,17 @@ window.KIT_GAME = {
     '2026.11-3': { lines: 'identity', flags: (f) => ({ ...f, teireiPrep: false, teireiRecovery: false }) },
   },
 };
+
+// 版 2026.11-5（docs/cg-staging.md）：河本の一枚絵のために足した行 c10-015-p1 を削除した。
+// キットの行の対応表は、書いてある行IDだけを写す（書いていない行の保存は読めなくなる）。
+// そこで、現在のすべての行を同じIDへ写し、削除した行だけを次の実在の行へ写す。従来の各版からの移行も同じ対応表を使う（フラグの移し方は各版のまま）。
+(function (game) {
+  var removed = { 'c10-015-p1': 'c10-016' };
+  var lines = {};
+  Object.keys(game.scenes).forEach(function (key) {
+    game.scenes[key].lines.forEach(function (line) { lines[line.id] = line.id; });
+  });
+  Object.keys(removed).forEach(function (id) { lines[id] = removed[id]; });
+  Object.keys(game.migrations).forEach(function (ver) { game.migrations[ver].lines = lines; });
+  game.migrations['2026.11-4'] = { lines: lines };
+})(window.KIT_GAME);

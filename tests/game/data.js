@@ -25,7 +25,7 @@ check('固定版の検証に通る', v.ok, v.errors.join(' / '));
 section('作品の識別子・版');
 check('作品IDは novelgame02-koshien', G.id === 'novelgame02-koshien', G.id);
 check('作品名は きみのための甲子園', G.title === 'きみのための甲子園', G.title);
-check('作品データの版は 2026.11-4', G.dataVersion === '2026.11-4', G.dataVersion);
+check('作品データの版は 2026.11-5（c10-015-p1 の削除）', G.dataVersion === '2026.11-5', G.dataVersion);
 check('使うキットの版は 0.1.0', G.kit === '0.1.0', G.kit);
 const kitJs = read('kit/releases/0.1.0/kit.js');
 const kitVersion = (kitJs.match(/const KIT_VERSION = '([^']+)'/) || [])[1];
@@ -515,7 +515,7 @@ const ccResume = (auto, slots) => {
   return r.mode === 'current' && r.record.auto.at === auto[0] && Object.entries(auto[1]).every(([k, v]) => r.record.auto.flags[k] === v) &&
     r.record.slots.map(x => x?.at).join() === slots.join();
 };
-check('調整前の保存（同じ版 2026.11-4）の位置と選択を、そのまま再開できる',
+check('現在の版の保存の位置と選択を、そのまま再開できる',
   ccResume(['c32i-004', { aotakeRecovery: true }], ['c05e-003', 'c19-025', 'c24-002']) &&
   ccResume(['c33k-001c', {}], ['c32h-001', 'c33i-004', 'c33k-002']));
 
@@ -582,8 +582,7 @@ section('時間経過・関係性・対戦相手の補強');
     !win.lines.some((l) => l.speaker === 'oyama' && /ありがと|悪いな|助かる/.test(l.text)) && win.lines.some((l) => l.speaker === 'oyama' && /セカンド/.test(l.text)) && /グラブ/.test(win.lines.find((l) => l.id === 'cwinter-019').text + win.lines.find((l) => l.id === 'cwinter-020').text));
   // 追加行は一枚絵の区間に入れない
   const added = order.filter((l) => /-p\d+$/.test(l.id) || /^cwinter-/.test(l.id));
-  const cgLineAllowed = ['c10-015-p1']; // 河本の一枚絵を出す行（河本の受け取り方）として足した行
-  check('追加した行（' + added.length + '行）は、河本の一枚絵の行（c10-015-p1）を除き、一枚絵の区間に入っていない', added.every((l) => cgLineAllowed.includes(l.id) || !V.stateAt(G, l.id).cg), added.filter((l) => !cgLineAllowed.includes(l.id) && V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
+  check('追加した行（' + added.length + '行）は、一枚絵の区間に入っていない', added.every((l) => !V.stateAt(G, l.id).cg), added.filter((l) => V.stateAt(G, l.id).cg).map((l) => l.id).join(' '));
   // 選択前の共通区間で、選択によって得る情報を先取りしない（今回追加した行）
   const addedIn = (keys) => added.filter((l) => keys.includes(sceneOf.get(l.id)));
   const leak = (lines, re) => lines.filter((l) => re.test(flat(l))).map((l) => l.id);
@@ -609,7 +608,7 @@ section('時間経過・関係性・対戦相手の補強');
     auto: { at: 'cwinter-010', flags: f0, dataVersion: G.dataVersion },
     slots: [{ at: 'c26e-001', flags: f0, dataVersion: G.dataVersion }, { at: 'c02e-003-p8', flags: f0, dataVersion: G.dataVersion }, { at: 'c33a-002', flags: f0, dataVersion: G.dataVersion }], seen: [] };
   const r = saves.assess(G, rec, JSON.stringify(rec));
-  check('既存の行・追加した行・冬の章間の保存から再開できる（データ版 2026.11-4 のまま）', G.dataVersion === '2026.11-4' && r.mode === 'current' && r.record.auto.at === 'cwinter-010' && r.record.slots.map((x) => x && x.at).join() === 'c26e-001,c02e-003-p8,c33a-002', r.mode);
+  check('既存の行・追加した行・冬の章間の保存から再開できる（現在の版）', r.mode === 'current' && r.record.auto.at === 'cwinter-010' && r.record.slots.map((x) => x && x.at).join() === 'c26e-001,c02e-003-p8,c33a-002', r.mode);
 }
 
 section('人物の判断と情報共有（選ばなかった経路でも、知っていることを使う）');
@@ -680,15 +679,39 @@ section('主要人物の紹介');
   check('厳は美空の父、野原は龍成の監督と分かる', /父の厳/.test(t('c17-007')) && /監督の野原/.test(t('c19-013')));
 }
 
-section('河本の妄想の一枚絵と、5-10 の流れ');
+section('5-10 河本の来校（一枚絵を外した流れ）と、行の削除に伴う保存の移行');
 {
+  const order = Object.values(G.scenes).flatMap((sc) => sc.lines);
   const ln = new Map(Object.values(G.scenes).flatMap((sc) => sc.lines.map((l) => [l.id, l])));
   const t = (id) => (ln.get(id)?.text || '').replace(/\n/g, '');
-  const cgAt = (id) => V.stateAt(G, id).cg;
-  check('現実の「そう。おめでとう。」（c10-015）は通常画面で、美空と河本が並ぶ', !cgAt('c10-015') && ln.get('c10-015').speaker === 'misora' && /おめでとう/.test(t('c10-015')) && V.stateAt(G, 'c10-015').portraits.left?.char === 'misora' && V.stateAt(G, 'c10-015').portraits.right?.char === 'kawamoto');
-  check('一枚絵は、河本がその一言を都合よく受け取る1行（c10-015-p1）だけに出る', cgAt('c10-015-p1') === 'c10-kawamoto-daydream-embrace' && /河本の耳には/.test(t('c10-015-p1')) && /自分だけに向けられた声/.test(t('c10-015-p1')));
-  check('切り抜きを練習メニューの下へ入れる現実の行（c10-016）からは通常画面に戻り、一枚絵を重ねない', ['c10-016', 'c10-017', 'c10-018', 'c10-019'].every((id) => !cgAt(id)) && /いちばん下に入った/.test(t('c10-016')));
-  check('平野の地の文で河本の頭の中を知ったことにしない（他視点の行は「河本さん」と呼ばない）', !/河本さん/.test(t('c10-015-p1')));
+  const seq = G.scenes['kawamoto-visit'] ? G.scenes['kawamoto-visit'].lines.map((l) => l.id) : order.filter((l) => /^c10-/.test(l.id)).map((l) => l.id);
+  const i15 = seq.indexOf('c10-015');
+  check('c10-015-p1（河本の受け取り方の一文）は削除し、c10-015 → c10-016 → c10-017 と続く', !ln.has('c10-015-p1') && seq[i15 + 1] === 'c10-016' && seq[i15 + 2] === 'c10-017' && !/河本の耳には/.test(order.map((l) => l.text).join('')), seq.slice(i15, i15 + 3).join());
+  check('c10-015〜c10-020 は一枚絵なしの通常画面で、美空（左）と河本（右）が消えずに並ぶ', ['c10-015', 'c10-016', 'c10-017', 'c10-018', 'c10-019', 'c10-020'].every((id) => { const st = V.stateAt(G, id); return !st.cg && st.portraits.left?.char === 'misora' && st.portraits.right?.char === 'kawamoto'; }));
+  check('c10-016 は切り抜きを練習メニューの下へ入れ、c10-017 で河本が口元を緩める（代わりの説明は足さない）', /いちばん下に入った/.test(t('c10-016')) && /口元を緩めた/.test(t('c10-017')));
+  check('5-10 の驚き差分（c10-020〜）と大山の割り込み（c10-022〜）は維持', V.stateAt(G, 'c10-020').portraits.right?.expr === 'casual-shock' && V.stateAt(G, 'c10-022').portraits.left?.expr === 'practice-angry');
+  // 旧版の保存：c10-015-p1 は c10-016 へ、ほかの行と選択は同じ位置へ。削除した一枚絵の解放は外し、残す一枚絵の解放は保つ
+  const f0 = Object.fromEntries(Object.entries(G.flags).map(([k, d]) => [k, d.default]));
+  const old = { v: 1, game: G.id, dataVersion: '2026.11-4', flagSchema: saves.flagSchema(G),
+    auto: { at: 'c10-015-p1', flags: { ...f0, aotakeRecovery: true }, dataVersion: '2026.11-4' },
+    slots: [{ at: 'c13-021', flags: f0, dataVersion: '2026.11-4' }, { at: 'c26a-008', flags: f0, dataVersion: '2026.11-4' }, { at: 'c26b-008', flags: f0, dataVersion: '2026.11-4' }],
+    seen: ['c10-015-p1#0000', 'c10-016#' + V.hashLine(ln.get('c10-016'))],
+    gallery: { 'c10-kawamoto-daydream-embrace': true, 'c13-shinjo-daydream-dinner': true, 'c26a-tahara-daydream-home': true, 'c26b-komiya-daydream-hand': true, 'hirano-field-visit-vision': true, 'cnews-oyama-tears-newspaper': true } };
+  const r = saves.assess(G, old, JSON.stringify(old));
+  check('版 2026.11-4 の保存：c10-015-p1 の自動セーブは c10-016 へ移り、選択（フラグ）も保つ', r.mode === 'migrated' && r.record.auto.at === 'c10-016' && r.record.auto.flags.aotakeRecovery === true, r.mode + ' ' + r.reason);
+  check('版 2026.11-4 の保存：削除した一枚絵の区間（c13-021・c26a-008・c26b-008）の手動セーブは同じ行のまま', r.record && r.record.slots.map((x) => x && x.at).join() === 'c13-021,c26a-008,c26b-008');
+  check('版 2026.11-4 の保存：既読は残る行だけを保ち、削除した行の既読は捨てる', r.record && r.record.seen.join() === 'c10-016#' + V.hashLine(ln.get('c10-016')));
+  check('削除した一枚絵の解放情報は読み捨て、残す一枚絵の解放はそのまま', r.record && JSON.stringify(r.record.gallery) === JSON.stringify({ 'hirano-field-visit-vision': true, 'cnews-oyama-tears-newspaper': true }), JSON.stringify(r.record && r.record.gallery));
+  // 従来の各版からの移行も維持する（行の対応表は全版で共通。フラグの移し方は各版のまま）
+  const allOk = Object.keys(G.migrations).every((ver) => {
+    const m = G.migrations[ver];
+    return m.lines['c10-015-p1'] === 'c10-016' && order.every((l) => m.lines[l.id] === l.id);
+  });
+  check('従来の各版（' + Object.keys(G.migrations).join('、') + '）からの移行で、現在のすべての行は同じ行へ、c10-015-p1 は c10-016 へ写る', allOk && ['2026.10-1', '2026.11-1', '2026.11-2', '2026.11-3', '2026.11-4'].every((v) => v in G.migrations));
+  const old3 = { v: 1, game: G.id, dataVersion: '2026.11-3', flagSchema: { ...saves.flagSchema(G) }, auto: { at: 'c08-020', flags: { ...f0 }, dataVersion: '2026.11-3' }, slots: [], seen: [] };
+  delete old3.flagSchema.teireiPrep; delete old3.flagSchema.teireiRecovery; delete old3.auto.flags.teireiPrep; delete old3.auto.flags.teireiRecovery;
+  const r3 = saves.assess(G, old3, JSON.stringify(old3));
+  check('版 2026.11-3 の保存も、従来どおりフラグを補って移せる', r3.mode === 'migrated' && r3.record.auto.at === 'c08-020' && r3.record.auto.flags.teireiPrep === false, r3.mode + ' ' + r3.reason);
 }
 
 section('最後のアウト');
@@ -969,8 +992,8 @@ check('c08-021〜c08-023 は作者決定の確定文（形状の説明はせず�
 check('激怒の区間の本文に、硬球の形状や表情を説明し直す文がない', ['c08-021', 'c08-022', 'c08-023'].every((id) => !/ひしゃげ|縫い目|鬼の形相/.test(lineText(id))));
 check('c08-009 の給水のボトルの音は変えない', lineText('c08-009').startsWith('給水台のほうから、空のボトルをカゴに入れる音がした。'));
 check('game.css の表情差分の専用表示は、表情差分の画像名だけを対象にする（ほかの立ち絵の大きさを一括で変えない）',
-  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock|confronting)|misora-game-uniform-(?:flustered-chibi|hush)|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision|c10-kawamoto-daydream-embrace|cbus-oyama-daydream-bride|c26a-tahara-daydream-home|c26b-komiya-daydream-hand)\.webp/.test(s)));
-check('game.css の一枚絵の調整は、第2便の5枚だけを対象にする（新聞と新庄の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|c13-shinjo-daydream-dinner/.test(read('game.css')));
+  (read('game.css').match(/\[src\$="([^"]+)"\]/g) || []).every((s) => /(?:nakata-practice-(?:rage|bashful|shock|confronting)|misora-game-uniform-(?:flustered-chibi|hush)|oyama-practice-angry|kawamoto-casual-shock|hirano-field-visit-vision)\.webp/.test(s)));
+check('game.css の一枚絵の調整は、平野の朝練見学だけを対象にする（新聞・白無垢の一枚絵には適用しない）', !/cnews-oyama-tears-newspaper|cbus-oyama-daydream-bride/.test(read('game.css')));
 
 section('相対パス（公開先 /adv02/ の下で動く）');
 const indexHtml = read('index.html');
@@ -1006,16 +1029,12 @@ for (const [expr, expected] of Object.entries(addedSpans)) {
 const cgKey = 'cnews-oyama-tears-newspaper';
 const CG_BATCH02 = {
   'hirano-field-visit-vision': { lines: ['c01-009', 'c01-010', 'c01-011'], release: 'c01-012', bg: 'hosho-field-fence-morning' },
-  'c10-kawamoto-daydream-embrace': { lines: ['c10-015-p1'], release: 'c10-016', bg: 'hosho-field-bench' },
-  'c13-shinjo-daydream-dinner': { lines: ['c13-021', 'c13-022'], release: 'c13-023', bg: 'hosho-field-bench' },
   'cbus-oyama-daydream-bride': { lines: ['cbus-003a'], release: 'cbus-004', bg: 'bus-interior' },
-  'c26a-tahara-daydream-home': { lines: ['c26a-008'], release: 'c26a-009', bg: 'hosho-field-afternoon' },
-  'c26b-komiya-daydream-hand': { lines: ['c26b-008'], release: 'c26b-008a', bg: 'hosho-field-afternoon' },
 };
 const cgIds = Object.keys(G.assets.cgs);
-check('一枚絵は7枚（新聞＋第2便6枚）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
+check('一枚絵は3枚（新聞・平野の朝練見学・大山の白無垢）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
 check('一枚絵の ID はファイル名と同じで、assets/cg/ に実ファイルがある', cgIds.every((id) => G.assets.cgs[id].src === 'assets/cg/' + id + '.webp' && fs.existsSync(path.join(ROOT, G.assets.cgs[id].src))));
-check('assets/cg には登録した7枚だけがある（CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
+check('assets/cg には登録した3枚だけがある（削除した4枚・CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
 const badCg = cgIds.filter((id) => { const b = fs.readFileSync(path.join(ROOT, G.assets.cgs[id].src));
   return !(b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' && (b.readUInt16LE(26) & 0x3fff) === 1920 && (b.readUInt16LE(28) & 0x3fff) === 1080); });
 check('一枚絵はすべて不透明な WebP で、1920×1080px', badCg.length === 0, badCg.join(','));
@@ -1028,11 +1047,29 @@ for (const [id, s] of Object.entries(CG_BATCH02)) {
     JSON.stringify(cgLines(id)) === JSON.stringify(s.lines) && !V.stateAt(G, s.release).cg && V.stateAt(G, s.release).bg === s.bg && s.lines.every((l) => V.stateAt(G, l).bg === s.bg),
     cgLines(id).join(','));
 }
-check('5-10：一枚絵の後の c10-018 で、一枚絵の前と同じ監督（左）と河本（右）に戻る', shownAt('c10-014') === 'misora/game-uniform-normal,kawamoto/casual-normal' && shownAt('c10-018') === 'misora/game-uniform-normal,kawamoto/casual-normal');
-check('田原の一枚絵は田原の分岐（tahara-catching）だけ、小宮の一枚絵は小宮の分岐（komiya-fielding）だけに出て、合流後に残らない',
-  cgLines('c26a-tahara-daydream-home').every((l) => sceneOfLine.get(l) === 'tahara-catching') && cgLines('c26b-komiya-daydream-hand').every((l) => sceneOfLine.get(l) === 'komiya-fielding') &&
-  G.scenes['rookies-teirei'].lines.every((l) => !V.stateAt(G, l.id).cg));
-check('index.html はキットの起動の後に、分岐の一枚絵の解放を補う game-cg-branches.js を読む', refsAll().indexOf('./game-cg-branches.js') > -1 && read('index.html').indexOf('KitEngine.start') < read('index.html').indexOf('./game-cg-branches.js'));
+const REMOVED_CGS = ['c10-kawamoto-daydream-embrace', 'c13-shinjo-daydream-dinner', 'c26a-tahara-daydream-home', 'c26b-komiya-daydream-hand'];
+check('削除した4枚は、登録・表示指定・ファイル・作品のコードと CSS のどこにも残らない', REMOVED_CGS.every((id) => !(id in G.assets.cgs) && !(G.cues || []).some((c) => c.cg && c.cg.id === id) && !fs.existsSync(path.join(ROOT, 'assets', 'cg', id + '.webp')) && !['game.js', 'game.css', 'index.html', 'game-stage.js', 'game-title.js'].some((f) => read(f).includes(id))));
+check('5-10・5-13・5-26 の両分岐は一枚絵を出さない', allIds.filter((id) => /^c(10|13|26[ab]?)-/.test(id)).every((id) => !V.stateAt(G, id).cg));
+check('5-13 c13-020〜c13-024 は通常の背景（ベンチ）のまま', ['c13-020', 'c13-021', 'c13-022', 'c13-023', 'c13-024'].every((id) => V.stateAt(G, id).bg === 'hosho-field-bench'));
+check('5-26 田原・小宮の分岐は通常の背景（放課後のグラウンド）のまま', allIds.filter((id) => /^c26[ab]-/.test(id)).every((id) => V.stateAt(G, id).bg === 'hosho-field-afternoon'));
+check('分岐の一枚絵の解放を補う game-cg-branches.js は削除し、index.html から読まない', !fs.existsSync(path.join(ROOT, 'game-cg-branches.js')) && !read('index.html').includes('game-cg-branches'));
+// キットは並び順で手前の一枚絵を解放する。残す3枚は、すべての経路が必ず通る場面にあり、通らずに先の場面へ進む経路がない（誤解放しない）
+{
+  const keys = Object.keys(G.scenes);
+  const refsOf = (o, out) => { if (typeof o === 'function') { for (const m of String(o).matchAll(/'([^']+)'/g)) if (G.scenes[m[1]]) out.add(m[1]); } else if (typeof o === 'string') { if (G.scenes[o]) out.add(o); } else if (o && typeof o === 'object') for (const v of Object.values(o)) refsOf(v, out); return out; };
+  const succ = Object.fromEntries(keys.map((k) => { const sc = G.scenes[k]; const out = refsOf(sc.next, new Set()); refsOf(sc.choices, out); sc.lines.forEach((l) => refsOf(l.choices, out)); return [k, out]; }));
+  const startScene = G.start.scene;
+  const all = new Set([startScene]); const st = [startScene];
+  while (st.length) { const x = st.pop(); for (const y of succ[x]) if (!all.has(y)) { all.add(y); st.push(y); } }
+  const bypass = cgIds.map((id) => {
+    const at = G.cues.find((c) => c.cg && c.cg.id === id).at; const sc = sceneOfLine.get(at); const ci = keys.indexOf(sc);
+    if (sc === startScene) return [];
+    const seen = new Set([startScene]); const q = [startScene];
+    while (q.length) { const x = q.pop(); for (const y of succ[x]) if (y !== sc && !seen.has(y)) { seen.add(y); q.push(y); } }
+    return [...seen].filter((k) => keys.indexOf(k) > ci).map((k) => id + '→' + k);
+  }).flat();
+  check('残す3枚の場面を通らずに、並び順で後の場面へ進む経路がない（全 ' + all.size + ' 場面を探索）', all.size === keys.length && bypass.length === 0, bypass.slice(0, 5).join(' '));
+}
 function refsAll() { return [...read('index.html').matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]); }
 check('一枚絵の区間は通常の立ち絵を重ねない', allIds.filter(id => V.stateAt(G,id).cg).every(id => shownAt(id) === '-'));
 

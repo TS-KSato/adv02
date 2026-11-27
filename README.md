@@ -20,9 +20,11 @@
 index.html                 入口（/adv02/ の下で動く。相対パスのみ）
 game.js                    作品データ（window.KIT_GAME）
 game.css                   新作専用の見た目（場面名・ページ数の札）
-assets/backgrounds/        背景（31枚）
-assets/portraits/          立ち絵（45枚）と素材一覧 portraits-list.csv
-assets/cg/                 一枚絵（7枚。配置は docs/cg-staging.md）
+assets/backgrounds/        背景（32枚）
+assets/inserts/            挿絵（2枚。CG 鑑賞には登録しない。docs/title-and-inserts.md）
+assets/title/              タイトル画面の画像
+assets/portraits/          立ち絵（47枚）と素材一覧 portraits-list.csv
+assets/cg/                 一枚絵（3枚。配置は docs/cg-staging.md）
 kit/releases/0.1.0/        作品が実行時に読む、固定版のキット（4 ファイル）
 kit/engine/                上流の複製（回帰試験が参照）
 kit/samples/               キットの回帰試験用の作品（新作の下敷きではない）
@@ -104,4 +106,4 @@ npm run test:game        # 新作：作品データ・取り込みの記録・�
 
 表情・一枚絵の第1便を登録済みです。一枚絵はキットのサンプルと同じ `assets/cg/` に置き、章間「新聞と記録」の `cnews-010`〜`cnews-011c` に表示します。`cnews-012` で部室へ戻ります。到達後はCG鑑賞にも登録されます。本文・分岐・保存キー・データ版は変更していません。
 
-一枚絵第2便の6枚（平野の朝練見学、河本・新庄・大山・田原・小宮の妄想）を、5-1・5-10・5-13・幕間「行きのバス」・5-26の両分岐に配置しています。配置、本文欄との重なりの調整、分岐の一枚絵の解放（`game-cg-branches.js`）は [docs/cg-staging.md](docs/cg-staging.md) にまとめています。
+一枚絵は3枚（章間「新聞と記録」の大山、5-1 の平野の朝練見学、幕間「行きのバス」の大山の白無垢）です。第2便で配置した河本・新庄・田原・小宮の4枚は、本文にない具体的な妄想を一枚絵の側で足していたため、作者の判断で削除しました。配置と削除の記録は [docs/cg-staging.md](docs/cg-staging.md) にまとめています。
