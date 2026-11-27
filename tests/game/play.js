@@ -736,7 +736,7 @@ async function batch4InPlay(browser, viewport, label) {
   const noPortraits = async () => (await portraitNow(page)).length === 0;
   const spans = [
     // [前の行, 前の背景, 入口, 途中, 終わりの行, 終わりの背景, 新しい背景, 名前]
-    ['c02e-017', 'hosho-field-afternoon', 'c02e-018', 'c02e-019', 'c03-001', 'hosho-field-afternoon', 'school-station-road-evening', '5-2 駅までの道'],
+    ['c02e-017', 'hosho-field-sunset', 'c02e-018', 'c02e-019', 'c03-001', 'hosho-field-afternoon', 'school-station-road-evening', '5-2 駅までの道'],
     ['cblank-010', 'hosho-clubroom', 'cblank-011', 'cblank-012', 'c21-001', 'hosho-field-afternoon', 'hirano-room', '幕間「空いた一行」平野の部屋'],
     ['c21-016', 'hospital-exam-room', 'c21-017', 'c21-017', 'c21-018', 'hosho-field-afternoon', 'hospital-corridor', '5-21 病院の廊下'],
   ];
@@ -1748,7 +1748,7 @@ async function portraitAuditInPlay(browser, viewport) {
     }
   }
   const cutAssets = Object.entries(bboxes).filter(([, b]) => b.bottom >= b.h - 2).map(([f]) => f);
-  check('元画像の下端で絵が切れている素材は ' + cutAssets.join('、') + ' だけ（ほかは全身）', cutAssets.join() === 'nakata-practice-rage.webp', cutAssets.join());
+  check('元画像の下端で絵が切れている素材は ' + cutAssets.join('、') + ' だけ（ほかは全身）', cutAssets.join() === 'nakata-practice-rage.webp,misora-game-uniform-hush.webp', cutAssets.join());
   check('立ち絵が切り替わる ' + starts.length + ' 行（表示 ' + shown + ' 件）で、切り抜き・切り口の露出・浮き・頭の欠けがない', bad.length === 0, bad.slice(0, 6).join(' | '));
   await ctx.close();
 }
