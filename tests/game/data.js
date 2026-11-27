@@ -982,7 +982,7 @@ const portraitSpans = [
   ['c05-003', '-'], ['c05-004', 'oyama/practice-normal'], ['c05-027', 'oyama/practice-normal'], ['c05o-001', 'oyama/practice-normal'], ['c05s-001', '-'],
   ['c05e-011', 'oyama/practice-normal'], ['c05e-012', '-'], ['c05b-001', 'oyama/practice-normal'],
   ['c06-008', '-'], ['c06-009', 'misora/game-uniform-normal'], ['c06b-001', '-'], ['c06e-004', 'misora/game-uniform-normal'], ['c06e-004a', 'misora/game-uniform-pale'], ['c06e-009', '-'], ['c06e-010', 'misora/game-uniform-hush'],
-  ['c07-001', 'misora/game-uniform-hush'], ['c07-004', 'misora/game-uniform-hush'], ['c07-005', 'misora/game-uniform-flustered-chibi'], ['c07-006', 'nakata/practice-confronting,misora/game-uniform-flustered-chibi'], ['c07-006a', 'nakata/practice-confronting,misora/game-uniform-normal'], ['c07-007', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-008', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
+  ['c07-001', 'misora/game-uniform-hush'], ['c07-004', 'misora/game-uniform-hush'], ['c07-005', 'misora/game-uniform-flustered-chibi'], ['c07-006', 'nakata/practice-confronting,misora/game-uniform-normal'], ['c07-006a', 'nakata/practice-confronting,misora/game-uniform-normal'], ['c07-007', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-008', 'nakata/practice-normal,misora/game-uniform-normal'], ['c07-020', 'nakata/practice-normal'], ['c07-023', '-'], ['c07-026', 'misora/game-uniform-normal'],
   ['c07-033', 'nakata/practice-normal,misora/game-uniform-normal'], ['c08-001', 'misora/game-uniform-normal'], ['c08-020', 'misora/game-uniform-normal'], ['c08-021', 'nakata/practice-rage'], ['c08-023', 'nakata/practice-rage'], ['c08-024', 'misora/game-uniform-normal'],
   ['c08-040', 'misora/game-uniform-normal'], ['c08-041', 'nakata/practice-shock,misora/game-uniform-normal'], ['c08-043', 'nakata/practice-shock,misora/game-uniform-normal'],
   ['c04-019', 'misora/game-uniform-normal'], ['c04-022', 'nakata/practice-bashful,misora/game-uniform-normal'], ['c04-023', 'misora/game-uniform-normal'],
@@ -1019,7 +1019,7 @@ const portraitSpans = [
   ['c26e-001-p2', 'hiyori/jersey-normal'], ['c26e-001', '-'], ['c26e-005', 'komiya/game-uniform-normal,shinjo/game-uniform-normal'], ['c26e-009', 'komiya/game-uniform-normal'], ['c26e-010', '-'],
   ['c27-005', 'komiya/practice-normal'], ['c27-009', 'hiyori/school-summer-bench,misora/game-uniform-normal'], ['c27-016', 'komiya/practice-normal'], ['c27-025', 'gen/casual-normal'], ['c28-015', 'nohara/game-uniform-normal'],
   ['c29a-003', 'hiyori/school-summer-bench'], ['c29b-001', '-'], ['c29c-001', '-'], ['c29d-005', 'muto/game-uniform-normal,nohara/game-uniform-normal'], ['c29d-008-p2', 'oyama/game-uniform-normal'],
-  ['c29f-002', 'tahara/game-uniform-normal'], ['c29g-001', 'tahara/game-uniform-normal'], ['c29h-003', 'misora/game-uniform-normal'], ['c29h-007', 'nohara/game-uniform-normal'], ['c29h-012', 'misora/game-uniform-normal'],
+  ['c29f-002', 'tahara/game-uniform-normal'], ['c29g-001', 'tahara/game-uniform-normal'], ['c29h-003', 'misora/game-uniform-normal'], ['c29h-007', 'nohara/game-uniform-normal'], ['c29h-012', '-'], ['c29h-013', '-'],
   ['c29i-003', 'oyama/game-uniform-normal'], ['c29j-001', '-'], ['c29k-003', 'oyama/game-uniform-normal,misora/game-uniform-normal'], ['c29k-004', '-'],
   ['cbus-001', 'hiyori/school-summer-normal'], ['cbus-003a', '-'], ['cbus-008', '-'], ['c30-001-p2', 'hiyori/school-summer-bench'], ['c30-004', 'komiya/game-uniform-normal'], ['c30-015', 'oyama/game-uniform-normal'],
   ['c30-025-p4', 'hiyori/jersey-normal'], ['c31a-004', '-'], ['c31a-007', 'hiyori/jersey-normal'], ['c31d-002', 'hiyori/school-summer-bench'], ['c31h-001', '-'], ['c31k-003', '-'],
@@ -1029,7 +1029,7 @@ const portraitSpans = [
   ['c33d-001i', 'gen/casual-normal'], ['c33d-001k', 'kawamoto/casual-normal'], ['c33d-001n', 'hiyori/school-summer-bench'], ['c33d-001r', '-'], ['c33f-002', 'hiyori/school-summer-bench,tahara/game-uniform-normal'],
   ['c33i-004', 'tahara/game-uniform-normal'], ['c33k-001n', '-'], ['c33l-002', 'misora/game-uniform-normal,shinjo/game-uniform-normal'], ['c33l-005', 'shinjo/game-uniform-normal'], ['c33l-008', 'oyama/game-uniform-normal'],
   ['clastout-002', '-'], ['clastout-005', 'hiyori/school-summer-bench'], ['c34-003', '-'], ['c34-014', 'hiyori/school-summer-bench'], ['c35-009', 'misora/game-uniform-normal,oyama/game-uniform-normal'],
-  ['c35-017', 'shinjo/game-uniform-normal'], ['c35-020', 'oyama/game-uniform-normal'], ['c36-001', 'oyama/game-uniform-normal'], ['c36-002', '-'], ['c36-015', 'gen/casual-normal'], ['c36-021', 'hiyori/school-summer-bench'],
+  ['c35-017', 'shinjo/game-uniform-normal'], ['c35-020', '-'], ['c36-001', '-'], ['c36-002', '-'], ['c36-015', 'gen/casual-normal'], ['c36-021', '-'], ['c36-019', 'hiyori/school-summer-bench'],
 ];
 check('行ごとの立ち絵（左,右）：登場・退場・分岐・回想の主な行',
   portraitSpans.every(([id, want]) => shownAt(id) === want), portraitSpans.filter(([id, want]) => shownAt(id) !== want).map(([id]) => id + '=' + shownAt(id)).join(' '));
@@ -1071,7 +1071,7 @@ section('表情第1便と新聞の一枚絵');
 const addedSpans = {
  'misora/game-uniform-pale': ['c06e-004a','c06e-004b','c06e-005'],
  'misora/game-uniform-angry': ['c06e-006','c06e-007'],
- 'misora/game-uniform-flustered-chibi': ['c07-005','c07-006','c07-016'],
+ 'misora/game-uniform-flustered-chibi': ['c07-005','c07-016'],
  'kawamoto/casual-shock': ['c10-020','c10-021','c10-022'],
  'kawamoto/casual-angry': ['c10-029','c10-030'],
  'oyama/practice-angry': ['c10-022','c10-023','c10-024','c10-025','c10-026','c10-027','c26a-009a','c26a-009b','c26a-009c','c26a-009d','c26a-009e'],
@@ -1082,14 +1082,18 @@ for (const [expr, expected] of Object.entries(addedSpans)) {
 }
 const cgKey = 'cnews-oyama-tears-newspaper';
 const CG_BATCH02 = {
+  'c20-misora-tears': { lines: ['c20-004', 'c20-005', 'c20-005a'], release: 'c20-005b', bg: 'regional-stadium-dugout-sunset' },
+  'c24-tsuyoshi-looming': { lines: ['c24-011'], release: 'c24-012', bg: 'station-plaza-autumn' },
+  'c29h-misora-shadowed-smile': { lines: ['c29h-012', 'c29h-013'], release: 'c29i-001', bg: 'regional-stadium-dugout' },
+  'c35-misora-full-smile': { lines: ['c35-019', 'c35-020', 'c35-021', 'c36-001', 'c36-002'], release: 'c36-003', bg: 'koshien-dugout' },
   'c16-sasaki-daydream-bride': { lines: ['c16-004'], release: 'c16-004a', bg: 'regional-stadium-field' },
   'hirano-field-visit-vision': { lines: ['c01-009', 'c01-010', 'c01-011'], release: 'c01-012', bg: 'hosho-field-fence-morning' },
   'cbus-oyama-daydream-bride': { lines: ['cbus-003a'], release: 'cbus-004', bg: 'bus-interior' },
 };
 const cgIds = Object.keys(G.assets.cgs);
-check('一枚絵は4枚（新聞・平野の朝練見学・佐々木の花嫁・大山の白無垢）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
+check('一枚絵は9枚（新聞・平野の朝練見学・佐々木の花嫁・大山の白無垢、第5便の涙・影の笑み・剛・満面の笑み・幕切れ）', JSON.stringify([...cgIds].sort()) === JSON.stringify([cgKey, 'c36-ending-leap', ...Object.keys(CG_BATCH02)].sort()), cgIds.join(','));
 check('一枚絵の ID はファイル名と同じで、assets/cg/ に実ファイルがある', cgIds.every((id) => G.assets.cgs[id].src === 'assets/cg/' + id + '.webp' && fs.existsSync(path.join(ROOT, G.assets.cgs[id].src))));
-check('assets/cg には登録した4枚だけがある（削除した4枚・CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
+check('assets/cg には登録した9枚だけがある（削除した4枚・CSV・ZIP・PNG原本を置かない）', JSON.stringify(fs.readdirSync(path.join(ROOT, 'assets', 'cg')).sort()) === JSON.stringify(cgIds.map((id) => id + '.webp').sort()));
 const badCg = cgIds.filter((id) => { const b = fs.readFileSync(path.join(ROOT, G.assets.cgs[id].src));
   return !(b.toString('ascii', 0, 4) === 'RIFF' && b.toString('ascii', 8, 16) === 'WEBPVP8 ' && (b.readUInt16LE(26) & 0x3fff) === 1920 && (b.readUInt16LE(28) & 0x3fff) === 1080); });
 check('一枚絵はすべて不透明な WebP で、1920×1080px', badCg.length === 0, badCg.join(','));
@@ -1102,6 +1106,12 @@ for (const [id, s] of Object.entries(CG_BATCH02)) {
     JSON.stringify(cgLines(id)) === JSON.stringify(s.lines) && !V.stateAt(G, s.release).cg && V.stateAt(G, s.release).bg === s.bg && s.lines.every((l) => V.stateAt(G, l).bg === s.bg),
     cgLines(id).join(','));
 }
+check('幕切れ（c36-ending-leap）は最後の2行（c36-020〜c36-021）だけで、本文の結末まで出す', JSON.stringify(cgLines('c36-ending-leap')) === JSON.stringify(['c36-020', 'c36-021']) && G.scenes['real-promise'].lines.at(-1).id === 'c36-021' && !G.scenes['real-promise'].next);
+check('影の笑みは勝敗どちらの経路でも解除される（勝利 c29i-001・敗北 c29j-001）', !V.stateAt(G, 'c29i-001').cg && !V.stateAt(G, 'c29j-001').cg && V.stateAt(G, 'c29i-001').bg === 'regional-stadium-dugout');
+check('満面の笑みは場面をまたいで同じ画像を続ける（キットの制約で c35-019〜c35-021 と c36-001〜c36-002 の2区間。同じ ID）', G.cues.filter((c) => c.cg && c.cg.id === 'c35-misora-full-smile').map((c) => c.at + '〜' + c.cg.until).join(',') === 'c35-019〜c35-021,c36-001〜c36-002');
+check('本文枠を最初に隠す演出は c20-004・c29h-012・c35-019 の3行だけ（game-reveal.js）、index.html は画像切り替えの後に読む',
+  /REVEAL = \{ 'c20-004': 'c20-misora-tears', 'c29h-012': 'c29h-misora-shadowed-smile', 'c35-019': 'c35-misora-full-smile' \}/.test(read('game-reveal.js')) && read('index.html').indexOf('./game-reveal.js') > read('index.html').indexOf('./game-stage.js'));
+check('半デフォルメ版は c07-005 と c07-016 だけ。c07-006 は美空を通常の顔に戻し、左に中田の突進を出す', shownAt('c07-005') === 'misora/game-uniform-flustered-chibi' && shownAt('c07-006') === 'nakata/practice-confronting,misora/game-uniform-normal');
 const REMOVED_CGS = ['c10-kawamoto-daydream-embrace', 'c13-shinjo-daydream-dinner', 'c26a-tahara-daydream-home', 'c26b-komiya-daydream-hand'];
 check('削除した4枚は、登録・表示指定・ファイル・作品のコードと CSS のどこにも残らない', REMOVED_CGS.every((id) => !(id in G.assets.cgs) && !(G.cues || []).some((c) => c.cg && c.cg.id === id) && !fs.existsSync(path.join(ROOT, 'assets', 'cg', id + '.webp')) && !['game.js', 'game.css', 'index.html', 'game-stage.js', 'game-title.js'].some((f) => read(f).includes(id))));
 check('5-10・5-13・5-26 の両分岐は一枚絵を出さない', allIds.filter((id) => /^c(10|13|26[ab]?)-/.test(id)).every((id) => !V.stateAt(G, id).cg));

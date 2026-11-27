@@ -96,15 +96,17 @@
   .kit-portrait-img[src$="nakata-practice-shock.webp"] { height: 100%; max-width: none; margin-top: -6vh; }
 }
 
-/* 美空の動揺デフォルメ（5-7）。高さのある画面は、通常の美空と同じ大きさ・位置（キットの既定：画面下端にそろえた全身）。
-   跳ねた足と影は本文枠の後ろへ入ってよい。全身を本文枠の上に収めるために縮めない。
-   高さの小さい画面は、通常の上半身拡大（165%）だと顔が本文枠に隠れるので、帽子から顔（元画像の上から約560px）までが
-   本文枠の上端より上に入る大きさにし、上端を画面の上端にそろえる（脚は本文枠の後ろ）。 */
+/* 美空の動揺（半デフォルメ版、第5便の試作。5-7 の c07-005・c07-016）。顔は通常の美空の約1.9倍、肩幅は約1.1倍で描かれているので、
+   肩の見かけの大きさを通常の美空にそろえる（高さのある画面：通常の 78% の約9割 = 70%、キットの既定どおり右の枠で下端にそろえる）。
+   下半身は本文枠の後ろ・画面の下へ出てよい。全身を本文枠の上に収めるために縮めない。縦横比は変えない。
+   高さの小さい画面は、通常の上半身拡大（165%）だと顔が本文枠に隠れるので、帽子から顎（元画像の上から約420px）までが本文枠の上に入る
+   120% にし、上端を画面の上端にそろえる。 */
+.kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] { height: 70%; }
 @media (max-height: 500px) {
-  .kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] { height: 94%; max-width: none; margin-right: 2vw; }
+  .kit-portrait-img[src$="misora-game-uniform-flustered-chibi.webp"] { height: 120%; max-width: none; }
 }
 
-/* 一枚絵（docs/cg-staging.md）。7枚ともキットの既定どおり表示領域全体に敷く（object-fit: cover。縮小・余白なし）。
+/* 一枚絵（docs/cg-staging.md）。どれもキットの既定どおり表示領域全体に敷く（object-fit: cover。縮小・余白なし）。
    本文枠は一枚絵の表示中も通常と同じ（位置・大きさ・下地を変えない）。
    平野の朝練見学だけは、横長の画面で下側（グラブと球）を見せる（上の空を切る）。 */
 .kit-cg:not([hidden])[src$="hirano-field-visit-vision.webp"] { object-position: 50% 100%; }
@@ -167,3 +169,8 @@
 @media (max-height: 500px) {
   .kit-portrait-img[src$="nakata-practice-confronting.webp"] { height: 120%; }
 }
+
+/* 一枚絵の導入で本文枠を一時的に隠す（game-reveal.js、docs/ui-frame.md）。c20-004・c29h-012・c35-019 だけ。
+   visibility で隠すので、本文枠・場面名の札が占める領域は詰めず、位置・大きさ・不透明度・操作ボタンの配置は変わらない。 */
+.kit-play.game-reveal-hidden .kit-dialogue,
+.kit-play.game-reveal-hidden .kit-scene { visibility: hidden; }
